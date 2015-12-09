@@ -1,2 +1,2 @@
 # RogueTraderGeneratorTools
-Vairous generators for Rogue Trader
+Various generators for Rogue Trader
