@@ -173,21 +173,24 @@ namespace RogueTraderSystemGenerator.Nodes
 
             // END generate table
 
-            if (_xenos is XenosStarsOfInequity)
+            var xenos = _xenos as XenosStarsOfInequity;
+            if (xenos != null)
             {
-                DocBuilder.AddContentLine(ref _flowDocument, "Bestial Archetype", (_xenos as XenosStarsOfInequity).BestialArchetypeText);
-                DocBuilder.AddContentLine(ref _flowDocument, "Bestial Nature", (_xenos as XenosStarsOfInequity).BestialNature);
+                DocBuilder.AddContentLine(ref _flowDocument, "Bestial Archetype", xenos.BestialArchetypeText);
+                DocBuilder.AddContentLine(ref _flowDocument, "Bestial Nature", xenos.BestialNature);
             }
-            if(_xenos is XenosKoronusBestiary)
+            var bestiary = _xenos as XenosKoronusBestiary;
+            if(bestiary != null)
             {
-                DocBuilder.AddContentLine(ref _flowDocument, "Base Profile", (_xenos as XenosKoronusBestiary).BaseProfileText);
-                if((_xenos as XenosKoronusBestiary).FloraType != FloraType.NotFlora)
-                    DocBuilder.AddContentLine(ref _flowDocument, "Flora Type", (_xenos as XenosKoronusBestiary).FloraTypeText);
+                DocBuilder.AddContentLine(ref _flowDocument, "Base Profile", bestiary.BaseProfileText);
+                if(bestiary.FloraType != FloraType.NotFlora)
+                    DocBuilder.AddContentLine(ref _flowDocument, "Flora Type", bestiary.FloraTypeText);
             }
-            if (_xenos is XenosPrimitive)
+            var primitive = _xenos as XenosPrimitive;
+            if (primitive != null)
             {
-                DocBuilder.AddContentLine(ref _flowDocument, "Unusual Xenos Communication", (_xenos as XenosPrimitive).UnusualCommunication);
-                DocBuilder.AddContentLine(ref _flowDocument, "Social Structure", (_xenos as XenosPrimitive).SocialStructure);
+                DocBuilder.AddContentLine(ref _flowDocument, "Unusual Xenos Communication", primitive.UnusualCommunication);
+                DocBuilder.AddContentLine(ref _flowDocument, "Social Structure", primitive.SocialStructure);
             }
 
             DocBuilder.AddContentLine(ref _flowDocument, "Skills", new DocContentItem(_xenos.GetSkillList()));
@@ -225,21 +228,21 @@ namespace RogueTraderSystemGenerator.Nodes
         private void GenerateStarsOfInequityXenos()
         {
             _xenos = new XenosStarsOfInequity();
-            (_xenos as XenosStarsOfInequity).Generate();
-            NodeName = (_xenos as XenosStarsOfInequity).BestialArchetypeText.Content;
+            ((XenosStarsOfInequity) _xenos).Generate();
+            NodeName = ((XenosStarsOfInequity) _xenos).BestialArchetypeText.Content;
         }
 
         private void GenerateKoronusBestiaryXenos()
         {
             _xenos = new XenosKoronusBestiary(WorldType);
-            (_xenos as XenosKoronusBestiary).Generate();
-            NodeName = (_xenos as XenosKoronusBestiary).BaseProfileText.Content;
+            ((XenosKoronusBestiary) _xenos).Generate();
+            NodeName = ((XenosKoronusBestiary) _xenos).BaseProfileText.Content;
         }
 
         private void GeneratePrimitiveXenos()
         {
             _xenos = new XenosPrimitive();
-            (_xenos as XenosPrimitive).Generate();
+            ((XenosPrimitive) _xenos).Generate();
             NodeName = "Primitive Xenos";
         }
 

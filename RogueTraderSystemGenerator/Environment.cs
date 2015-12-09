@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.Serialization;
 using RogueTraderSystemGenerator.Nodes;
+// ReSharper disable UnusedAutoPropertyAccessor.Global
+// ReSharper disable MemberCanBePrivate.Global
 
 namespace RogueTraderSystemGenerator
 {
@@ -47,7 +50,7 @@ namespace RogueTraderSystemGenerator
                 case TerritoryBaseTerrain.Wasteland:
                     return "Wasteland";
                 default:
-                    throw new ArgumentOutOfRangeException("baseTerrain");
+                    throw new ArgumentOutOfRangeException(nameof(baseTerrain));
             }
         }
 
@@ -131,22 +134,12 @@ namespace RogueTraderSystemGenerator
 
         public int GetNumOrganicCompounds()
         {
-            int numCompounds = 0;
-            foreach (Territory territory in Territories)
-            {
-                numCompounds += territory.TerritoryTraitUniqueCompound;
-            }
-            return numCompounds;
+            return Territories.Sum(territory => territory.TerritoryTraitUniqueCompound);
         }
 
         public int GetNumNotableSpecies()
         {
-            int numSpecies = 0;
-            foreach (Territory territory in Territories)
-            {
-                numSpecies += territory.TerritoryTraitNotableSpecies;
-            }
-            return numSpecies;
+            return Territories.Sum(territory => territory.TerritoryTraitNotableSpecies);
         }
 
         public void GenerateLandmarks(PlanetNode planet, EffectivePlanetSize effectivePlanetSize)

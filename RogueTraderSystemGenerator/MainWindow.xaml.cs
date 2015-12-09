@@ -7,7 +7,6 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media.Imaging;
 using Microsoft.Win32;
 using RogueTraderSystemGenerator.Nodes;
 
@@ -59,8 +58,6 @@ namespace RogueTraderSystemGenerator
         private NodeBase GetSelectedNode()
         {
             var selectedItem = TreeNodes.SelectedItem as NodeBase;
-            if (selectedItem == null)
-                return null;
             return selectedItem;
         }
 
@@ -653,25 +650,25 @@ namespace RogueTraderSystemGenerator
             if (GetSelectedNode() is PlanetNode)
             {
                 var planetNode = GetSelectedNode() as PlanetNode;
-                if (planetNode != null) planetNode.AddMoon();
+                planetNode?.AddMoon();
             }
             else if(GetSelectedNode() is OrbitalFeaturesNode)
             {
                 if (GetSelectedNode().Parent is PlanetNode)
                 {
                     var planetNode = GetSelectedNode().Parent as PlanetNode;
-                    if (planetNode != null) planetNode.AddMoon();
+                    planetNode?.AddMoon();
                 }
                 else if (GetSelectedNode().Parent is GasGiantNode)
                 {
                     var planetNode = GetSelectedNode().Parent as GasGiantNode;
-                    if (planetNode != null) planetNode.AddMoon();
+                    planetNode?.AddMoon();
                 }
             }
             else if (GetSelectedNode() is GasGiantNode)
             {
                 var planetNode = GetSelectedNode() as GasGiantNode;
-                if (planetNode != null) planetNode.AddMoon();
+                planetNode?.AddMoon();
             }
             else
                 throw new Exception("Attempted to generate a moon from the wrong node source");
@@ -684,25 +681,25 @@ namespace RogueTraderSystemGenerator
             if (GetSelectedNode() is PlanetNode)
             {
                 var planetNode = GetSelectedNode() as PlanetNode;
-                if (planetNode != null) planetNode.AddLesserMoon();
+                planetNode?.AddLesserMoon();
             }
             else if (GetSelectedNode() is OrbitalFeaturesNode)
             {
                 if (GetSelectedNode().Parent is PlanetNode)
                 {
                     var planetNode = GetSelectedNode().Parent as PlanetNode;
-                    if (planetNode != null) planetNode.AddLesserMoon();
+                    planetNode?.AddLesserMoon();
                 }
                 else if (GetSelectedNode().Parent is GasGiantNode)
                 {
                     var planetNode = GetSelectedNode().Parent as GasGiantNode;
-                    if (planetNode != null) planetNode.AddLesserMoon();
+                    planetNode?.AddLesserMoon();
                 }
             }
             else if (GetSelectedNode() is GasGiantNode)
             {
                 var planetNode = GetSelectedNode() as GasGiantNode;
-                if (planetNode != null) planetNode.AddLesserMoon();
+                planetNode?.AddLesserMoon();
             }
             else
                 throw new Exception("Attempted to generate a lesser moon from the wrong node source");
@@ -715,25 +712,25 @@ namespace RogueTraderSystemGenerator
             if (GetSelectedNode() is PlanetNode)
             {
                 var planetNode = GetSelectedNode() as PlanetNode;
-                if (planetNode != null) planetNode.AddAsteroid();
+                planetNode?.AddAsteroid();
             }
             else if (GetSelectedNode() is OrbitalFeaturesNode)
             {
                 if (GetSelectedNode().Parent is PlanetNode)
                 {
                     var planetNode = GetSelectedNode().Parent as PlanetNode;
-                    if (planetNode != null) planetNode.AddAsteroid();
+                    planetNode?.AddAsteroid();
                 }
                 else if (GetSelectedNode().Parent is GasGiantNode)
                 {
                     var planetNode = GetSelectedNode().Parent as GasGiantNode;
-                    if (planetNode != null) planetNode.AddAsteroid();
+                    planetNode?.AddAsteroid();
                 }
             }
             else if (GetSelectedNode() is GasGiantNode)
             {
                 var planetNode = GetSelectedNode() as GasGiantNode;
-                if (planetNode != null) planetNode.AddAsteroid();
+                planetNode?.AddAsteroid();
             }
             else
                 throw new Exception("Attempted to generate an asteroid from the wrong node source");
@@ -746,8 +743,7 @@ namespace RogueTraderSystemGenerator
             foreach (NodeBase node in _rootNodes)
             {
                 SystemNode systemNode = node as SystemNode;
-                if (systemNode != null)
-                    systemNode.GenerateNames();
+                systemNode?.GenerateNames();
             }
         }
 
@@ -950,19 +946,6 @@ namespace RogueTraderSystemGenerator
         {
             AboutDialog dlg = new AboutDialog();
             dlg.ShowDialog();
-            /*
-            About about = new About
-                {
-                    Publisher = "Espen Gätzschmann",
-                    Title = "Rogue Trader Generator Tool",
-                    AdditionalNotes =
-                        "Rogue Trader and its respective trademarks are owned by Fantasy Flight Games and Games Workshop. I have no affiliation with either. This tool is provided free of charge, and I have been very careful not to break any copyrights. ",
-                    Hyperlink = new Uri("mailto:espeng@gmail.com"),
-                    HyperlinkText = "mailto:espeng@gmail.com",
-                    ApplicationLogo = new BitmapImage(new Uri("pack://application:,,,/d6_128x128.ico"))
-                };
-            about.Show();
-            */
         }
 
         private void WindowClosed(object sender, EventArgs e)
@@ -986,16 +969,13 @@ namespace RogueTraderSystemGenerator
         private void AddXenosClick(object sender, RoutedEventArgs e)
         {
             var node = GetSelectedNode() as NativeSpeciesNode;
-            if (node != null)
+            PlanetNode planet = node?.Parent as PlanetNode;
+            if(planet != null)
             {
-                PlanetNode planet = node.Parent as PlanetNode;
-                if(planet != null)
-                {
-                    XenosNode xenos = new XenosNode(planet.WorldType, false, node.SystemCreationRules) {Parent = node};
-                    node.Children.Add(xenos);
-                    xenos.Generate();
-                    node.Dirty = true;
-                }
+                XenosNode xenos = new XenosNode(planet.WorldType, false, node.SystemCreationRules) {Parent = node};
+                node.Children.Add(xenos);
+                xenos.Generate();
+                node.Dirty = true;
             }
         }
 
@@ -1072,7 +1052,7 @@ namespace RogueTraderSystemGenerator
                 MoveDown(node);
         }
 
-        static private bool SetSelected(ItemsControl parent, object child)
+        private static bool SetSelected(ItemsControl parent, object child)
         {
             if (parent == null || child == null)
                 return false;
@@ -1086,12 +1066,9 @@ namespace RogueTraderSystemGenerator
 
             if (parent.Items.Count > 0)
             {
-                foreach (object childItem in parent.Items)
-                {
-                    ItemsControl childControl = parent.ItemContainerGenerator.ContainerFromItem(childItem) as ItemsControl;
-                    if (SetSelected(childControl, child))
-                        return true;
-                }
+                return (
+                    from object childItem in parent.Items
+                    select parent.ItemContainerGenerator.ContainerFromItem(childItem) as ItemsControl).Any(childControl => SetSelected(childControl, child));
             }
             return false;
         }

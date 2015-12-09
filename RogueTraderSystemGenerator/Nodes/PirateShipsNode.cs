@@ -64,8 +64,7 @@ namespace RogueTraderSystemGenerator.Nodes
             for (int i = 0; i < totalShips; i++)
             {
                 Starship ship = StarshipTools.GetRandomPirateShip(_pirateSpecies);
-                ShipNode node = new ShipNode(ship);
-                node.Parent = this;
+                ShipNode node = new ShipNode(ship) {Parent = this};
                 Children.Add(node);
             }
         }
@@ -73,8 +72,7 @@ namespace RogueTraderSystemGenerator.Nodes
         public void AddNewShip()
         {
             Starship ship = StarshipTools.GetRandomPirateShip(_pirateSpecies);
-            ShipNode node = new ShipNode(ship);
-            node.Parent = this;
+            ShipNode node = new ShipNode(ship) {Parent = this};
             Children.Add(node);
         }
     }

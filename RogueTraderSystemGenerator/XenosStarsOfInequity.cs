@@ -402,7 +402,7 @@ namespace RogueTraderSystemGenerator
             else if (randValue <= 5)
             {
                 BestialNature = new DocContentItem("Earth-Scorning", 36);
-                _earthScorning = true;
+                EarthScorning = true;
                 // Special features only, listed in book
             }
             else if (randValue <= 6)

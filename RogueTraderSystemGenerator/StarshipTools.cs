@@ -4,9 +4,9 @@ using RogueTraderSystemGenerator.Nodes;
 
 namespace RogueTraderSystemGenerator
 {
-    static public class StarshipTools
+    public static class StarshipTools
     {
-        static public Species GetRandomSpecies()
+        public static Species GetRandomSpecies()
         {
             switch (Globals.Rand.Next(1, 15))
             {
@@ -37,7 +37,7 @@ namespace RogueTraderSystemGenerator
             throw new Exception("Error during generation of random species for ship generation");
         }
 
-        static public Starship GetRandomPirateShip(Species race)
+        public static Starship GetRandomPirateShip(Species race)
         {
             Starship ship = new Starship {BookSource = RuleBook.BattlefleetKoronus};
 
@@ -81,13 +81,13 @@ namespace RogueTraderSystemGenerator
                     GenerateRandomChaosReaverShip(ref ship);
                     break;
                 default:
-                    throw new ArgumentOutOfRangeException("race");
+                    throw new ArgumentOutOfRangeException(nameof(race));
             }
 
             return ship;
         }
 
-        static public void GenerateRandomOrkShip(ref Starship ship)
+        public static void GenerateRandomOrkShip(ref Starship ship)
         {
             ship.Race = Species.Ork;
             ship.OrkUpgrades = new List<string>();
@@ -212,7 +212,7 @@ namespace RogueTraderSystemGenerator
             return result;
         }
 
-        static public void GenerateRandomEldarShip(ref Starship ship)
+        public static void GenerateRandomEldarShip(ref Starship ship)
         {
             ship.Race = Species.Eldar;
             ship.BookSource = RuleBook.BattlefleetKoronus;
@@ -257,7 +257,7 @@ namespace RogueTraderSystemGenerator
             }
         }
 
-        static public void GenerateRandomDarkEldarShip(ref Starship ship)
+        public static void GenerateRandomDarkEldarShip(ref Starship ship)
         {
             ship.Race = Species.DarkEldar;
             ship.BookSource = RuleBook.TheSoulReaver;
@@ -278,7 +278,7 @@ namespace RogueTraderSystemGenerator
             }
         }
 
-        static public void GenerateRandomRakGolShip(ref Starship ship)
+        public static void GenerateRandomRakGolShip(ref Starship ship)
         {
             ship.Race = Species.RakGol;
             ship.BookSource = RuleBook.BattlefleetKoronus;
@@ -305,7 +305,7 @@ namespace RogueTraderSystemGenerator
             }
         }
 
-        static public void GenerateRandomChaosReaverShip(ref Starship ship)
+        public static void GenerateRandomChaosReaverShip(ref Starship ship)
         {
             ship.Race = Species.ChaosReaver;
             ship.BookSource = RuleBook.BattlefleetKoronus;
@@ -374,7 +374,7 @@ namespace RogueTraderSystemGenerator
             }
         }
 
-        static public void GenerateRandomHumanShip(ref Starship ship)
+        public static void GenerateRandomHumanShip(ref Starship ship)
         {
             ship.Race = Species.Human;
 
@@ -663,7 +663,7 @@ namespace RogueTraderSystemGenerator
             }
         }
 
-        static public void GenerateRandomHumanPirateShip(ref Starship ship)
+        public static void GenerateRandomHumanPirateShip(ref Starship ship)
         {
             ship.Race = Species.Human;
 
@@ -1083,7 +1083,7 @@ namespace RogueTraderSystemGenerator
                 case ShipClass.Battleship:
                     return new DocContentItem("Battleship");
                 default:
-                    throw new ArgumentOutOfRangeException("shipClass");
+                    throw new ArgumentOutOfRangeException(nameof(shipClass));
             }
         }
     }

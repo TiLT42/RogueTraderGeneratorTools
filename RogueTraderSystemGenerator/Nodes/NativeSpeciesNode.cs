@@ -12,7 +12,7 @@ namespace RogueTraderSystemGenerator.Nodes
             _systemCreationRules = systemCreationRules;
         }
 
-        public SystemCreationRules SystemCreationRules { get { return _systemCreationRules; } }
+        public SystemCreationRules SystemCreationRules => _systemCreationRules;
 
         public override void GenerateFlowDocument()
         {

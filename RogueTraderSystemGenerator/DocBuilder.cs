@@ -64,14 +64,14 @@ namespace RogueTraderSystemGenerator
                     BookSource = "The Soul Reaver";
                     break;
                 default:
-                    throw new ArgumentOutOfRangeException("book");
+                    throw new ArgumentOutOfRangeException(nameof(book));
             }
         }
     }
 
     static class DocBuilder
     {
-        static public void AddHeader(ref FlowDocument doc, string header, int headerLevel)
+        public static void AddHeader(ref FlowDocument doc, string header, int headerLevel)
         {
             Paragraph paragraph = new Paragraph();
             if (headerLevel <= 1)
@@ -108,7 +108,7 @@ namespace RogueTraderSystemGenerator
             doc.Blocks.Add(paragraph);
         }
     
-        static public void AddContentLine(ref FlowDocument doc, string header, DocContentItem content)
+        public static void AddContentLine(ref FlowDocument doc, string header, DocContentItem content)
         {
             Paragraph paragraph = new Paragraph {FontSize = 12};
             if(header.Trim().Length > 0)
@@ -129,7 +129,7 @@ namespace RogueTraderSystemGenerator
             doc.Blocks.Add(paragraph);
         }
 
-        static public void AddContentList(ref FlowDocument doc, string header, List<DocContentItem> content)
+        public static void AddContentList(ref FlowDocument doc, string header, List<DocContentItem> content)
         {
             Paragraph paraHeader = new Paragraph {FontSize = 12};
             paraHeader.Inlines.Add(new Bold(new Run(header + ":")));

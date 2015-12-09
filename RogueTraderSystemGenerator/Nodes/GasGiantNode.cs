@@ -163,8 +163,10 @@ namespace RogueTraderSystemGenerator.Nodes
                     // Generate a Lesser Moon
                     if (_orbitalFeaturesNode == null)
                     {
-                        _orbitalFeaturesNode = new OrbitalFeaturesNode(_systemCreationRules);
-                        _orbitalFeaturesNode.Parent = this;
+                        _orbitalFeaturesNode = new OrbitalFeaturesNode(_systemCreationRules)
+                                               {
+                                                   Parent = this
+                                               };
                         Children.Add(_orbitalFeaturesNode);
                     }
                     _orbitalFeaturesNode.AddLesserMoon();
@@ -174,8 +176,10 @@ namespace RogueTraderSystemGenerator.Nodes
                     // Generate a Moon
                     if (_orbitalFeaturesNode == null)
                     {
-                        _orbitalFeaturesNode = new OrbitalFeaturesNode(_systemCreationRules);
-                        _orbitalFeaturesNode.Parent = this;
+                        _orbitalFeaturesNode = new OrbitalFeaturesNode(_systemCreationRules)
+                                               {
+                                                   Parent = this
+                                               };
                         Children.Add(_orbitalFeaturesNode);
                     }
                     _orbitalFeaturesNode.AddMoon(_bodyValue, _titan);

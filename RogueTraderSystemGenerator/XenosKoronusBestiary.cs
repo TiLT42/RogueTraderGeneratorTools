@@ -250,7 +250,7 @@ namespace RogueTraderSystemGenerator
             Stats.WillPower = 0;
             Stats.Fellowship = 0;
 
-            _doesNotMove = true;
+            DoesNotMove = true;
             BaseMovement = 0;
             Wounds = 24;
 
@@ -284,7 +284,7 @@ namespace RogueTraderSystemGenerator
             Stats.WillPower = 0;
             Stats.Fellowship = 0;
 
-            _doesNotMove = true;
+            DoesNotMove = true;
             BaseMovement = 0;
             Wounds = 8;
 
@@ -318,7 +318,7 @@ namespace RogueTraderSystemGenerator
             Stats.WillPower = 0;
             Stats.Fellowship = 0;
 
-            _doesNotMove = true;
+            DoesNotMove = true;
             BaseMovement = 0;
             Wounds = 20;
 
@@ -352,7 +352,7 @@ namespace RogueTraderSystemGenerator
             Stats.WillPower = 0;
             Stats.Fellowship = 0;
 
-            _doesNotMove = true;
+            DoesNotMove = true;
             BaseMovement = 0;
             Wounds = 40;
 
@@ -1441,7 +1441,7 @@ namespace RogueTraderSystemGenerator
 
             if (Traits.Amorphous > 0)
             {
-                _amorphousMovement = true;
+                AmorphousMovement = true;
                 Stats.Toughness += 10;
                 Traits.StrangePhysiology++;
                 Traits.UnnaturalSenses += 15;
@@ -1698,7 +1698,7 @@ namespace RogueTraderSystemGenerator
 
             if (Traits.UprootedMovement > 0)
             {
-                _doesNotMove = false;
+                DoesNotMove = false;
             }
 
             if (Traits.Venomous > 0)

@@ -21,10 +21,7 @@ namespace RogueTraderSystemGenerator.Nodes
         [DataMember]
         public ZoneSize ZoneSize { get; set; }
 
-        public SystemZone Zone
-        {
-            get { return _zone; }
-        }
+        public SystemZone Zone => _zone;
 
         public ZoneNode(SystemZone zone)
         {
@@ -41,7 +38,7 @@ namespace RogueTraderSystemGenerator.Nodes
                     NodeName = "Outer Reaches";
                     break;
                 default:
-                    throw new ArgumentOutOfRangeException("zone");
+                    throw new ArgumentOutOfRangeException(nameof(zone));
             }
             ZoneSize = ZoneSize.Normal;
         }
@@ -61,13 +58,15 @@ namespace RogueTraderSystemGenerator.Nodes
         {
         }
 
-        public PlanetNode AddPlanet(bool forceInhabitable = false)
+        public void AddPlanet(bool forceInhabitable = false)
         {
             SystemNode systemNode = Parent as SystemNode;
             if (systemNode != null)
-                return systemNode.AddPlanet(_zone, forceInhabitable);
+            {
+                systemNode.AddPlanet(_zone, forceInhabitable);
+                return;
+            }
             Debug.Assert(false);
-            return null;
         }
 
         public PlanetNode InsertPlanet(int position, bool forceInhabitable = false)

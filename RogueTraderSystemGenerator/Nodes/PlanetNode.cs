@@ -114,7 +114,6 @@ namespace RogueTraderSystemGenerator.Nodes
 
         public bool IsInhabitantHomeWorld
         {
-            get { return _isInhabitantHomeWorld; }
             set { _isInhabitantHomeWorld = value; }
         }
 
@@ -134,15 +133,11 @@ namespace RogueTraderSystemGenerator.Nodes
 
         public bool WarpStorm
         {
-            get { return _warpStorm; }
             set { _warpStorm = value; }
         }
 
 
-        public bool IsMoon
-        {
-            get { return _isMoon; }
-        }
+        public bool IsMoon => _isMoon;
 
         public PlanetNode(SystemCreationRules systemCreationRules)
         {
@@ -282,23 +277,21 @@ namespace RogueTraderSystemGenerator.Nodes
 
         }
 
-        public string GetNumberOfContinentsText()
+        private string GetNumberOfContinentsText()
         {
             return _numContinents == 0 ? "None" : _numContinents.ToString(CultureInfo.InvariantCulture);
         }
 
-        public string GetNumberOfIslandsText()
+        private string GetNumberOfIslandsText()
         {
             return _numIslands == 0 ? "None" : _numIslands.ToString(CultureInfo.InvariantCulture);
         }
 
         public override void Generate()
         {
-            _primitiveXenosNode = new PrimitiveXenosNode(_systemCreationRules);
-            _primitiveXenosNode.Parent = this;
+            _primitiveXenosNode = new PrimitiveXenosNode(_systemCreationRules) {Parent = this};
             Children.Add(_primitiveXenosNode);
-            _nativeSpeciesNode = new NativeSpeciesNode(_systemCreationRules);
-            _nativeSpeciesNode.Parent = this;
+            _nativeSpeciesNode = new NativeSpeciesNode(_systemCreationRules) {Parent = this};
             Children.Add(_nativeSpeciesNode);
 
             NodeBase zoneNode = Parent;
@@ -418,8 +411,7 @@ namespace RogueTraderSystemGenerator.Nodes
                     // Generate an Asteroid
                     if (_orbitalFeaturesNode == null)
                     {
-                        _orbitalFeaturesNode = new OrbitalFeaturesNode(_systemCreationRules);
-                        _orbitalFeaturesNode.Parent = this;
+                        _orbitalFeaturesNode = new OrbitalFeaturesNode(_systemCreationRules) {Parent = this};
                         Children.Add(_orbitalFeaturesNode);
                     }
                     _orbitalFeaturesNode.AddAsteroid();
@@ -429,8 +421,7 @@ namespace RogueTraderSystemGenerator.Nodes
                     // Generate a Lesser Moon
                     if (_orbitalFeaturesNode == null)
                     {
-                        _orbitalFeaturesNode = new OrbitalFeaturesNode(_systemCreationRules);
-                        _orbitalFeaturesNode.Parent = this;
+                        _orbitalFeaturesNode = new OrbitalFeaturesNode(_systemCreationRules) {Parent = this};
                         Children.Add(_orbitalFeaturesNode);
                     }
                     _orbitalFeaturesNode.AddLesserMoon();
@@ -440,8 +431,7 @@ namespace RogueTraderSystemGenerator.Nodes
                     // Generate a Moon
                     if (_orbitalFeaturesNode == null)
                     {
-                        _orbitalFeaturesNode = new OrbitalFeaturesNode(_systemCreationRules);
-                        _orbitalFeaturesNode.Parent = this;
+                        _orbitalFeaturesNode = new OrbitalFeaturesNode(_systemCreationRules) {Parent = this};
                         Children.Add(_orbitalFeaturesNode);
                     }
                     _orbitalFeaturesNode.AddMoon(_bodyValue, false);
@@ -874,7 +864,7 @@ namespace RogueTraderSystemGenerator.Nodes
 
         public int GetNumOrbitalFeatures()
         {
-            return _orbitalFeaturesNode != null ? _orbitalFeaturesNode.GetNumOrbitalFeatures() : 0;
+            return _orbitalFeaturesNode?.GetNumOrbitalFeatures() ?? 0;
         }
 
         private void GenerateInhabitants()
@@ -939,7 +929,7 @@ namespace RogueTraderSystemGenerator.Nodes
                     randValue = 5;
                     break;
                 default:
-                    throw new ArgumentOutOfRangeException("forcedLevel");
+                    throw new ArgumentOutOfRangeException(nameof(forcedLevel));
             }
 
             if (randValue <= 1)
@@ -1089,7 +1079,7 @@ namespace RogueTraderSystemGenerator.Nodes
                     randValue = 6;
                     break;
                 default:
-                    throw new ArgumentOutOfRangeException("forcedLevel");
+                    throw new ArgumentOutOfRangeException(nameof(forcedLevel));
             }
 
             if (randValue <= 2)

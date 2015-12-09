@@ -56,6 +56,7 @@ namespace RogueTraderSystemGenerator
                 return 9;
             }
         }
+/*
         public int FellowshipBonus
         {
             get
@@ -65,6 +66,8 @@ namespace RogueTraderSystemGenerator
                 return 9;
             }
         }
+*/
+/*
         public int IntelligenceBonus
         {
             get
@@ -74,6 +77,8 @@ namespace RogueTraderSystemGenerator
                 return 9;
             }
         }
+*/
+/*
         public int PerceptionBonus
         {
             get
@@ -83,6 +88,7 @@ namespace RogueTraderSystemGenerator
                 return 9;
             }
         }
+*/
         public int StrengthBonus
         {
             get
@@ -101,6 +107,7 @@ namespace RogueTraderSystemGenerator
                 return 9;
             }
         }
+/*
         public int WillPowerBonus
         {
             get
@@ -110,6 +117,7 @@ namespace RogueTraderSystemGenerator
                 return 9;
             }
         }
+*/
 
         public string GetStatTextForTable(int value)
         {
@@ -716,24 +724,25 @@ namespace RogueTraderSystemGenerator
     abstract class XenosBase
     {
         [DataMember]
-        protected int _baseMovementLookupValue;
+        protected int BaseMovementLookupValue;
         [DataMember]
-        protected bool _earthScorning; // Used for movement adjustment
+        protected bool EarthScorning; // Used for movement adjustment
         [DataMember]
-        protected bool _doesNotMove;
+        protected bool DoesNotMove;
         [DataMember]
-        protected bool _amorphousMovement; // Special value from Koronus Bestiary
+        protected bool AmorphousMovement; // Special value from Koronus Bestiary
 
         protected int BaseMovement
         {
-            get { return _baseMovementLookupValue; }
+            // ReSharper disable once MemberCanBePrivate.Global
+            get { return BaseMovementLookupValue; }
             set
             {
                 if (value < 0)
                     value = 0;
                 if (value > 10)
                     value = 10;
-                _baseMovementLookupValue = value;
+                BaseMovementLookupValue = value;
             }
         }
 
@@ -762,7 +771,7 @@ namespace RogueTraderSystemGenerator
             UniqueArmourName = "";
         }
 
-        public decimal GetMovementValue(MovementScales movementScale)
+        private decimal GetMovementValue(MovementScales movementScale)
         {
             if(BaseMovement == 0)
             {
@@ -777,7 +786,7 @@ namespace RogueTraderSystemGenerator
                     case MovementScales.Run:
                         return 3;
                     default:
-                        throw new ArgumentOutOfRangeException("movementScale");
+                        throw new ArgumentOutOfRangeException(nameof(movementScale));
                 }
             }
 
@@ -792,13 +801,13 @@ namespace RogueTraderSystemGenerator
                 case MovementScales.Run:
                     return BaseMovement * 6;
                 default:
-                    throw new ArgumentOutOfRangeException("movementScale");
+                    throw new ArgumentOutOfRangeException(nameof(movementScale));
             }
         }
 
         public string GetMovementString()
         {
-            if (_doesNotMove)
+            if (DoesNotMove)
                 return "N/A";
             return GetMovementValue(MovementScales.HalfMove) + "/" + GetMovementValue(MovementScales.FullMove) + "/" + GetMovementValue(MovementScales.Charge) + "/" + GetMovementValue(MovementScales.Run);
         }
@@ -850,7 +859,7 @@ namespace RogueTraderSystemGenerator
             return tb;
         }
 
-        public int GetTotalStrengthBonus()
+        protected int GetTotalStrengthBonus()
         {
             int sb = Stats.StrengthBonus;
             if (Traits.UnnaturalStrength > 0)
@@ -927,15 +936,15 @@ namespace RogueTraderSystemGenerator
             return traitText;
         }
 
-        public void CalculateMovement()
+        protected void CalculateMovement()
         {
             int baseMove = Stats.AgilityBonus;
-            if ((_amorphousMovement || Traits.Crawler > 0) && baseMove >= 2)
+            if ((AmorphousMovement || Traits.Crawler > 0) && baseMove >= 2)
             {
                 int newMove = (baseMove/2 + baseMove%2);
                 baseMove = newMove;
             }
-            if (_earthScorning)
+            if (EarthScorning)
                 baseMove = 0;
             if (Traits.Quadruped > 0)
                 baseMove *= 2;

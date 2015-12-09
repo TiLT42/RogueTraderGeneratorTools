@@ -2,11 +2,14 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Linq;
 using System.Runtime.Serialization;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
-using System.Windows;
 using System.Windows.Media;
+// ReSharper disable InconsistentNaming
+// TODO: Re-enable InconsistentNaming warnings and fix the variable names in this file
 
 namespace RogueTraderSystemGenerator.Nodes
 {
@@ -115,7 +118,7 @@ namespace RogueTraderSystemGenerator.Nodes
     [KnownType(typeof(XenosNode))]
     [KnownType(typeof(ZoneNode))]
     [DataContract(IsReference = true)]
-    abstract public class NodeBase : INotifyPropertyChanged
+    public abstract class NodeBase : INotifyPropertyChanged
     {
         [DataMember]
         protected NodeBase _parent;
@@ -133,13 +136,12 @@ namespace RogueTraderSystemGenerator.Nodes
         [DataMember]
         protected string _description = "";
         [DataMember] 
-        protected bool _dirty = false;
+        protected bool _dirty;
         [DataMember]
         protected Species _inhabitants = Species.None;
 
         public Species Inhabitants
         {
-            get { return _inhabitants; }
             set { _inhabitants = value; }
         }
 
@@ -165,6 +167,8 @@ namespace RogueTraderSystemGenerator.Nodes
         protected List<OrganicCompound> OrganicCompounds = new List<OrganicCompound>();
         // End Resources
 
+        // Do not remove the font-related properties below. They are used, despite what Resharper might tell you.
+        // ReSharper disable once UnusedMember.Global
         public FontWeight FontWeight
         {
             get
@@ -195,6 +199,7 @@ namespace RogueTraderSystemGenerator.Nodes
             }
         }
 
+        // ReSharper disable once UnusedMember.Global
         public FontStyle FontStyle
         {
             get
@@ -209,6 +214,7 @@ namespace RogueTraderSystemGenerator.Nodes
             }
         }
 
+        // ReSharper disable once UnusedMember.Global
         public Brush FontForeground
         {
             get
@@ -292,7 +298,6 @@ namespace RogueTraderSystemGenerator.Nodes
 
         public string CustomName
         {
-            get { return _customName; }
             set
             {
                 _customName = value;
@@ -312,40 +317,21 @@ namespace RogueTraderSystemGenerator.Nodes
 
         public bool Dirty
         {
-            get { return _dirty; }
             set { _dirty = value; }
         }
 
-        public string ResourceIndustrialMetalText
-        {
-            get { return GetResourceAbundanceText(_resourceIndustrialMetal) + " (" + _resourceIndustrialMetal + ") industrial metals"; }
-        }
-        public string ResourceOrnamentalText
-        {
-            get { return GetResourceAbundanceText(_resourceOrnamental) + " (" + _resourceOrnamental + ") ornamentals"; }
-        }
-        public string ResourceRadioactiveText
-        {
-            get { return GetResourceAbundanceText(_resourceRadioactive) + " (" + _resourceRadioactive + ") radioactives"; }
-        }
-        public string ResourceExoticMaterialText
-        {
-            get { return GetResourceAbundanceText(_resourceExoticMaterial) + " (" + _resourceExoticMaterial + ") exotic materials"; }
-        }
-        public string ResourceArcheotechCacheText
-        {
-            get { return GetResourceAbundanceText(_resourceArcheotechCache) + " (" + _resourceArcheotechCache + ")"; }
-        }
-        public string ResourceXenosRuinsText
-        {
-            get { return GetResourceAbundanceText(_resourceXenosRuins) + " (" + _resourceXenosRuins + ")"; }
-        }
+        private string ResourceIndustrialMetalText => GetResourceAbundanceText(_resourceIndustrialMetal) + " (" + _resourceIndustrialMetal + ") industrial metals";
 
-        public void ClearCustomName()
-        {
-            _customName = "";
-        }
-        
+        private string ResourceOrnamentalText => GetResourceAbundanceText(_resourceOrnamental) + " (" + _resourceOrnamental + ") ornamentals";
+
+        private string ResourceRadioactiveText => GetResourceAbundanceText(_resourceRadioactive) + " (" + _resourceRadioactive + ") radioactives";
+
+        private string ResourceExoticMaterialText => GetResourceAbundanceText(_resourceExoticMaterial) + " (" + _resourceExoticMaterial + ") exotic materials";
+
+        protected string ResourceArcheotechCacheText => GetResourceAbundanceText(_resourceArcheotechCache) + " (" + _resourceArcheotechCache + ")";
+
+        protected string ResourceXenosRuinsText => GetResourceAbundanceText(_resourceXenosRuins) + " (" + _resourceXenosRuins + ")";
+
         public override string ToString()
         {
             return _nodeName;
@@ -359,7 +345,7 @@ namespace RogueTraderSystemGenerator.Nodes
             _dirty = generatedManually;
         }
 
-        virtual public void ResetVariables()
+        public virtual void ResetVariables()
         {
             _children.Clear();
             _flowDocument = new FlowDocument();
@@ -382,13 +368,13 @@ namespace RogueTraderSystemGenerator.Nodes
 
         public event PropertyChangedEventHandler PropertyChanged;
 
-        protected virtual void OnPropertyChanged(string propertyName)
+        private void OnPropertyChanged(string propertyName)
         {
             PropertyChangedEventHandler handler = PropertyChanged;
-            if (handler != null) handler(this, new PropertyChangedEventArgs(propertyName));
+            handler?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
-        protected string GetResourceAbundanceText(int resourceValue)
+        private string GetResourceAbundanceText(int resourceValue)
         {
             if (resourceValue <= 15)
                 return "Minimal";
@@ -523,7 +509,7 @@ namespace RogueTraderSystemGenerator.Nodes
                 OrganicCompounds.Add(new OrganicCompound(resourceType, amountToAdd));
         }
 
-        protected OrganicResourceTypes GetRandomOrganicResourceType()
+        private OrganicResourceTypes GetRandomOrganicResourceType()
         {
             switch(Globals.RollD10())
             {
@@ -704,7 +690,7 @@ namespace RogueTraderSystemGenerator.Nodes
             }
         }
 
-        public void DistributeSystemCreationRulesToChildren(SystemCreationRules systemCreationRules)
+        protected void DistributeSystemCreationRulesToChildren(SystemCreationRules systemCreationRules)
         {
             _systemCreationRules = systemCreationRules;
             foreach (NodeBase node in Children)
@@ -717,15 +703,10 @@ namespace RogueTraderSystemGenerator.Nodes
         {
             if(_dirty)
                 return true;
-            foreach (NodeBase child in Children)
-            {
-                if (child.IsNodeTreeDirty())
-                    return true;
-            }
-            return false;
+            return Children.Any(child => child.IsNodeTreeDirty());
         }
 
-        public void GetAllNodesInHierarchy(ref List<NodeBase> nodeList)
+        protected void GetAllNodesInHierarchy(ref List<NodeBase> nodeList)
         {
             nodeList.Add(this);
             foreach (NodeBase child in Children)
@@ -964,7 +945,7 @@ namespace RogueTraderSystemGenerator.Nodes
                 OrganicCompounds.Remove(resourceToRemove);
         }
 
-        public string GetSpeciesText(Species species)
+        protected string GetSpeciesText(Species species)
         {
             switch (species)
             {
@@ -993,7 +974,7 @@ namespace RogueTraderSystemGenerator.Nodes
                 case Species.None:
                     return "None";
                 default:
-                    throw new ArgumentOutOfRangeException("species");
+                    throw new ArgumentOutOfRangeException(nameof(species));
             }
         }
 

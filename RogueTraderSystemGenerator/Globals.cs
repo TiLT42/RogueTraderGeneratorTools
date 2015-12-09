@@ -29,14 +29,15 @@ namespace RogueTraderSystemGenerator
         TheSoulReaver,
     }
 
-    static public class Globals
+    public static class Globals
     {
 // ReSharper disable InconsistentNaming
         private static readonly Random _rand = new Random();
 // ReSharper restore InconsistentNaming
         private static List<int> _oneOrMoreChoicesTaken;
         private static int _numOneOrMoreChoices;
-        public static Random Rand { get { return _rand; } }
+        public static Random Rand => _rand;
+
         public static int RollD100(int numDice = 1)
         {
             int result = 0;
@@ -109,7 +110,7 @@ namespace RogueTraderSystemGenerator
                 case Species.Other:
                     return "Xenos (other)";
                 default:
-                    throw new ArgumentOutOfRangeException("species");
+                    throw new ArgumentOutOfRangeException(nameof(species));
             }
         }
 

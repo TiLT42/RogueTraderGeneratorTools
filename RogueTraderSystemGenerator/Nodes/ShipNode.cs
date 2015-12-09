@@ -131,9 +131,7 @@ namespace RogueTraderSystemGenerator.Nodes
                 DocBuilder.AddContentLine(ref _flowDocument, "Space", new DocContentItem(_ship.UsedSpace + " / " + _ship.TotalSpace));
                 if(_ship.EssentialComponents.Count > 0)
                 {
-                    List<DocContentItem> items = new List<DocContentItem>();
-                    foreach (var component in _ship.EssentialComponents)
-                        items.Add(new DocContentItem(component.ComponentName, component.PageNumber, "", component.BookSource));
+                    List<DocContentItem> items = _ship.EssentialComponents.Select(component => new DocContentItem(component.ComponentName, component.PageNumber, "", component.BookSource)).ToList();
                     DocBuilder.AddContentList(ref _flowDocument, "Essential Components", items);
                 }
                 else
@@ -142,9 +140,7 @@ namespace RogueTraderSystemGenerator.Nodes
                 }
                 if (_ship.SupplementalComponents.Count > 0)
                 {
-                    List<DocContentItem> items = new List<DocContentItem>();
-                    foreach (var component in _ship.SupplementalComponents)
-                        items.Add(new DocContentItem(component.ComponentName, component.PageNumber, "", component.BookSource));
+                    List<DocContentItem> items = _ship.SupplementalComponents.Select(component => new DocContentItem(component.ComponentName, component.PageNumber, "", component.BookSource)).ToList();
                     DocBuilder.AddContentList(ref _flowDocument, "Supplemental Components", items);
                 }
                 else
@@ -153,9 +149,7 @@ namespace RogueTraderSystemGenerator.Nodes
                 }
                 if (_ship.WeaponComponents.Count > 0)
                 {
-                    List<DocContentItem> items = new List<DocContentItem>();
-                    foreach (var component in _ship.WeaponComponents)
-                        items.Add(new DocContentItem(component.MountSlot + ": " + component.ComponentName, component.PageNumber, "", component.BookSource));
+                    List<DocContentItem> items = _ship.WeaponComponents.Select(component => new DocContentItem(component.MountSlot + ": " + component.ComponentName, component.PageNumber, "", component.BookSource)).ToList();
                     DocBuilder.AddContentList(ref _flowDocument, "Weapon Components", items);
                 }
                 else
@@ -167,9 +161,7 @@ namespace RogueTraderSystemGenerator.Nodes
             {
                 if (_ship.OrkUpgrades.Count > 0)
                 {
-                    List<DocContentItem> items = new List<DocContentItem>();
-                    foreach (var upgrade in _ship.OrkUpgrades)
-                        items.Add(new DocContentItem(upgrade));
+                    List<DocContentItem> items = _ship.OrkUpgrades.Select(upgrade => new DocContentItem(upgrade)).ToList();
                     DocBuilder.AddContentList(ref _flowDocument, "Orky Ship Modifications", items);
                 }
                 else

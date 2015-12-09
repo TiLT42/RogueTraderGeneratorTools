@@ -250,7 +250,7 @@ namespace RogueTraderSystemGenerator
 
             if (Traits.Amorphous > 0)
             {
-                _amorphousMovement = true;
+                AmorphousMovement = true;
                 Stats.Toughness += 10;
                 Traits.StrangePhysiology++;
                 Traits.UnnaturalSenses += 15;
@@ -507,7 +507,7 @@ namespace RogueTraderSystemGenerator
 
             if (Traits.UprootedMovement > 0)
             {
-                _doesNotMove = false;
+                DoesNotMove = false;
             }
 
             if (Traits.Venomous > 0)

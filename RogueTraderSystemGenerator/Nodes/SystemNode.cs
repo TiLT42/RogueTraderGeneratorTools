@@ -165,7 +165,7 @@ namespace RogueTraderSystemGenerator.Nodes
             _children.Clear();
         }
 
-        public PlanetNode AddPlanet(SystemZone zone, bool forceInhabitable = false)
+        public void AddPlanet(SystemZone zone, bool forceInhabitable = false)
         {
             PlanetNode node = new PlanetNode(_systemCreationRules, forceInhabitable) {Parent = GetZone(zone)};
             node.Generate();
@@ -173,7 +173,7 @@ namespace RogueTraderSystemGenerator.Nodes
             GetZone(zone).Children.Add(node);
             GenerateNames();
 
-            return node;
+            return;
         }
 
         public PlanetNode InsertPlanet(int position, SystemZone zone, bool forceInhabitable = false)
@@ -487,24 +487,21 @@ namespace RogueTraderSystemGenerator.Nodes
             for(int i = 0; i < _systemCreationRules.NumExtraAsteroidBelts; i++)
             {
                 SystemZone zone = GetRandomZone();
-                AsteroidBeltNode node = new AsteroidBeltNode(_systemCreationRules);
-                node.Parent = GetZone(zone);
+                AsteroidBeltNode node = new AsteroidBeltNode(_systemCreationRules) {Parent = GetZone(zone)};
                 GetZone(zone).Children.Add(node);
                 node.Generate();
             }
             for (int i = 0; i < _systemCreationRules.NumExtraAsteroidClusters; i++)
             {
                 SystemZone zone = GetRandomZone();
-                AsteroidClusterNode node = new AsteroidClusterNode(_systemCreationRules);
-                node.Parent = GetZone(zone);
+                AsteroidClusterNode node = new AsteroidClusterNode(_systemCreationRules) {Parent = GetZone(zone)};
                 GetZone(zone).Children.Add(node);
                 node.Generate();
             }
             for (int i = 0; i < _systemCreationRules.NumExtraGravityRiptides; i++)
             {
                 SystemZone zone = GetRandomZone();
-                GravityRiptideNode node = new GravityRiptideNode();
-                node.Parent = GetZone(zone);
+                GravityRiptideNode node = new GravityRiptideNode {Parent = GetZone(zone)};
                 GetZone(zone).Children.Add(node);
                 node.Generate();
             }
@@ -526,16 +523,8 @@ namespace RogueTraderSystemGenerator.Nodes
                     bool done = false;
                     while(!done)
                     {
-                        NodeBase planetToDelete = null;
                         SystemZone zone = GetRandomZone();
-                        foreach (var child in GetZone(zone).Children)
-                        {
-                            if (child is PlanetNode)
-                            {
-                                planetToDelete = child;
-                                break;
-                            }
-                        }
+                        NodeBase planetToDelete = GetZone(zone).Children.OfType<PlanetNode>().FirstOrDefault();
                         if(planetToDelete != null)
                         {
                             GetZone(zone).Children.Remove(planetToDelete);
@@ -800,7 +789,7 @@ namespace RogueTraderSystemGenerator.Nodes
                 case SystemZone.OuterReaches:
                     return _outerReachesZone;
                 default:
-                    throw new ArgumentOutOfRangeException("zone");
+                    throw new ArgumentOutOfRangeException(nameof(zone));
             }
         }
 
@@ -819,12 +808,7 @@ namespace RogueTraderSystemGenerator.Nodes
 
         private bool SystemFeaturesContains(string searchString)
         {
-            foreach (DocContentItem docContentItem in _systemFeatures)
-            {
-                if (String.Compare(docContentItem.Content, searchString, StringComparison.Ordinal) == 0)
-                    return true;
-            }
-            return false;
+            return _systemFeatures.Any(docContentItem => String.Compare(docContentItem.Content, searchString, StringComparison.Ordinal) == 0);
         }
 
         private void GenerateSystemFeatures()
@@ -945,8 +929,7 @@ namespace RogueTraderSystemGenerator.Nodes
                                 continue;
                             _systemFeatures.Add(new DocContentItem("Pirate Den", 10));
 
-                            PirateShipsNode pirateNode = new PirateShipsNode();
-                            pirateNode.Parent = this;
+                            PirateShipsNode pirateNode = new PirateShipsNode {Parent = this};
                             Children.Add(pirateNode);
                             pirateNode.Generate();
                             //_pirateDen = true;
@@ -1038,13 +1021,6 @@ namespace RogueTraderSystemGenerator.Nodes
             }
         }
 
-        public void DistributeSystemCreationRules()
-        {
-            if (_systemCreationRules == null)
-                throw new Exception("Tried to distribute system creation rules that didn't exist");
-            DistributeSystemCreationRulesToChildren(_systemCreationRules);
-        }
-
         private void GenerateStarfarers()
         {
             if (_systemCreationRules.StarfarersNumSystemFeaturesInhabited > 0)
@@ -1061,16 +1037,7 @@ namespace RogueTraderSystemGenerator.Nodes
                     throw new Exception("Couldn't find enough system nodes for the starfarers system feature. This is a bug and should be reported.");
 
                 // Build a list of inhabitable planets, then pick a random one. If no planets are inhabitable, create one!
-                List<PlanetNode> habitablePlanets = new List<PlanetNode>();
-                foreach (NodeBase node in allSystemNodes)
-                {
-                    PlanetNode planetNode = node as PlanetNode;
-                    if (planetNode != null)
-                    {
-                        if(planetNode.IsPlanetInhabitable())
-                            habitablePlanets.Add(planetNode);
-                    }
-                }
+                List<PlanetNode> habitablePlanets = allSystemNodes.OfType<PlanetNode>().Where(planetNode => planetNode.IsPlanetInhabitable()).ToList();
                 if(habitablePlanets.Count == 0)
                 {
                     //habitablePlanets.Add(_primaryBiosphereZone.AddPlanet(true));
@@ -1115,11 +1082,11 @@ namespace RogueTraderSystemGenerator.Nodes
                     {
                         int randomNodeValue = Globals.Rand.Next(tier1Nodes.Count);
                         NodeBase node = tier1Nodes[randomNodeValue];
-                        if (node is PlanetNode)
+                        PlanetNode planetNode = node as PlanetNode;
+                        if (planetNode != null)
                         {
-                            PlanetNode planet = (PlanetNode) node;
-                            if (planet.PrimitiveXenosNode != null)
-                                planet.PrimitiveXenosNode.Children.Clear();
+                            PlanetNode planet = planetNode;
+                            planet.PrimitiveXenosNode?.Children.Clear();
                             planet.PrimitiveXenosNode = null;
                             planet.Inhabitants = inhabitantRace;
                             if (planet.IsPlanetInhabitable())
@@ -1302,15 +1269,10 @@ namespace RogueTraderSystemGenerator.Nodes
             if (_systemCreationRules.NumPlanetsInWarpStorms <= 0)
                 return;
 
-            List<PlanetNode> allPlanets = new List<PlanetNode>();
             List<NodeBase> allNodes = new List<NodeBase>();
             GetAllNodesInHierarchy(ref allNodes);
 
-            foreach (NodeBase node in allNodes)
-            {
-                if (node is PlanetNode)
-                    allPlanets.Add(node as PlanetNode);
-            }
+            List<PlanetNode> allPlanets = allNodes.OfType<PlanetNode>().Select(node => node).ToList();
 
             for (int i = 0; i < _systemCreationRules.NumPlanetsInWarpStorms; i++)
             {

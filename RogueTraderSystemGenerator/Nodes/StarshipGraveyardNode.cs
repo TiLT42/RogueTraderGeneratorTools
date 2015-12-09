@@ -19,7 +19,7 @@ namespace RogueTraderSystemGenerator.Nodes
         [DataMember]
         public ShipClass ShipClass = ShipClass.Undefined;
         [DataMember]
-        public int BookPage = 0;
+        public int BookPage;
         [DataMember]
         public DocContentItem DocItem;
         [DataMember]
@@ -324,7 +324,7 @@ namespace RogueTraderSystemGenerator.Nodes
                 case Species.None:
                     break;
                 default:
-                    throw new ArgumentOutOfRangeException("race1");
+                    throw new ArgumentOutOfRangeException(nameof(race1));
             }
             switch (race2)
             {
@@ -345,7 +345,7 @@ namespace RogueTraderSystemGenerator.Nodes
                 case Species.None:
                     break;
                 default:
-                    throw new ArgumentOutOfRangeException("race1");
+                    throw new ArgumentOutOfRangeException(nameof(race1));
             }
 
             int numTotalResources = Globals.RollD10() + 2;
@@ -386,7 +386,7 @@ namespace RogueTraderSystemGenerator.Nodes
             }
         }
 
-        static private StarshipHulk GenerateHulk(int salvageChance, Species race, bool increasedChanceOfBoarding = false)
+        private static StarshipHulk GenerateHulk(int salvageChance, Species race, bool increasedChanceOfBoarding = false)
         {
             StarshipHulk hulk = new StarshipHulk();
             if(race == Species.Random)
@@ -408,8 +408,10 @@ namespace RogueTraderSystemGenerator.Nodes
                 race = Species.Eldar;
             }
 
-            Starship ship = new Starship();
-            ship.Race = race;
+            Starship ship = new Starship
+                            {
+                                Race = race
+                            };
             switch(race)
             {
                 case Species.Human:
