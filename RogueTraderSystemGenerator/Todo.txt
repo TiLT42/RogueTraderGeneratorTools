@@ -1,0 +1,5 @@
+﻿- Expanded ship generation 
+- Create information given by system augur scan
+- Help system?
+- Eldar inhabitants have specific effects on their planets in some cases. Implement!
+
