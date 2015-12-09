@@ -596,49 +596,6 @@ namespace RogueTraderSystemGenerator
         private void ExportPdfClick(object sender, RoutedEventArgs e)
         {
             MessageBox.Show("Not supported");
-
-            /*
-            string currentFileName = "";
-            SaveFileDialog saveDlg = new SaveFileDialog();
-            saveDlg.Filter = "Adobe Reader Document|*.pdf";
-            saveDlg.Title = "Export to PDF";
-            saveDlg.ShowDialog();
-            currentFileName = saveDlg.FileName;
-
-            if (currentFileName != "")
-            {
-                _saveFileName = currentFileName;
-                try
-                {
-                    //NeuroSpeech.XamlToPDF.Xaml.XamlPdfWriter writer = new NeuroSpeech.XamlToPDF.Xaml.XamlPdfWriter();
-                    using (FileStream fs = new FileStream(currentFileName, FileMode.OpenOrCreate, FileAccess.Write))
-                    {
-                        //writer.Write(XamlWriter.Save(DescriptionView.Document), fs);
-                        /*
-                        var formatter = new DataContractSerializer(typeof(ObservableCollection<NodeBase>));
-                        formatter.WriteObject(fs, _rootNodes);
-                        _dirty = false;
-                        */
-            /*
-                    }
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show("An error occured while attempting to save your file. The error was: " + ex.Message + "\n\nException: " + ex.InnerException);
-                }
-            }
-
-            /*
-            byte[] data = null;
-            NeuroSpeech.XamlToPDF.Xaml.XamlPdfWriter writer = new NeuroSpeech.XamlToPDF.Xaml.XamlPdfWriter();
-            //using (NeuroSpeech.XamlToPDF.Xaml.XamlPdfWriter writer = new NeuroSpeech.XamlToPDF.Xaml.XamlPdfWriter())
-            using (MemoryStream stream = new MemoryStream())
-            {
-                //DescriptionView.Document.ContentStart
-                writer.Write(XamlWriter.Save(DescriptionView.Document), stream);
-                data = stream.ToArray();
-            }
-            */
         }
 
         private void PrintClick(object sender, RoutedEventArgs e)
