@@ -13,7 +13,7 @@ using System.Windows;
 [assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("Rogue Trader Generator Tool")]
 [assembly: AssemblyCopyright("Copyright © Espen Gätzschmann 2013")]
-[assembly: AssemblyTrademark("Rogue Trader, and all other trademarks, and copyrights are the property of their respective owners.")]
+[assembly: AssemblyTrademark("Rogue Trader and all related trademarks and copyrights are owned by Fantasy Flight Games")]
 [assembly: AssemblyCulture("")]
 
 // Setting ComVisible to false makes the types in this assembly not visible 

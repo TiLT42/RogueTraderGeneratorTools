@@ -1,3 +1,5 @@
-﻿- Make generated attributes editable.
+﻿- Expanded ship generation 
+- Create information given by system augur scan
+- Help system?
 
 

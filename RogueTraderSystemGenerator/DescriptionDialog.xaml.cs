@@ -13,7 +13,6 @@ namespace RogueTraderSystemGenerator
         {
             InitializeComponent();
             UserInput.Focus();
-            UserInput.SpellCheck.IsEnabled = true;
         }
 
         private void OkButtonClick(object sender, RoutedEventArgs e)
