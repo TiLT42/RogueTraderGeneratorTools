@@ -755,7 +755,7 @@ namespace RogueTraderSystemGenerator
 
             string oldDescription = node.Description;
 
-            DescriptionDialog dlg = new DescriptionDialog {MessageToUser = {Text = "Please enter a description for this node."}, UserInput = {Text = node.Description}};
+            DescriptionDialog dlg = new DescriptionDialog { Topmost = true, MessageToUser = {Text = "Please enter a description for this node."}, UserInput = {Text = node.Description}};
             dlg.ShowDialog();
             if (dlg.DialogResult == true)
             {
