@@ -22,7 +22,7 @@
             <Hyperlink Name="emailLink" NavigateUri="mailto:espeng@gmail.com" RequestNavigate="HyperlinkRequestNavigate">espeng@gmail.com</Hyperlink>
         </TextBlock>
         <TextBlock Grid.Column="0" Grid.Row="3" Text="Based on the Rogue Trader game system created by Fantasy Flight Games and Games Workshop. The author has no affiliation with either and claims no ownership over the material in this application. This tool is provided free of charge, and special care has been taken to avoid breaking any copyrights. Text from the books is quoted only where absolutely necessary." TextWrapping="Wrap" Margin="5"/>
-        <TextBlock Grid.Column="0" Grid.Row="4" Text="Version: 1.07" Margin="5"/>
+        <TextBlock Grid.Column="0" Grid.Row="4" Text="Version: 1.08" Margin="5"/>
         <Button Grid.Column="0" Grid.Row="5" Content="Close" Width="100" Height="25" Margin="5" Click="ButtonClick"/>
     </Grid>
 </Window>
