@@ -1,4 +1,4 @@
-# RogueTraderGeneratorTools
+# Rogue Trader Generator Tools
 The Rogue Trader Generator Tools is a Windows desktop application that automates all of the dice rolling from the various generators in the Rogue Trader line of roleplaying games, made by Fantasy Flight Games under license by Games Workshop. The Rogue Trader Generator Tools and its author are not affiliated with either party.
 
 The main focus of the tools is to cover the sprawling system generation in the Stars of Inequity splatbook. Building a system by going through the book and rolling dice can take hours. The Rogue Trader Generator Tools does it for you in a fraction of a second. The generator builds a solar system according to the rules of that book and fills it with planets, system features, and even flora and fauna. 
