@@ -5,3 +5,5 @@
 /.vs
 /RogueTraderSystemGenerator/obj/Debug
 /RogueTraderSystemGenerator/obj/Release
+/RogueTraderSystemGenerator/bin/Debug
+/RogueTraderSystemGenerator/bin/Release

@@ -1109,5 +1109,82 @@ namespace RogueTraderSystemGenerator
         }
 
 
+        private void Node_OnPreviewDrop(object sender, DragEventArgs e)
+        {
+            if (!(sender is TextBlock tb))
+                return;
+            if(!(tb.DataContext is NodeBase targetNode))
+                return;
+            if (!e.Data.GetFormats().Any())
+                return;
+            object data = e.Data.GetData(e.Data.GetFormats().First());
+            if(!(data is NodeBase nodeBase))
+                return;
+            if(targetNode == nodeBase)
+                return;
+            if (nodeBase.Parent != null)
+            {
+                nodeBase.Parent.Dirty = true;
+                nodeBase.Parent.Children.Remove(nodeBase);
+            }
+            else
+            {
+                _rootNodes.Remove(nodeBase);
+            }
+
+            nodeBase.Parent = targetNode;
+            nodeBase.Dirty = true;
+            targetNode.Children.Add(nodeBase);
+            targetNode.Dirty = true;
+        }
+
+        private void UIElement_OnPreviewMouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if(!AllowFreeDrag.IsChecked.GetValueOrDefault())
+                return;
+            if(!(sender is TextBlock tb))
+                return;
+            if (!(tb.DataContext is NodeBase targetNode))
+                return;
+            if(!IsEditableNode(targetNode))
+                return;
+            
+            DragDrop.DoDragDrop(tb, targetNode, DragDropEffects.Move);
+        }
+
+        private void MoveToOuterScope(object sender, RoutedEventArgs e)
+        {
+            if (!AllowFreeDrag.IsChecked.GetValueOrDefault())
+                return;
+            if (!(TreeNodes.SelectedItem is NodeBase targetNode))
+                return;
+            DoMoveToOuterScope(targetNode);
+        }
+
+        private void DoMoveToOuterScope(NodeBase targetNode)
+        {
+            if (targetNode.Parent == null)
+                return;
+            NodeBase parentParent = targetNode.Parent.Parent;
+            targetNode.Parent.Dirty = true;
+            targetNode.Parent.Children.Remove(targetNode);
+            if (parentParent != null)
+            {
+                parentParent.Dirty = true;
+                parentParent.Children.Add(targetNode);
+            }
+            else
+            {
+                _rootNodes.Add(targetNode);
+            }
+
+            targetNode.Dirty = true;
+            targetNode.Parent = parentParent;
+        }
+
+        private void MoveLeftExecuted(object sender, ExecutedRoutedEventArgs e)
+        {
+            DoMoveToOuterScope(GetSelectedNode());
+        }
     }
 }

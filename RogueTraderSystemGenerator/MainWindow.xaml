@@ -1,20 +1,51 @@
-﻿<Window x:Class="RogueTraderSystemGenerator.MainWindow"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:Nodes="clr-namespace:RogueTraderSystemGenerator.Nodes" Title="Rogue Trader Generator Tools" Height="600" Width="850" WindowState="Maximized" Closing="WindowClosing1" Icon="d6_128x128.ico" Closed="WindowClosed">
+﻿<Window
+    x:Class="RogueTraderSystemGenerator.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:Nodes="clr-namespace:RogueTraderSystemGenerator.Nodes"
+    Title="Rogue Trader Generator Tools"
+    Width="850"
+    Height="600"
+    Closed="WindowClosed"
+    Closing="WindowClosing1"
+    Icon="d6_128x128.ico"
+    WindowState="Maximized">
     <Window.CommandBindings>
-        <CommandBinding Command="Save" CanExecute="SaveCanExecute" Executed="SaveExecuted" />
-        <CommandBinding Command="Print" CanExecute="PrintCanExecute" Executed="PrintExecuted" />
+        <CommandBinding
+            CanExecute="SaveCanExecute"
+            Command="Save"
+            Executed="SaveExecuted" />
+        <CommandBinding
+            CanExecute="PrintCanExecute"
+            Command="Print"
+            Executed="PrintExecuted" />
         <CommandBinding Command="MoveUp" Executed="MoveUpExecuted" />
         <CommandBinding Command="MoveDown" Executed="MoveDownExecuted" />
+        <CommandBinding Command="MoveLeft" Executed="MoveLeftExecuted" />
     </Window.CommandBindings>
     <Window.InputBindings>
-        <KeyBinding Command="Save" Key="S" Modifiers="Control" />
-        <KeyBinding Command="Print" Key="P" Modifiers="Control" />
-        <KeyBinding Command="MoveUp" Key="U" Modifiers="Control" />
-        <KeyBinding Command="MoveDown" Key="D" Modifiers="Control" />
+        <KeyBinding
+            Key="S"
+            Command="Save"
+            Modifiers="Control" />
+        <KeyBinding
+            Key="P"
+            Command="Print"
+            Modifiers="Control" />
+        <KeyBinding
+            Key="U"
+            Command="MoveUp"
+            Modifiers="Control" />
+        <KeyBinding
+            Key="D"
+            Command="MoveDown"
+            Modifiers="Control" />
+        <KeyBinding
+            Key="A"
+            Command="MoveLeft"
+            Modifiers="Control" />
     </Window.InputBindings>
-    
+
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -23,206 +54,377 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="300"/>
-            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="300" />
+            <ColumnDefinition Width="Auto" />
             <ColumnDefinition />
         </Grid.ColumnDefinitions>
 
-        <Menu Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" IsMainMenu="True">
+        <Menu
+            Grid.Row="0"
+            Grid.Column="0"
+            Grid.ColumnSpan="3"
+            IsMainMenu="True">
             <MenuItem Header="_File">
-                <MenuItem Header="_New Workspace" Click="NewClick"/>
-                <Separator/>
-                <MenuItem Header="_Open Workspace" Click="OpenClick"/>
-                <Separator/>
-                <MenuItem Header="_Save" Click="SaveClick" InputGestureText="Ctrl+S" />
-                <MenuItem Header="_Save As" Click="SaveAsClick"/>
-                <Separator/>
-                <MenuItem Header="Print" Click="PrintClick" InputGestureText="Ctrl+P"/>
-                <Separator/>
-                <MenuItem Header="_Exit" Click="ExitClick" InputGestureText="Alt+F4"/>
+                <MenuItem Click="NewClick" Header="_New Workspace" />
+                <Separator />
+                <MenuItem Click="OpenClick" Header="_Open Workspace" />
+                <Separator />
+                <MenuItem
+                    Click="SaveClick"
+                    Header="_Save"
+                    InputGestureText="Ctrl+S" />
+                <MenuItem Click="SaveAsClick" Header="_Save As" />
+                <Separator />
+                <MenuItem
+                    Click="PrintClick"
+                    Header="Print"
+                    InputGestureText="Ctrl+P" />
+                <Separator />
+                <MenuItem
+                    Click="ExitClick"
+                    Header="_Exit"
+                    InputGestureText="Alt+F4" />
             </MenuItem>
             <MenuItem Header="Export">
-                <MenuItem Header="_Adobe Reader (PDF)" Click="ExportPdfClick" Visibility="Collapsed"/>
-                <MenuItem Header="_Rich Text Format (RTF)" Click="ExportRtfClick" />
+                <MenuItem
+                    Click="ExportPdfClick"
+                    Header="_Adobe Reader (PDF)"
+                    Visibility="Collapsed" />
+                <MenuItem Click="ExportRtfClick" Header="_Rich Text Format (RTF)" />
             </MenuItem>
             <MenuItem Header="Generate">
-                <MenuItem Name="GenerateNewSystemMenuItem"  Header="New _System" Click="NewSystemClick"/>
-                <MenuItem Name="GenerateNewStarshipMenuItem" Header="New S_tarship" Click="NewStarshipClick"/>
-                <MenuItem Name="GenerateNewPrimitiveSpeciesMenuItem" Header="New _Primitive Species" Click="NewPrimitiveSpeciesClick"/>
-                <MenuItem Name="GenerateNewXenosMenuItem"  Header="New _Xenos...">
-                    <MenuItem Header="Random World" Click="RandomWorldXenosClick"/>
-                    <MenuItem Header="Temperate World" Click="TemperateWorldXenosClick"/>
-                    <MenuItem Header="Death World" Click="DeathWorldXenosClick"/>
-                    <MenuItem Header="Desert World" Click="DesertWorldXenosClick"/>
-                    <MenuItem Header="Ice World" Click="IceWorldXenosClick"/>
-                    <MenuItem Header="Jungle World" Click="JungleWorldXenosClick"/>
-                    <MenuItem Header="Ocean World" Click="OceanWorldXenosClick"/>
-                    <MenuItem Header="Volcanic World" Click="VolcanicWorldXenosClick"/>
+                <MenuItem
+                    Name="GenerateNewSystemMenuItem"
+                    Click="NewSystemClick"
+                    Header="New _System" />
+                <MenuItem
+                    Name="GenerateNewStarshipMenuItem"
+                    Click="NewStarshipClick"
+                    Header="New S_tarship" />
+                <MenuItem
+                    Name="GenerateNewPrimitiveSpeciesMenuItem"
+                    Click="NewPrimitiveSpeciesClick"
+                    Header="New _Primitive Species" />
+                <MenuItem Name="GenerateNewXenosMenuItem" Header="New _Xenos...">
+                    <MenuItem Click="RandomWorldXenosClick" Header="Random World" />
+                    <MenuItem Click="TemperateWorldXenosClick" Header="Temperate World" />
+                    <MenuItem Click="DeathWorldXenosClick" Header="Death World" />
+                    <MenuItem Click="DesertWorldXenosClick" Header="Desert World" />
+                    <MenuItem Click="IceWorldXenosClick" Header="Ice World" />
+                    <MenuItem Click="JungleWorldXenosClick" Header="Jungle World" />
+                    <MenuItem Click="OceanWorldXenosClick" Header="Ocean World" />
+                    <MenuItem Click="VolcanicWorldXenosClick" Header="Volcanic World" />
                 </MenuItem>
                 <MenuItem Name="GenerateNewTreasureMenuItem" Header="New _Treasure...">
-                    <MenuItem Header="Random" Click="NewRandomTreasureClick"/>
-                    <MenuItem Header="Finely Wrought (Skilled Craftsmanship)" Click="NewFinelyWroughtTreasureClick"/>
-                    <MenuItem Header="Ancient Miracle (Archeotech)" Click="NewAncientMiracleTreasureClick"/>
-                    <MenuItem Header="Alien Technology (Xenotech)" Click="NewAlienTechnologyTreasureClick"/>
-                    <MenuItem Header="Cursed Artefact (Twisted Omens)" Click="NewCursedArtefactTreasureClick"/>
+                    <MenuItem Click="NewRandomTreasureClick" Header="Random" />
+                    <MenuItem Click="NewFinelyWroughtTreasureClick" Header="Finely Wrought (Skilled Craftsmanship)" />
+                    <MenuItem Click="NewAncientMiracleTreasureClick" Header="Ancient Miracle (Archeotech)" />
+                    <MenuItem Click="NewAlienTechnologyTreasureClick" Header="Alien Technology (Xenotech)" />
+                    <MenuItem Click="NewCursedArtefactTreasureClick" Header="Cursed Artefact (Twisted Omens)" />
                 </MenuItem>
             </MenuItem>
             <MenuItem Header="_Settings">
-                <MenuItem Header="_Edit Settings" Click="ConfigureClick"/>
+                <MenuItem Click="ConfigureClick" Header="_Edit Settings" />
+                <CheckBox
+                    x:Name="AllowFreeDrag"
+                    Content="Allow free node movement"
+                    IsChecked="True" />
             </MenuItem>
             <MenuItem Header="_Help">
-                <MenuItem Header="_About Rogue Trader System Generator" Click="AboutClick"/>
+                <MenuItem Click="AboutClick" Header="_About Rogue Trader System Generator" />
             </MenuItem>
         </Menu>
 
-        <ToolBarPanel Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2">
-        </ToolBarPanel>
-        <TreeView Grid.Row="1" Grid.Column="0" Name="TreeNodes" SelectedItemChanged="TreeNodesSelectedItemChanged1">
+        <ToolBarPanel
+            Grid.Row="0"
+            Grid.Column="0"
+            Grid.ColumnSpan="2" />
+        <TreeView
+            Name="TreeNodes"
+            Grid.Row="1"
+            Grid.Column="0"
+            SelectedItemChanged="TreeNodesSelectedItemChanged1">
             <TreeView.Resources>
                 <HierarchicalDataTemplate DataType="{x:Type Nodes:NodeBase}" ItemsSource="{Binding Children}">
-                    <TextBlock Text="{Binding NodeName}"/>
+                    <TextBlock
+                        AllowDrop="True"
+                        PreviewDrop="Node_OnPreviewDrop"
+                        PreviewMouseLeftButtonDown="UIElement_OnPreviewMouseDown"
+                        Text="{Binding NodeName}" />
                 </HierarchicalDataTemplate>
-                <ContextMenu x:Key="SystemContext"  StaysOpen="true">
-                    <MenuItem Header="Generate" Click="GenerateClick"/>
-                    <MenuItem Header="Edit Description" Click="EditDescriptionClick"/>
-                    <Separator/>
-                    <MenuItem Header="Move Up" InputGestureText="Ctrl+U" Click="MoveUpClick"/>
-                    <MenuItem Header="Move Down" InputGestureText="Ctrl+D" Click="MoveDownClick"/>
-                    <Separator/>
-                    <MenuItem Header="Rename" Click="RenameSystemClick"/>
-                    <MenuItem Header="Delete" Click="DeleteNodeClick"/>
+                <ContextMenu x:Key="SystemContext" StaysOpen="true">
+                    <MenuItem Click="GenerateClick" Header="Generate" />
+                    <MenuItem Click="EditDescriptionClick" Header="Edit Description" />
+                    <Separator />
+                    <MenuItem
+                        Click="MoveUpClick"
+                        Header="Move Up"
+                        InputGestureText="Ctrl+U" />
+                    <MenuItem
+                        Click="MoveDownClick"
+                        Header="Move Down"
+                        InputGestureText="Ctrl+D" />
+                    <MenuItem
+                        Click="MoveToOuterScope"
+                        Header="Move To Outer Scope"
+                        InputGestureText="Ctrl+A"
+                        IsEnabled="{Binding ElementName=AllowFreeDrag, Path=IsChecked}" />
+
+                    <Separator />
+                    <MenuItem Click="RenameSystemClick" Header="Rename" />
+                    <MenuItem Click="DeleteNodeClick" Header="Delete" />
                 </ContextMenu>
-                <ContextMenu x:Key="ZoneContext"  StaysOpen="true">
-                    <MenuItem Header="Add Planet" Click="AddPlanetClick"/>
-                    <MenuItem Header="Add Gas Giant" Click="AddGasGiantClick"/>
-                    <MenuItem Header="Add Asteroid Belt" Click="AddAsteroidBeltClick"/>
-                    <MenuItem Header="Add Asteroid Cluster" Click="AddAsteroidClusterClick"/>
-                    <MenuItem Header="Add Derelict Station" Click="AddDerelictStationClick"/>
-                    <MenuItem Header="Add Dust Cloud" Click="AddDustCloudClick"/>
-                    <MenuItem Header="Add Gravity Riptide" Click="AddGravityRiptideClick"/>
-                    <MenuItem Header="Add Radiation Bursts" Click="AddRadiationBurstsClick"/>
-                    <MenuItem Header="Add Solar Flares" Click="AddSolarFlaresClick"/>
-                    <MenuItem Header="Add Starship Graveyard" Click="AddShipGraveyardClick"/>
+                <ContextMenu x:Key="ZoneContext" StaysOpen="true">
+                    <MenuItem Click="AddPlanetClick" Header="Add Planet" />
+                    <MenuItem Click="AddGasGiantClick" Header="Add Gas Giant" />
+                    <MenuItem Click="AddAsteroidBeltClick" Header="Add Asteroid Belt" />
+                    <MenuItem Click="AddAsteroidClusterClick" Header="Add Asteroid Cluster" />
+                    <MenuItem Click="AddDerelictStationClick" Header="Add Derelict Station" />
+                    <MenuItem Click="AddDustCloudClick" Header="Add Dust Cloud" />
+                    <MenuItem Click="AddGravityRiptideClick" Header="Add Gravity Riptide" />
+                    <MenuItem Click="AddRadiationBurstsClick" Header="Add Radiation Bursts" />
+                    <MenuItem Click="AddSolarFlaresClick" Header="Add Solar Flares" />
+                    <MenuItem Click="AddShipGraveyardClick" Header="Add Starship Graveyard" />
                 </ContextMenu>
-                <ContextMenu x:Key="PlanetContext"  StaysOpen="true">
-                    <MenuItem Header="Generate" Click="GenerateClick"/>
-                    <MenuItem Header="Edit Description" Click="EditDescriptionClick"/>
-                    <Separator/>
-                    <MenuItem Header="Move Up" InputGestureText="Ctrl+U" Click="MoveUpClick"/>
-                    <MenuItem Header="Move Down" InputGestureText="Ctrl+D" Click="MoveDownClick"/>
-                    <Separator/>
-                    <MenuItem Header="Rename" Click="RenamePlanetClick"/>
-                    <MenuItem Header="Delete" Click="DeleteNodeClick"/>
+                <ContextMenu x:Key="PlanetContext" StaysOpen="true">
+                    <MenuItem Click="GenerateClick" Header="Generate" />
+                    <MenuItem Click="EditDescriptionClick" Header="Edit Description" />
+                    <Separator />
+                    <MenuItem
+                        Click="MoveUpClick"
+                        Header="Move Up"
+                        InputGestureText="Ctrl+U" />
+                    <MenuItem
+                        Click="MoveDownClick"
+                        Header="Move Down"
+                        InputGestureText="Ctrl+D" />
+                    <MenuItem
+                        Click="MoveToOuterScope"
+                        Header="Move To Outer Scope"
+                        InputGestureText="Ctrl+A"
+                        IsEnabled="{Binding ElementName=AllowFreeDrag, Path=IsChecked}" />
+                    <Separator />
+                    <MenuItem Click="RenamePlanetClick" Header="Rename" />
+                    <MenuItem Click="DeleteNodeClick" Header="Delete" />
                 </ContextMenu>
-                <ContextMenu x:Key="GasGiantContext"  StaysOpen="true">
-                    <MenuItem Header="Generate" Click="GenerateClick"/>
-                    <MenuItem Header="Edit Description" Click="EditDescriptionClick"/>
-                    <Separator/>
-                    <MenuItem Header="Move Up" InputGestureText="Ctrl+U" Click="MoveUpClick"/>
-                    <MenuItem Header="Move Down" InputGestureText="Ctrl+D" Click="MoveDownClick"/>
-                    <Separator/>
-                    <MenuItem Header="Rename" Click="RenameGasGiantClick"/>
-                    <MenuItem Header="Delete" Click="DeleteNodeClick"/>
+                <ContextMenu x:Key="GasGiantContext" StaysOpen="true">
+                    <MenuItem Click="GenerateClick" Header="Generate" />
+                    <MenuItem Click="EditDescriptionClick" Header="Edit Description" />
+                    <Separator />
+                    <MenuItem
+                        Click="MoveUpClick"
+                        Header="Move Up"
+                        InputGestureText="Ctrl+U" />
+                    <MenuItem
+                        Click="MoveDownClick"
+                        Header="Move Down"
+                        InputGestureText="Ctrl+D" />
+                    <MenuItem
+                        Click="MoveToOuterScope"
+                        Header="Move To Outer Scope"
+                        InputGestureText="Ctrl+A"
+                        IsEnabled="{Binding ElementName=AllowFreeDrag, Path=IsChecked}" />
+                    <Separator />
+                    <MenuItem Click="RenameGasGiantClick" Header="Rename" />
+                    <MenuItem Click="DeleteNodeClick" Header="Delete" />
                 </ContextMenu>
-                <ContextMenu x:Key="OrbitalFeaturesContext"  StaysOpen="true">
-                    <MenuItem Header="Add Moon" Click="AddMoonClick"/>
-                    <MenuItem Header="Add Lesser Moon" Click="AddLesserMoonClick"/>
-                    <MenuItem Header="Add Asteroid" Click="AddAsteroidClick"/>
+                <ContextMenu x:Key="OrbitalFeaturesContext" StaysOpen="true">
+                    <MenuItem Click="AddMoonClick" Header="Add Moon" />
+                    <MenuItem Click="AddLesserMoonClick" Header="Add Lesser Moon" />
+                    <MenuItem Click="AddAsteroidClick" Header="Add Asteroid" />
                 </ContextMenu>
-                <ContextMenu x:Key="MoonContext"  StaysOpen="true">
-                    <MenuItem Header="Generate" Click="GenerateClick"/>
-                    <MenuItem Header="Edit Description" Click="EditDescriptionClick"/>
-                    <Separator/>
-                    <MenuItem Header="Move Up" InputGestureText="Ctrl+U" Click="MoveUpClick"/>
-                    <MenuItem Header="Move Down" InputGestureText="Ctrl+D" Click="MoveDownClick"/>
-                    <Separator/>
-                    <MenuItem Header="Rename" Click="RenamePlanetClick"/>
-                    <MenuItem Header="Delete" Click="DeleteNodeClick"/>
+                <ContextMenu x:Key="MoonContext" StaysOpen="true">
+                    <MenuItem Click="GenerateClick" Header="Generate" />
+                    <MenuItem Click="EditDescriptionClick" Header="Edit Description" />
+                    <Separator />
+                    <MenuItem
+                        Click="MoveUpClick"
+                        Header="Move Up"
+                        InputGestureText="Ctrl+U" />
+                    <MenuItem
+                        Click="MoveDownClick"
+                        Header="Move Down"
+                        InputGestureText="Ctrl+D" />
+                    <MenuItem
+                        Click="MoveToOuterScope"
+                        Header="Move To Outer Scope"
+                        InputGestureText="Ctrl+A"
+                        IsEnabled="{Binding ElementName=AllowFreeDrag, Path=IsChecked}" />
+                    <Separator />
+                    <MenuItem Click="RenamePlanetClick" Header="Rename" />
+                    <MenuItem Click="DeleteNodeClick" Header="Delete" />
                 </ContextMenu>
-                <ContextMenu x:Key="XenosContext"  StaysOpen="true">
-                    <MenuItem Header="Generate" Click="GenerateClick"/>
-                    <MenuItem Header="Edit Description" Click="EditDescriptionClick"/>
-                    <Separator/>
-                    <MenuItem Header="Move Up" InputGestureText="Ctrl+U" Click="MoveUpClick"/>
-                    <MenuItem Header="Move Down" InputGestureText="Ctrl+D" Click="MoveDownClick"/>
-                    <Separator/>
-                    <MenuItem Header="Rename" Click="RenameXenosClick"/>
-                    <MenuItem Header="Delete" Click="DeleteNodeClick"/>
+                <ContextMenu x:Key="XenosContext" StaysOpen="true">
+                    <MenuItem Click="GenerateClick" Header="Generate" />
+                    <MenuItem Click="EditDescriptionClick" Header="Edit Description" />
+                    <Separator />
+                    <MenuItem
+                        Click="MoveUpClick"
+                        Header="Move Up"
+                        InputGestureText="Ctrl+U" />
+                    <MenuItem
+                        Click="MoveDownClick"
+                        Header="Move Down"
+                        InputGestureText="Ctrl+D" />
+                    <MenuItem
+                        Click="MoveToOuterScope"
+                        Header="Move To Outer Scope"
+                        InputGestureText="Ctrl+A"
+                        IsEnabled="{Binding ElementName=AllowFreeDrag, Path=IsChecked}" />
+                    <Separator />
+                    <MenuItem Click="RenameXenosClick" Header="Rename" />
+                    <MenuItem Click="DeleteNodeClick" Header="Delete" />
                 </ContextMenu>
-                <ContextMenu x:Key="GeneralNodeContext"  StaysOpen="true">
-                    <MenuItem Header="Generate" Click="GenerateClick"/>
-                    <MenuItem Header="Edit Description" Click="EditDescriptionClick"/>
-                    <Separator/>
-                    <MenuItem Header="Move Up" InputGestureText="Ctrl+U" Click="MoveUpClick"/>
-                    <MenuItem Header="Move Down" InputGestureText="Ctrl+D" Click="MoveDownClick"/>
-                    <Separator/>
-                    <MenuItem Header="Rename" Click="RenameClick"/>
-                    <MenuItem Header="Delete" Click="DeleteNodeClick"/>
+                <ContextMenu x:Key="GeneralNodeContext" StaysOpen="true">
+                    <MenuItem Click="GenerateClick" Header="Generate" />
+                    <MenuItem Click="EditDescriptionClick" Header="Edit Description" />
+                    <Separator />
+                    <MenuItem
+                        Click="MoveUpClick"
+                        Header="Move Up"
+                        InputGestureText="Ctrl+U" />
+                    <MenuItem
+                        Click="MoveDownClick"
+                        Header="Move Down"
+                        InputGestureText="Ctrl+D" />
+                    <MenuItem
+                        Click="MoveToOuterScope"
+                        Header="Move To Outer Scope"
+                        InputGestureText="Ctrl+A"
+                        IsEnabled="{Binding ElementName=AllowFreeDrag, Path=IsChecked}" />
+                    <Separator />
+                    <MenuItem Click="RenameClick" Header="Rename" />
+                    <MenuItem Click="DeleteNodeClick" Header="Delete" />
                 </ContextMenu>
-                <ContextMenu x:Key="GeneralNodeNoGenerateContext"  StaysOpen="true">
-                    <MenuItem Header="Edit Description" Click="EditDescriptionClick"/>
-                    <Separator/>
-                    <MenuItem Header="Move Up" InputGestureText="Ctrl+U" Click="MoveUpClick"/>
-                    <MenuItem Header="Move Down" InputGestureText="Ctrl+D" Click="MoveDownClick"/>
-                    <Separator/>
-                    <MenuItem Header="Rename" Click="RenameClick"/>
-                    <MenuItem Header="Delete" Click="DeleteNodeClick"/>
+                <ContextMenu x:Key="GeneralNodeNoGenerateContext" StaysOpen="true">
+                    <MenuItem Click="EditDescriptionClick" Header="Edit Description" />
+                    <Separator />
+                    <MenuItem
+                        Click="MoveUpClick"
+                        Header="Move Up"
+                        InputGestureText="Ctrl+U" />
+                    <MenuItem
+                        Click="MoveDownClick"
+                        Header="Move Down"
+                        InputGestureText="Ctrl+D" />
+                    <MenuItem
+                        Click="MoveToOuterScope"
+                        Header="Move To Outer Scope"
+                        InputGestureText="Ctrl+A"
+                        IsEnabled="{Binding ElementName=AllowFreeDrag, Path=IsChecked}" />
+                    <Separator />
+                    <MenuItem Click="RenameClick" Header="Rename" />
+                    <MenuItem Click="DeleteNodeClick" Header="Delete" />
                 </ContextMenu>
-                <ContextMenu x:Key="StarshipContext"  StaysOpen="true">
-                    <MenuItem Header="Generate" Click="GenerateClick"/>
-                    <MenuItem Header="Edit Description" Click="EditDescriptionClick"/>
-                    <Separator/>
-                    <MenuItem Header="Move Up" InputGestureText="Ctrl+U" Click="MoveUpClick"/>
-                    <MenuItem Header="Move Down" InputGestureText="Ctrl+D" Click="MoveDownClick"/>
-                    <Separator/>
-                    <MenuItem Header="Rename" Click="RenameClick"/>
-                    <MenuItem Header="Delete" Click="DeleteNodeClick"/>
+                <ContextMenu x:Key="StarshipContext" StaysOpen="true">
+                    <MenuItem Click="GenerateClick" Header="Generate" />
+                    <MenuItem Click="EditDescriptionClick" Header="Edit Description" />
+                    <Separator />
+                    <MenuItem
+                        Click="MoveUpClick"
+                        Header="Move Up"
+                        InputGestureText="Ctrl+U" />
+                    <MenuItem
+                        Click="MoveDownClick"
+                        Header="Move Down"
+                        InputGestureText="Ctrl+D" />
+                    <MenuItem
+                        Click="MoveToOuterScope"
+                        Header="Move To Outer Scope"
+                        InputGestureText="Ctrl+A"
+                        IsEnabled="{Binding ElementName=AllowFreeDrag, Path=IsChecked}" />
+                    <Separator />
+                    <MenuItem Click="RenameClick" Header="Rename" />
+                    <MenuItem Click="DeleteNodeClick" Header="Delete" />
                 </ContextMenu>
-                <ContextMenu x:Key="TreasureContext"  StaysOpen="true">
-                    <MenuItem Header="Generate" Click="GenerateClick"/>
-                    <MenuItem Header="Edit Description" Click="EditDescriptionClick"/>
-                    <Separator/>
-                    <MenuItem Header="Move Up" InputGestureText="Ctrl+U" Click="MoveUpClick"/>
-                    <MenuItem Header="Move Down" InputGestureText="Ctrl+D" Click="MoveDownClick"/>
-                    <Separator/>
-                    <MenuItem Header="Rename" Click="RenameClick"/>
-                    <MenuItem Header="Delete" Click="DeleteNodeClick"/>
+                <ContextMenu x:Key="TreasureContext" StaysOpen="true">
+                    <MenuItem Click="GenerateClick" Header="Generate" />
+                    <MenuItem Click="EditDescriptionClick" Header="Edit Description" />
+                    <Separator />
+                    <MenuItem
+                        Click="MoveUpClick"
+                        Header="Move Up"
+                        InputGestureText="Ctrl+U" />
+                    <MenuItem
+                        Click="MoveDownClick"
+                        Header="Move Down"
+                        InputGestureText="Ctrl+D" />
+                    <MenuItem
+                        Click="MoveToOuterScope"
+                        Header="Move To Outer Scope"
+                        InputGestureText="Ctrl+A"
+                        IsEnabled="{Binding ElementName=AllowFreeDrag, Path=IsChecked}" />
+                    <Separator />
+                    <MenuItem Click="RenameClick" Header="Rename" />
+                    <MenuItem Click="DeleteNodeClick" Header="Delete" />
                 </ContextMenu>
-                <ContextMenu x:Key="NativeSpeciesContext"  StaysOpen="true">
-                    <MenuItem Header="Add Xenos" Click="AddXenosClick"/>
+                <ContextMenu x:Key="NativeSpeciesContext" StaysOpen="true">
+                    <MenuItem Click="AddXenosClick" Header="Add Xenos" />
                 </ContextMenu>
-                <ContextMenu x:Key="PirateShipsContext"  StaysOpen="true">
-                    <MenuItem Header="Add Pirate Ship" Click="AddPirateShipClick"/>
-                    <Separator/>
-                    <MenuItem Header="Edit Description" Click="EditDescriptionClick"/>
+                <ContextMenu x:Key="PirateShipsContext" StaysOpen="true">
+                    <MenuItem Click="AddPirateShipClick" Header="Add Pirate Ship" />
+                    <Separator />
+                    <MenuItem Click="EditDescriptionClick" Header="Edit Description" />
                 </ContextMenu>
             </TreeView.Resources>
             <TreeView.ItemContainerStyle>
                 <Style TargetType="{x:Type TreeViewItem}">
-                    <Setter Property="FontWeight" Value="{Binding FontWeight}"/>
-                    <Setter Property="FontStyle" Value="{Binding FontStyle}"/>
-                    <Setter Property="Foreground" Value="{Binding FontForeground}"/>
-                    <Setter Property="TreeViewItem.IsExpanded" Value="True"/>
+                    <Setter Property="FontWeight" Value="{Binding FontWeight}" />
+                    <Setter Property="FontStyle" Value="{Binding FontStyle}" />
+                    <Setter Property="Foreground" Value="{Binding FontForeground}" />
+                    <Setter Property="TreeViewItem.IsExpanded" Value="True" />
                     <Style.Triggers>
                         <DataTrigger Binding="{Binding Path=Type}" Value="menu">
-                            <Setter Property="TreeViewItem.IsSelected" Value="True"/>
+                            <Setter Property="TreeViewItem.IsSelected" Value="True" />
                         </DataTrigger>
                     </Style.Triggers>
                 </Style>
             </TreeView.ItemContainerStyle>
         </TreeView>
-        
-        <GridSplitter Grid.Row="1" Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Stretch" ShowsPreview="True" Width="3"/>
-        
-        <FlowDocumentReader Name="DescriptionView" Grid.Row="1" Grid.Column="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
 
-        <Rectangle Grid.Column="0" Grid.ColumnSpan="3" Grid.Row="2" Grid.RowSpan="2" Fill="#FFE0E0E0" />
-        <CheckBox Name="PageReferenceCheckBox" Grid.Column="0" Grid.Row="2" Content="Display page references" IsChecked="False" Margin="5" Checked="PageReferenceCheckBoxChecked" Unchecked="PageReferenceCheckBoxUnchecked">
+        <GridSplitter
+            Grid.Row="1"
+            Grid.Column="1"
+            Width="3"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Stretch"
+            ShowsPreview="True" />
+
+        <FlowDocumentReader
+            Name="DescriptionView"
+            Grid.Row="1"
+            Grid.Column="2"
+            HorizontalAlignment="Stretch"
+            VerticalAlignment="Stretch" />
+
+        <Rectangle
+            Grid.Row="2"
+            Grid.RowSpan="2"
+            Grid.Column="0"
+            Grid.ColumnSpan="3"
+            Fill="#FFE0E0E0" />
+        <CheckBox
+            Name="PageReferenceCheckBox"
+            Grid.Row="2"
+            Grid.Column="0"
+            Margin="5"
+            Checked="PageReferenceCheckBoxChecked"
+            Content="Display page references"
+            IsChecked="False"
+            Unchecked="PageReferenceCheckBoxUnchecked">
             <CheckBox.ToolTip>
                 <ToolTip Content="Adds page numbers, section titles and book titles where appropriate. If enabled, this will also be part of any exports you make." />
             </CheckBox.ToolTip>
         </CheckBox>
-        <CheckBox Name="CollateNodesCheckBox" Grid.Column="0" Grid.Row="3" Content="Collate nodes" IsChecked="False" Margin="5" Checked="CollateNodesCheckBoxChecked" Unchecked="CollateNodesCheckBoxUnchecked">
+        <CheckBox
+            Name="CollateNodesCheckBox"
+            Grid.Row="3"
+            Grid.Column="0"
+            Margin="5"
+            Checked="CollateNodesCheckBoxChecked"
+            Content="Collate nodes"
+            IsChecked="False"
+            Unchecked="CollateNodesCheckBoxUnchecked">
             <CheckBox.ToolTip>
                 <ToolTip Content="Shows not only the currently selected node in the document viewer, but also all its children in the correct order. Use this when exporting." />
             </CheckBox.ToolTip>
