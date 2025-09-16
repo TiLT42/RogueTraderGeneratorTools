@@ -52,7 +52,11 @@ class NodeBase {
 
     getNodeContent() {
         // Regenerate description for nodes with dynamic page references
-        if (this.type === NodeTypes.Planet || this.type === NodeTypes.System) {
+        if (this.type === NodeTypes.Planet || 
+            this.type === NodeTypes.System || 
+            this.type === NodeTypes.GasGiant ||
+            this.type === NodeTypes.AsteroidBelt ||
+            this.type === NodeTypes.Treasure) {
             this.updateDescription();
         }
         
