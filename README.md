@@ -16,3 +16,7 @@ You may freely configure the generator to use only the books you wish to include
 To download the latest version of the generator, please navigate to the releases page found at https://github.com/TiLT42/RogueTraderGeneratorTools/releases/
 
 If you wish to add your own modifications to the generator, feel free to fork the repository and submit pull requests.
+
+# UPDATE 16.09.25
+I'm currently using Copilot to migrate the app to Electron as a test. The WPF platform is getting a little old and there's still an audience for this app, so I'm hoping to modernize it a little. The master branch may become unstable during this time (but hopefully not), so if you want to avoid that, use the classic-wpf branch in the meantime. 
+If you wish to contribute to the Electron update, feel free to add pull requests. I'm hoping to move away from the typical Windows layout and make this compatible with web browsers eventually, but it will take some work.
