@@ -29,11 +29,14 @@ class XenosNode extends NodeBase {
         this.xenosTraits = [];
         this.weapons = ['Advanced Energy Weapon (100m; S/2/5; 1d10+4 E; Pen 3; Reliable)'];
         this.armour = 'Xenos Carapace (All 4)';
-        this.pageReference = 'Core Rulebook, p. 364-368';
     }
 
     generate() {
         super.generate();
+        
+        // Set page reference for xenos generation
+        this.pageReference = createPageReference(364, '', RuleBook.CoreRuleBook);
+        
         this.generateSpecies();
         this.generateTechLevel();
         this.generateHostility();

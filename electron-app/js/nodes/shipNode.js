@@ -14,6 +14,10 @@ class ShipNode extends NodeBase {
 
     generate() {
         super.generate();
+        
+        // Set page reference for starship generation (Battlefleet Koronus)
+        this.pageReference = createPageReference(26, '', RuleBook.BattlefleetKoronus);
+        
         this.generateShipClass();
         this.generateShipType();
         this.generateFaction();

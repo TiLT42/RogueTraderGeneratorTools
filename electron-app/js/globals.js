@@ -91,3 +91,23 @@ function updateWindowTitle() {
     const dirty = window.APP_STATE.isDirty ? '*' : '';
     document.title = `${fileName}${dirty} - Rogue Trader Generator Tools`;
 }
+
+// Helper function to create page references
+function createPageReference(pageNumber, tableName = '', book = RuleBook.StarsOfInequity) {
+    const bookNames = {
+        [RuleBook.CoreRuleBook]: 'Core Rulebook',
+        [RuleBook.StarsOfInequity]: 'Stars of Inequity',
+        [RuleBook.BattlefleetKoronus]: 'Battlefleet Koronus',
+        [RuleBook.TheKoronusBestiary]: 'The Koronus Bestiary',
+        [RuleBook.IntoTheStorm]: 'Into the Storm',
+        [RuleBook.TheSoulReaver]: 'The Soul Reaver'
+    };
+    
+    const bookName = bookNames[book] || 'Stars of Inequity';
+    
+    if (tableName) {
+        return `(${tableName}, page ${pageNumber} - ${bookName})`;
+    } else {
+        return `(page ${pageNumber} - ${bookName})`;
+    }
+}

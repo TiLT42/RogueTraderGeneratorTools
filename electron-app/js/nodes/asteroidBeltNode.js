@@ -17,6 +17,9 @@ class AsteroidBeltNode extends NodeBase {
     generate() {
         super.generate();
         
+        // Set page reference for asteroid belt generation
+        this.pageReference = createPageReference(17, 'Table 1-7: Asteroid Belt');
+        
         // Generate resources
         this.generateMineralResources();
         this.generateInhabitants();

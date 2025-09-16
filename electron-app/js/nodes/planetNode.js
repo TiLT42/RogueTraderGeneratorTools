@@ -67,6 +67,9 @@ class PlanetNode extends NodeBase {
     generate() {
         super.generate();
         
+        // Set page reference for planet generation
+        this.pageReference = createPageReference(16);
+        
         // Generate planet properties
         this.generateBody();
         this.generateGravity();
@@ -452,15 +455,24 @@ class PlanetNode extends NodeBase {
 
     updateDescription() {
         let desc = `<h3>Planet Classification</h3>`;
-        desc += `<p><strong>Body:</strong> ${this.body}</p>`;
-        desc += `<p><strong>Gravity:</strong> ${this.gravity}</p>`;
+        
+        // Helper function to conditionally add page references
+        const addPageRef = (pageNum, tableName = '') => {
+            if (window.APP_STATE.settings.showPageNumbers) {
+                return ` <span class="page-reference">${createPageReference(pageNum, tableName)}</span>`;
+            }
+            return '';
+        };
+        
+        desc += `<p><strong>Body:</strong> ${this.body}${addPageRef(19, "Table 1-6: Body")}</p>`;
+        desc += `<p><strong>Gravity:</strong> ${this.gravity}${addPageRef(20, "Table 1-7: Gravity")}</p>`;
         desc += `<p><strong>Atmosphere:</strong> ${this.atmosphericPresence}`;
         if (this.hasAtmosphere) {
             desc += ` (${this.atmosphericComposition})`;
         }
-        desc += `</p>`;
-        desc += `<p><strong>Climate:</strong> ${this.climate}</p>`;
-        desc += `<p><strong>Habitability:</strong> ${this.habitability}</p>`;
+        desc += `${addPageRef(21, "Table 1-9: Atmospheric Presence")}</p>`;
+        desc += `<p><strong>Climate:</strong> ${this.climate}${addPageRef(22, "Table 1-11: Climate")}</p>`;
+        desc += `<p><strong>Habitability:</strong> ${this.habitability}${addPageRef(23, "Table 1-12: Habitability")}</p>`;
         
         if (this.inhabitants !== 'None') {
             desc += `<h3>Inhabitants</h3>`;

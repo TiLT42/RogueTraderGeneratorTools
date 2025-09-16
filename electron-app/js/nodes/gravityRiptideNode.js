@@ -11,6 +11,10 @@ class GravityRiptideNode extends NodeBase {
 
     generate() {
         super.generate();
+        
+        // Set page reference for gravity riptide generation
+        this.pageReference = createPageReference(15, 'Gravity Riptide');
+        
         this.generateIntensity();
         this.generateEffects();
         this.updateDescription();

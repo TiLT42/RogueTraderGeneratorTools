@@ -10,6 +10,10 @@ class RadiationBurstsNode extends NodeBase {
 
     generate() {
         super.generate();
+        
+        // Set page reference for radiation bursts generation
+        this.pageReference = createPageReference(16, 'Radiation Bursts');
+        
         this.generateIntensity();
         this.generateType();
         this.generateEffects();

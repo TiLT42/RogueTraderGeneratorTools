@@ -10,6 +10,10 @@ class SolarFlaresNode extends NodeBase {
 
     generate() {
         super.generate();
+        
+        // Set page reference for solar flares generation
+        this.pageReference = createPageReference(16, 'Solar Flares');
+        
         this.generateIntensity();
         this.generateFrequency();
         this.generateEffects();

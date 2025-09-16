@@ -37,6 +37,10 @@ class PrimitiveXenosNode extends NodeBase {
 
     generate() {
         super.generate();
+        
+        // Set page reference for primitive xenos generation
+        this.pageReference = createPageReference(373, '', RuleBook.StarsOfInequity);
+        
         this.generateBodyType();
         this.generateLocomotion();
         this.generateSenses();

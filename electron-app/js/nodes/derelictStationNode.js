@@ -11,6 +11,10 @@ class DerelictStationNode extends NodeBase {
 
     generate() {
         super.generate();
+        
+        // Set page reference for derelict station generation
+        this.pageReference = createPageReference(15, 'Table 1-4: Derelict Station Origins');
+        
         this.generateStationType();
         this.generateCondition();
         this.generateDangers();

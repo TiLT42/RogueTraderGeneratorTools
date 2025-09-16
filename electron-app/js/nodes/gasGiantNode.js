@@ -28,6 +28,9 @@ class GasGiantNode extends NodeBase {
     generate() {
         super.generate();
         
+        // Set page reference for gas giant generation
+        this.pageReference = createPageReference(18, 'Table 1-8: Gas Giant');
+        
         this.generateBody();
         this.generateGravity();
         this.generatePlanetaryRings();

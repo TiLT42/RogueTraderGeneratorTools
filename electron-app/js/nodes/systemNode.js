@@ -45,6 +45,9 @@ class SystemNode extends NodeBase {
     generate() {
         super.generate();
         
+        // Set page reference for system generation
+        this.pageReference = createPageReference(12);
+        
         // Clear existing children
         this.children = [];
         
@@ -249,12 +252,20 @@ class SystemNode extends NodeBase {
     }
 
     updateDescription() {
-        let desc = `<h3>Star Classification</h3><p>${this.star}</p>`;
+        // Helper function to conditionally add page references
+        const addPageRef = (pageNum, tableName = '') => {
+            if (window.APP_STATE.settings.showPageNumbers) {
+                return ` <span class="page-reference">${createPageReference(pageNum, tableName)}</span>`;
+            }
+            return '';
+        };
+        
+        let desc = `<h3>Star Classification</h3><p>${this.star}${addPageRef(14, "Table 1-2: Star")}</p>`;
         
         if (this.systemFeatures.length > 0) {
             desc += `<h3>System Features</h3><ul>`;
             for (const feature of this.systemFeatures) {
-                desc += `<li>${feature}</li>`;
+                desc += `<li>${feature}${addPageRef(15, "Table 1-3: System Features")}</li>`;
             }
             desc += `</ul>`;
         }

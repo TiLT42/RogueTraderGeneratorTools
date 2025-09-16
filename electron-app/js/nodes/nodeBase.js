@@ -51,6 +51,25 @@ class NodeBase {
     }
 
     getNodeContent() {
+        // Regenerate description for nodes with dynamic page references
+        if (this.type === NodeTypes.Planet || 
+            this.type === NodeTypes.System || 
+            this.type === NodeTypes.GasGiant ||
+            this.type === NodeTypes.AsteroidBelt ||
+            this.type === NodeTypes.Treasure ||
+            this.type === NodeTypes.DerelictStation ||
+            this.type === NodeTypes.LesserMoon ||
+            this.type === NodeTypes.Zone ||
+            this.type === NodeTypes.Asteroid ||
+            this.type === NodeTypes.StarshipGraveyard ||
+            this.type === NodeTypes.SolarFlares ||
+            this.type === NodeTypes.RadiationBursts ||
+            this.type === NodeTypes.GravityRiptide ||
+            this.type === NodeTypes.DustCloud ||
+            this.type === NodeTypes.PirateShips) {
+            this.updateDescription();
+        }
+        
         let content = `<h2>${this.nodeName}</h2>`;
         
         if (this.description) {

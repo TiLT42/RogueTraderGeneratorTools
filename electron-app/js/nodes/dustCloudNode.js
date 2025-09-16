@@ -10,6 +10,10 @@ class DustCloudNode extends NodeBase {
 
     generate() {
         super.generate();
+        
+        // Set page reference for dust cloud generation
+        this.pageReference = createPageReference(15, 'Dust Cloud');
+        
         this.generateDensity();
         this.generateComposition();
         this.generateEffects();

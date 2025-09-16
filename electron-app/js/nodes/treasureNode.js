@@ -13,6 +13,10 @@ class TreasureNode extends NodeBase {
 
     generate() {
         super.generate();
+        
+        // Set page reference for treasure generation
+        this.pageReference = createPageReference(281, '', RuleBook.StarsOfInequity);
+        
         this.generateTreasureType();
         this.generateRarity();
         this.generateOrigin();
