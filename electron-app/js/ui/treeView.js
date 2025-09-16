@@ -70,8 +70,6 @@ class TreeView {
             li.textContent = 'No content generated yet. Use the Generate menu to create a system.';
             ul.appendChild(li);
         }
-        
-        console.log('TreeView rendered with', rootNodes ? rootNodes.length : 0, 'root nodes');
     }
 
     createNodeElement(node) {
