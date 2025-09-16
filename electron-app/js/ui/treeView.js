@@ -212,7 +212,6 @@ class TreeView {
     }
 
     refresh() {
-        console.log('Refreshing tree view with nodes:', window.APP_STATE.rootNodes.length);
         this.render(window.APP_STATE.rootNodes);
         
         // Restore selection if possible
@@ -222,21 +221,12 @@ class TreeView {
                 nodeElement.classList.add('selected');
             }
         }
-        console.log('Tree view refresh complete');
     }
 
     addRootNode(node) {
-        console.log('Adding root node:', node);
-        console.log('Current root nodes before:', window.APP_STATE.rootNodes.length);
-        
         window.APP_STATE.rootNodes.push(node);
-        console.log('Current root nodes after:', window.APP_STATE.rootNodes.length);
-        
         this.refresh();
-        console.log('Tree refreshed');
-        
         markDirty();
-        console.log('Marked dirty');
     }
 
     removeNode(node) {

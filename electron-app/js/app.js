@@ -203,42 +203,18 @@ class App {
     }
 
     generateNewSystem() {
-        console.log('Starting system generation...');
-        try {
-            const system = createNode(NodeTypes.System);
-            console.log('System node created:', system);
-            
-            system.generate();
-            console.log('System generated:', system);
-            
-            window.treeView.addRootNode(system);
-            console.log('System added to tree');
-            
-            window.treeView.selectNode(system);
-            console.log('System selected');
-        } catch (error) {
-            console.error('Error generating system:', error);
-        }
+        const system = createNode(NodeTypes.System);
+        system.generate();
+        window.treeView.addRootNode(system);
+        window.treeView.selectNode(system);
     }
 
     generateNewStarship() {
-        console.log('Starting starship generation...');
-        try {
-            const ship = createNode(NodeTypes.Ship);
-            ship.nodeName = 'Starship';
-            console.log('Ship node created:', ship);
-            
-            ship.generate();
-            console.log('Ship generated:', ship);
-            
-            window.treeView.addRootNode(ship);
-            console.log('Ship added to tree');
-            
-            window.treeView.selectNode(ship);
-            console.log('Ship selected');
-        } catch (error) {
-            console.error('Error generating starship:', error);
-        }
+        const ship = createNode(NodeTypes.Ship);
+        ship.nodeName = 'Starship';
+        ship.generate();
+        window.treeView.addRootNode(ship);
+        window.treeView.selectNode(ship);
     }
 
     generateNewPrimitiveSpecies() {

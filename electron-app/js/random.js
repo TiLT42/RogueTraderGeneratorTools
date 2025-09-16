@@ -50,6 +50,33 @@ class RandomGenerator {
         return result;
     }
 
+    // Roll a d5 (1-5)
+    rollD5(numDice = 1) {
+        let result = 0;
+        for (let i = 0; i < numDice; i++) {
+            result += this.nextInt(1, 5);
+        }
+        return result;
+    }
+
+    // Roll a d4 (1-4)
+    rollD4(numDice = 1) {
+        let result = 0;
+        for (let i = 0; i < numDice; i++) {
+            result += this.nextInt(1, 4);
+        }
+        return result;
+    }
+
+    // Roll a d3 (1-3)
+    rollD3(numDice = 1) {
+        let result = 0;
+        for (let i = 0; i < numDice; i++) {
+            result += this.nextInt(1, 3);
+        }
+        return result;
+    }
+
     // Roll any die
     roll(sides, numDice = 1) {
         let result = 0;
@@ -110,6 +137,9 @@ window.Random = new RandomGenerator();
 window.RollD100 = (numDice = 1) => window.Random.rollD100(numDice);
 window.RollD10 = (numDice = 1) => window.Random.rollD10(numDice);
 window.RollD6 = (numDice = 1) => window.Random.rollD6(numDice);
+window.RollD5 = (numDice = 1) => window.Random.rollD5(numDice);
+window.RollD4 = (numDice = 1) => window.Random.rollD4(numDice);
+window.RollD3 = (numDice = 1) => window.Random.rollD3(numDice);
 window.Roll = (sides, numDice = 1) => window.Random.roll(sides, numDice);
 window.ChooseFrom = (array) => window.Random.chooseFrom(array);
 window.Shuffle = (array) => window.Random.shuffle(array);
