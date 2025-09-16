@@ -44,7 +44,50 @@ class PrimitiveXenosNode extends NodeBase {
         this.generateReproduction();
         this.generateSociety();
         this.generateTechLevel();
+        this.generateStats();
+        this.generateTraits();
         this.updateDescription();
+    }
+
+    generateStats() {
+        // Apply random variations to base stats
+        this.stats.weaponSkill += (RollD100() <= 50 ? RollD100() - 50 : 0);
+        this.stats.strength += (RollD100() <= 50 ? RollD100() - 50 : 0);
+        this.stats.toughness += (RollD100() <= 50 ? RollD100() - 50 : 0);
+        this.stats.agility += (RollD100() <= 50 ? RollD100() - 50 : 0);
+        
+        // Ensure stats stay within bounds
+        Object.keys(this.stats).forEach(key => {
+            if (this.stats[key] < 10) this.stats[key] = 10;
+            if (this.stats[key] > 80) this.stats[key] = 80;
+        });
+        
+        // Calculate movement based on agility
+        const agilityBonus = Math.floor(this.stats.agility / 10);
+        this.movement = `${agilityBonus}/${agilityBonus*2}/${agilityBonus*3}/${agilityBonus*6}`;
+    }
+
+    generateTraits() {
+        this.traits = [];
+        const primitiveTraits = [
+            'Natural Weapons',
+            'Primitive',
+            'Bestial',
+            'Size (Average)'
+        ];
+        
+        // Add basic traits
+        this.traits.push('Natural Weapons');
+        this.traits.push('Primitive');
+        
+        // Random additional traits
+        if (RollD100() <= 30) {
+            this.traits.push('Bestial');
+        }
+        
+        if (RollD100() <= 20) {
+            this.traits.push(ChooseFrom(['Size (Scrawny)', 'Size (Hulking)']));
+        }
     }
 
     generateBodyType() {
