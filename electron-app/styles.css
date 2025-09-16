@@ -1,0 +1,529 @@
+/* Reset and base styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-size: 14px;
+    background-color: #f5f5f5;
+    overflow: hidden;
+}
+
+#app {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Main layout */
+.main-container {
+    flex: 1;
+    display: flex;
+    min-height: 0;
+}
+
+.left-panel {
+    width: 300px;
+    background-color: #ffffff;
+    border-right: 1px solid #ddd;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+}
+
+.splitter {
+    width: 5px;
+    background-color: #ddd;
+    cursor: col-resize;
+    user-select: none;
+}
+
+.splitter:hover {
+    background-color: #bbb;
+}
+
+.right-panel {
+    flex: 1;
+    background-color: #ffffff;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Tree view styles */
+#tree-container {
+    flex: 1;
+    padding: 10px;
+    overflow-y: auto;
+}
+
+#node-tree {
+    list-style: none;
+}
+
+.tree-node {
+    margin: 2px 0;
+    user-select: none;
+}
+
+.tree-node-content {
+    padding: 4px 8px;
+    border-radius: 3px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    min-height: 24px;
+}
+
+.tree-node-content:hover {
+    background-color: #f0f0f0;
+}
+
+.tree-node-content.selected {
+    background-color: #0078d4;
+    color: white;
+}
+
+.tree-node-icon {
+    width: 16px;
+    height: 16px;
+    margin-right: 6px;
+    flex-shrink: 0;
+}
+
+.tree-node-text {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.tree-node-children {
+    margin-left: 16px;
+    list-style: none;
+}
+
+.tree-node-expander {
+    width: 16px;
+    height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 10px;
+    margin-right: 4px;
+}
+
+.tree-node-expander:before {
+    content: '▶';
+    transition: transform 0.2s;
+}
+
+.tree-node-expander.expanded:before {
+    transform: rotate(90deg);
+}
+
+.tree-node.collapsed > .tree-node-children {
+    display: none;
+}
+
+/* Document viewer styles */
+#document-viewer {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+    background-color: #ffffff;
+}
+
+.document-content {
+    max-width: none;
+    line-height: 1.6;
+}
+
+.document-content h1 {
+    color: #2c3e50;
+    border-bottom: 2px solid #3498db;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+}
+
+.document-content h2 {
+    color: #34495e;
+    margin-top: 25px;
+    margin-bottom: 15px;
+}
+
+.document-content h3 {
+    color: #7f8c8d;
+    margin-top: 20px;
+    margin-bottom: 10px;
+}
+
+.document-content p {
+    margin-bottom: 15px;
+}
+
+.document-content ul, .document-content ol {
+    margin-bottom: 15px;
+    padding-left: 30px;
+}
+
+.document-content li {
+    margin-bottom: 5px;
+}
+
+.document-content .page-reference {
+    color: #666;
+    font-style: italic;
+    font-size: 0.9em;
+}
+
+.document-content .description-section {
+    background-color: #f8f9fa;
+    border-left: 4px solid #3498db;
+    padding: 15px;
+    margin: 15px 0;
+}
+
+/* Bottom panel styles */
+.bottom-panel {
+    height: 60px;
+    background-color: #e0e0e0;
+    border-top: 1px solid #ccc;
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+}
+
+.options-container {
+    display: flex;
+    gap: 20px;
+}
+
+.options-container label {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    font-size: 13px;
+}
+
+.options-container input[type="checkbox"] {
+    margin-right: 8px;
+}
+
+/* Modal styles */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.modal {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    max-width: 600px;
+    width: 90%;
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.modal-header {
+    padding: 15px 20px;
+    border-bottom: 1px solid #ddd;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.modal-header h3 {
+    margin: 0;
+    font-size: 18px;
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: #999;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-close:hover {
+    color: #333;
+}
+
+.modal-body {
+    padding: 20px;
+    flex: 1;
+    overflow-y: auto;
+}
+
+.modal-footer {
+    padding: 15px 20px;
+    border-top: 1px solid #ddd;
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+}
+
+.btn {
+    padding: 8px 16px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.btn-primary {
+    background-color: #0078d4;
+    color: white;
+    border-color: #0078d4;
+}
+
+.btn-primary:hover {
+    background-color: #106ebe;
+}
+
+.btn-secondary {
+    background-color: #f8f9fa;
+    color: #333;
+}
+
+.btn-secondary:hover {
+    background-color: #e9ecef;
+}
+
+/* Context menu styles */
+.context-menu {
+    position: fixed;
+    background-color: white;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+    min-width: 150px;
+}
+
+.context-menu-item {
+    padding: 8px 12px;
+    cursor: pointer;
+    font-size: 13px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.context-menu-item:last-child {
+    border-bottom: none;
+}
+
+.context-menu-item:hover {
+    background-color: #f0f0f0;
+}
+
+.context-menu-item.disabled {
+    color: #999;
+    cursor: not-allowed;
+}
+
+.context-menu-item.disabled:hover {
+    background-color: transparent;
+}
+
+.context-menu-separator {
+    height: 1px;
+    background-color: #ddd;
+    margin: 4px 0;
+}
+
+/* Loading spinner */
+.loading {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(255, 255, 255, 0.8);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #3498db;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 15px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Form elements */
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.form-group textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+
+/* Utility classes */
+.hidden {
+    display: none !important;
+}
+
+.text-center {
+    text-align: center;
+}
+
+.text-right {
+    text-align: right;
+}
+
+.text-muted {
+    color: #666;
+}
+
+.mt-10 {
+    margin-top: 10px;
+}
+
+.mb-10 {
+    margin-bottom: 10px;
+}
+
+.p-10 {
+    padding: 10px;
+}
+
+/* Node type specific styles */
+.tree-node-content.system {
+    font-weight: bold;
+}
+
+.tree-node-content.zone {
+    font-style: italic;
+}
+
+.tree-node-content.planet {
+    color: #2ecc71;
+}
+
+.tree-node-content.gas-giant {
+    color: #f39c12;
+}
+
+.tree-node-content.asteroid-belt {
+    color: #95a5a6;
+}
+
+.tree-node-content.starship {
+    color: #3498db;
+}
+
+.tree-node-content.xenos {
+    color: #e74c3c;
+}
+
+.tree-node-content.treasure {
+    color: #f1c40f;
+}
+
+/* Page references */
+.page-reference {
+    font-style: italic;
+    font-size: 0.9em;
+    color: #666;
+    margin-top: 10px;
+    padding-top: 5px;
+    border-top: 1px solid #eee;
+}
+
+/* Stat blocks for xenos species */
+.stat-block {
+    margin: 15px 0;
+    background: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 10px;
+}
+
+.stats-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 10px 0;
+    font-family: monospace;
+}
+
+.stats-table th,
+.stats-table td {
+    border: 1px solid #ccc;
+    padding: 8px;
+    text-align: center;
+    min-width: 40px;
+}
+
+.stats-table th {
+    background-color: #e9e9e9;
+    font-weight: bold;
+    font-size: 0.9em;
+}
+
+.stats-table td {
+    font-weight: bold;
+    font-size: 1.1em;
+}
+
+/* Responsive adjustments for stat blocks */
+@media (max-width: 600px) {
+    .stats-table {
+        font-size: 0.8em;
+    }
+    
+    .stats-table th,
+    .stats-table td {
+        padding: 4px;
+        min-width: 30px;
+    }
+}

@@ -1,0 +1,22 @@
+{
+  "name": "rogue-trader-generator-tools",
+  "version": "2.0.0",
+  "description": "Electron-based Rogue Trader RPG system and content generator",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron . --no-sandbox",
+    "dev": "electron . --dev --no-sandbox",
+    "build": "electron-builder",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": ["rogue-trader", "rpg", "generator", "warhammer-40k"],
+  "author": "Rogue Trader Generator Tools",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/TiLT42/RogueTraderGeneratorTools.git"
+  },
+  "devDependencies": {
+    "electron": "^38.1.0"
+  }
+}

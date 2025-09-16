@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rogue Trader Generator Tools</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="app">
+        <div class="main-container">
+            <!-- Left Panel - Tree View -->
+            <div class="left-panel">
+                <div id="tree-container">
+                    <ul id="node-tree"></ul>
+                </div>
+            </div>
+
+            <!-- Splitter -->
+            <div class="splitter" id="splitter"></div>
+
+            <!-- Right Panel - Document Viewer -->
+            <div class="right-panel">
+                <div id="document-viewer">
+                    <div class="document-content" id="document-content">
+                        <h2>Welcome to Rogue Trader Generator Tools</h2>
+                        <p>Select or generate a system from the Generate menu to begin.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Panel - Options -->
+        <div class="bottom-panel">
+            <div class="options-container">
+                <label>
+                    <input type="checkbox" id="page-references">
+                    Display page references
+                </label>
+                <label>
+                    <input type="checkbox" id="collate-nodes">
+                    Collate nodes
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Dialogs -->
+    <div id="modal-overlay" class="modal-overlay hidden">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 id="modal-title">Dialog</h3>
+                <button class="modal-close" id="modal-close">&times;</button>
+            </div>
+            <div class="modal-body" id="modal-body">
+                <!-- Dynamic content -->
+            </div>
+            <div class="modal-footer">
+                <button id="modal-ok" class="btn btn-primary">OK</button>
+                <button id="modal-cancel" class="btn btn-secondary">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Context Menu -->
+    <div id="context-menu" class="context-menu hidden">
+        <!-- Dynamic content -->
+    </div>
+
+    <!-- Loading Spinner -->
+    <div id="loading" class="loading hidden">
+        <div class="spinner"></div>
+        <p>Generating...</p>
+    </div>
+
+    <script src="js/globals.js"></script>
+    <script src="js/random.js"></script>
+    <script src="js/nodes/nodeBase.js"></script>
+    <script src="js/nodes/systemNode.js"></script>
+    <script src="js/nodes/zoneNode.js"></script>
+    <script src="js/nodes/planetNode.js"></script>
+    <script src="js/nodes/gasGiantNode.js"></script>
+    <script src="js/nodes/asteroidBeltNode.js"></script>
+    <script src="js/nodes/asteroidClusterNode.js"></script>
+    <script src="js/nodes/asteroidNode.js"></script>
+    <script src="js/nodes/derelictStationNode.js"></script>
+    <script src="js/nodes/dustCloudNode.js"></script>
+    <script src="js/nodes/gravityRiptideNode.js"></script>
+    <script src="js/nodes/lesserMoonNode.js"></script>
+    <script src="js/nodes/nativeSpeciesNode.js"></script>
+    <script src="js/nodes/orbitalFeaturesNode.js"></script>
+    <script src="js/nodes/pirateShipsNode.js"></script>
+    <script src="js/nodes/primitiveXenosNode.js"></script>
+    <script src="js/nodes/radiationBurstsNode.js"></script>
+    <script src="js/nodes/shipNode.js"></script>
+    <script src="js/nodes/solarFlaresNode.js"></script>
+    <script src="js/nodes/starshipGraveyardNode.js"></script>
+    <script src="js/nodes/treasureNode.js"></script>
+    <script src="js/nodes/xenosNode.js"></script>
+    <script src="js/nodes/createNode.js"></script>
+    <script src="js/ui/treeView.js"></script>
+    <script src="js/ui/documentViewer.js"></script>
+    <script src="js/ui/modals.js"></script>
+    <script src="js/ui/contextMenu.js"></script>
+    <script src="js/workspace.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
