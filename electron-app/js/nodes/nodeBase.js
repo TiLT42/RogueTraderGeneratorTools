@@ -51,6 +51,11 @@ class NodeBase {
     }
 
     getNodeContent() {
+        // Regenerate description for nodes with dynamic page references
+        if (this.type === NodeTypes.Planet || this.type === NodeTypes.System) {
+            this.updateDescription();
+        }
+        
         let content = `<h2>${this.nodeName}</h2>`;
         
         if (this.description) {
