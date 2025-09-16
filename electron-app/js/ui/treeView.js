@@ -42,16 +42,36 @@ class TreeView {
     }
 
     render(rootNodes) {
-        this.container.innerHTML = '';
-        const ul = document.createElement('ul');
-        ul.id = 'node-tree';
+        // Find or create the ul element
+        let ul = this.container.querySelector('#node-tree');
+        if (!ul) {
+            ul = document.createElement('ul');
+            ul.id = 'node-tree';
+            this.container.appendChild(ul);
+        }
         
-        for (const node of rootNodes) {
-            const li = this.createNodeElement(node);
+        // Clear existing content
+        ul.innerHTML = '';
+        
+        // Add nodes
+        if (rootNodes && rootNodes.length > 0) {
+            for (const node of rootNodes) {
+                const li = this.createNodeElement(node);
+                ul.appendChild(li);
+            }
+        } else {
+            // Show empty state message
+            const li = document.createElement('li');
+            li.className = 'tree-empty-state';
+            li.style.padding = '20px';
+            li.style.textAlign = 'center';
+            li.style.color = '#666';
+            li.style.fontStyle = 'italic';
+            li.textContent = 'No content generated yet. Use the Generate menu to create a system.';
             ul.appendChild(li);
         }
         
-        this.container.appendChild(ul);
+        console.log('TreeView rendered with', rootNodes ? rootNodes.length : 0, 'root nodes');
     }
 
     createNodeElement(node) {

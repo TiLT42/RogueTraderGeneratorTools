@@ -15,12 +15,19 @@ class App {
     }
 
     initializeComponents() {
+        console.log('Initializing components...');
+        
         // Initialize UI components
-        window.treeView = new TreeView(document.getElementById('tree-container'));
+        const treeContainer = document.getElementById('tree-container');
+        console.log('Tree container element:', treeContainer);
+        
+        window.treeView = new TreeView(treeContainer);
         window.documentViewer = new DocumentViewer(document.getElementById('document-viewer'));
         window.contextMenu = new ContextMenu();
         window.modals = new Modals();
         window.workspace = new Workspace();
+
+        console.log('UI components initialized');
 
         // Set up Electron API
         this.setupElectronAPI();
@@ -246,6 +253,17 @@ class App {
         
         // Show welcome message
         window.documentViewer.render();
+        
+        // Ensure tree view is rendered with empty state
+        window.treeView.render(window.APP_STATE.rootNodes);
+        
+        console.log('Default workspace created, rootNodes:', window.APP_STATE.rootNodes);
+        
+        // For testing: automatically generate a system to verify tree view works
+        setTimeout(() => {
+            console.log('Creating test system...');
+            this.generateNewSystem();
+        }, 1000);
     }
 }
 
