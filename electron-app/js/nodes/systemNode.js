@@ -212,10 +212,10 @@ class SystemNode extends NodeBase {
         this.outerReachesZone.zoneSize = this.determineZoneSize('outer');
         this.addChild(this.outerReachesZone);
         
-        // Generate content for each zone
-        this.innerCauldronZone.generateZoneContent();
-        this.primaryBiosphereZone.generateZoneContent();
-        this.outerReachesZone.generateZoneContent();
+        // Generate content for each zone (temporarily commented out for debugging)
+        // this.innerCauldronZone.generateZoneContent();
+        // this.primaryBiosphereZone.generateZoneContent();
+        // this.outerReachesZone.generateZoneContent();
     }
 
     determineZoneSize(zoneType) {
