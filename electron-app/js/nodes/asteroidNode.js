@@ -10,6 +10,10 @@ class AsteroidNode extends NodeBase {
 
     generate() {
         super.generate();
+        
+        // Set page reference for asteroid generation
+        this.pageReference = createPageReference(16);
+        
         this.generateSize();
         this.generateComposition();
         this.updateDescription();

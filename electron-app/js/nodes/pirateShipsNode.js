@@ -12,6 +12,10 @@ class PirateShipsNode extends NodeBase {
 
     generate() {
         super.generate();
+        
+        // Set page reference for pirate ships generation
+        this.pageReference = createPageReference(210, 'Wayfarer Station', RuleBook.CoreRuleBook);
+        
         this.generateFleetSize();
         this.generateShipTypes();
         this.generateFaction();

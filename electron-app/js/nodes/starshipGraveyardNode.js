@@ -13,6 +13,10 @@ class StarshipGraveyardNode extends NodeBase {
 
     generate() {
         super.generate();
+        
+        // Set page reference for starship graveyard generation
+        this.pageReference = createPageReference(17, 'Table 1-5: Starship Graveyard Origins');
+        
         this.generateOrigin();
         this.generateShips();
         this.generateDangers();

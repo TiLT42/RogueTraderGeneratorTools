@@ -15,6 +15,9 @@ class LesserMoonNode extends NodeBase {
     generate() {
         super.generate();
         
+        // Set page reference for lesser moon generation
+        this.pageReference = createPageReference(16);
+        
         this.generateBody();
         this.generateGravity();
         this.generateResources();
