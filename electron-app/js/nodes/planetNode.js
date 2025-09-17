@@ -1045,8 +1045,9 @@ class PlanetNode extends NodeBase {
         desc += `<p><strong>Habitability:</strong> ${this.getHabitabilityDisplay()}${addPageRef(23,'Table 1-12: Habitability')}</p>`;
         desc += `<p><strong>Major Continents or Archipelagos:</strong> ${this.numContinents === 0 ? 'None' : this.numContinents}${addPageRef(23,'Landmasses')}</p>`;
         desc += `<p><strong>Smaller Islands:</strong> ${this.numIslands === 0 ? 'None' : this.numIslands}${addPageRef(23,'Landmasses')}</p>`;
-        if (this.maidenWorld) desc += `<p><strong>Special:</strong> Eldar Maiden World</p>`;
-        if (this.warpStorm) desc += `<p><strong>Warp Storm:</strong> This planet is engulfed in a permanent Warp storm.</p>`;
+    if (this.maidenWorld) desc += `<p><strong>Special:</strong> Eldar Maiden World</p>`;
+    if (this.warpStorm) desc += `<p><strong>Warp Storm:</strong> This planet is engulfed in a permanent Warp storm.</p>`;
+    if (this.isInhabitantHomeWorld) desc += `<p><strong>Home World:</strong> Primary origin world of its spacefaring species.</p>`;
 
         // Territories & Landmarks
         if (this.environment) {
@@ -1091,8 +1092,10 @@ class PlanetNode extends NodeBase {
         if (this.xenosRuins.length === 0) desc += '<p>None</p>'; else desc += '<ul>'+this.xenosRuins.map(x=> (typeof x==='string'? `<li>${x}</li>` : `<li>${x.type} (Abundance ${x.abundance})</li>`)).join('')+'</ul>';
 
         // Inhabitants (simplified model retained)
-        desc += `<h3>Inhabitants</h3>`;
-        desc += `<p><strong>Species:</strong> ${this.inhabitants}</p>`;
+    desc += `<h3>Inhabitants</h3>`;
+    let speciesLine = this.inhabitants;
+    if (this.isInhabitantHomeWorld && this.inhabitants !== 'None') speciesLine += ' (Home World)';
+    desc += `<p><strong>Species:</strong> ${speciesLine}</p>`;
         if (this.inhabitantDevelopment) desc += `<p><strong>Development:</strong> ${this.inhabitantDevelopment}</p>`;
         if (this.techLevel) desc += `<p><strong>Technology Level:</strong> ${this.techLevel}</p>`;
         if (this.population) desc += `<p><strong>Population:</strong> ${this.population}</p>`;
@@ -1142,6 +1145,7 @@ class PlanetNode extends NodeBase {
         json.maidenWorld = this.maidenWorld;
         json.warpStorm = this.warpStorm;
         json.environment = this.environment; // persist environment structure
+        json.isInhabitantHomeWorld = this.isInhabitantHomeWorld;
         return json;
     }
 
@@ -1189,7 +1193,8 @@ class PlanetNode extends NodeBase {
             archeotechCaches: data.archeotechCaches || [],
             xenosRuins: data.xenosRuins || [],
             maidenWorld: data.maidenWorld || false,
-            warpStorm: data.warpStorm || false
+            warpStorm: data.warpStorm || false,
+            isInhabitantHomeWorld: data.isInhabitantHomeWorld || false
         });
 
         // Backwards compatibility: convert legacy mineral resource strings to objects with default abundance

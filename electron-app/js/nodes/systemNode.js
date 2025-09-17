@@ -66,7 +66,8 @@ class SystemNode extends NodeBase {
             numPlanetsModifier: 0,
 
             // Warp Turbulence / Stasis
-            numPlanetsInWarpStorms: 0
+            numPlanetsInWarpStorms: 0,
+            starfarersNumSystemFeaturesInhabited: 0
         };
     }
 
@@ -103,7 +104,47 @@ class SystemNode extends NodeBase {
         // Sequential naming for planets & gas giants
         this.assignSequentialBodyNames();
 
+    // After naming, apply warp storms and starfarer home world if needed
+    this.applyWarpStormsToPlanets();
+    this.applyStarfarersHomeWorld();
+
         this.updateDescription();
+    }
+
+    applyWarpStormsToPlanets() {
+        const count = this.systemCreationRules.numPlanetsInWarpStorms || this.numPlanetsInWarpStorms;
+        if (!count) return;
+        const planets = [];
+        this.getAllDescendantNodesOfType && this.getAllDescendantNodesOfType('Planet').forEach(p=> planets.push(p));
+        if (planets.length===0) return;
+        for (let i=0;i<count;i++) {
+            const idx = RandBetween(0, planets.length-1);
+            planets[idx].warpStorm = true;
+        }
+    }
+
+    applyStarfarersHomeWorld() {
+        if (!this.systemCreationRules.starfarersNumSystemFeaturesInhabited) return;
+        // TODO Starfarers Parity:
+        // 1. Implement full multi-settlement distribution across Tier 1 (planets, lesser moons) and Tier 2 (asteroids, stations, gas giants, graveyards)
+        // 2. Apply correct per-node development level probabilities (Voidfarers vs Colony vs Orbital Habitation) based on habitability checks
+        // 3. Clear primitive xenos node when assigning inhabited status as in C#
+        // 4. Respect minimumNumPlanetsAfterModifiers by inserting additional planets if needed before distribution
+        // 5. Add support functions on NodeBase for SetInhabitantDevelopmentLevelForStarfarers parity
+        // Current simplified implementation: pick/insert single home world only.
+        // Mirror C#: pick random inhabitable planet; if none, insert one in primary biosphere. Here we just flag first inhabitable.
+        const planets = [];
+        this.getAllDescendantNodesOfType && this.getAllDescendantNodesOfType('Planet').forEach(p=> planets.push(p));
+        let inhabitable = planets.filter(p=> p.isPlanetInhabitable && p.isPlanetInhabitable());
+        if (inhabitable.length===0 && this.primaryBiosphereZone) {
+            // create an emergency habitable planet
+            const planet = createNode(NodeTypes.Planet); planet.generate?.(); planet.habitability = 'LimitedEcosystem';
+            this.primaryBiosphereZone.addChild(planet);
+            inhabitable = [planet];
+        }
+        if (inhabitable.length===0) return;
+        const home = inhabitable[RandBetween(0, inhabitable.length-1)];
+        home.isInhabitantHomeWorld = true;
     }
 
     generateSystemName() {
@@ -480,17 +521,37 @@ class SystemNode extends NodeBase {
     }
 
     assignSequentialBodyNames() {
-        let counter = 1;
+        // First pass: assign primary sequence numbers to main planets/gas giants.
+        let primaryIndex = 1;
+        const primaries = [];
         const processZone = (zoneNode) => {
             for (const child of zoneNode.children) {
                 if (child.type === NodeTypes.Planet || child.type === NodeTypes.GasGiant) {
-                    child.nodeName = this.nodeName + ' ' + counter;
-                    // TODO: replicate GenerateNamesForOrbitalFeatures if needed
-                    counter++;
+                    child._primarySequenceNumber = primaryIndex; // internal temp marker
+                    child.nodeName = `${this.nodeName} ${primaryIndex}`;
+                    primaries.push(child);
+                    primaryIndex++;
                 }
             }
         };
         processZone(this.innerCauldronZone); processZone(this.primaryBiosphereZone); processZone(this.outerReachesZone);
+
+        // Second pass: name orbital feature child planets/moons that are themselves Planet nodes
+        const nameSatellitePlanets = (parentPlanet) => {
+            if (!parentPlanet.orbitalFeaturesNode) return;
+            let subIndex = 1;
+            for (const feature of parentPlanet.orbitalFeaturesNode.children) {
+                if (feature.type === NodeTypes.Planet) {
+                    feature.nodeName = `${this.nodeName} ${parentPlanet._primarySequenceNumber}-${subIndex}`;
+                    subIndex++;
+                }
+                // If gas giants can have nested orbital feature planets, recurse
+                if (feature.orbitalFeaturesNode) nameSatellitePlanets(feature);
+            }
+        };
+        for (const p of primaries) nameSatellitePlanets(p);
+        // Cleanup temp markers
+        for (const p of primaries) delete p._primarySequenceNumber;
     }
 
     updateDescription() {
