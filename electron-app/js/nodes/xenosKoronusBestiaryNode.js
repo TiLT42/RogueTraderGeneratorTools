@@ -46,18 +46,80 @@ class XenosKoronusBestiary extends NodeBase {
     }
 
     updateDescription(){
+        // Helper: map human-readable book name from data layer to RuleBook enum used by createPageReference
+        const mapBookName = (name) => {
+            switch (name) {
+                case 'Rogue Trader Core Rulebook': return RuleBook.CoreRuleBook;
+                case 'Stars of Inequity': return RuleBook.StarsOfInequity;
+                case 'Battlefleet Koronus': return RuleBook.BattlefleetKoronus;
+                case 'The Koronus Bestiary': return RuleBook.TheKoronusBestiary;
+                case 'Into the Storm': return RuleBook.IntoTheStorm;
+                case 'The Soul Reaver': return RuleBook.TheSoulReaver;
+                default: return RuleBook.StarsOfInequity;
+            }
+        };
+        const formatRefItem = (docRef, overrideLabel = '') => {
+            if (!docRef) return '';
+            const label = overrideLabel || docRef.content || docRef.ruleName || '';
+            // For Xenos references we don't include the label again in the parentheses to avoid duplication
+            return `<li>${label} <span class=\"page-reference\">${createPageReference(docRef.pageNumber, '', mapBookName(docRef.book))}</span></li>`;
+        };
+
         let desc = `<h3>${this.nodeName}</h3>`;
-        desc += `<p><strong>Base Profile:</strong> ${this.data._getBaseProfileText()}</p>`;
+
+    // Base Profile (no inline reference; will include in References section)
+    const baseProfileRef = this.data.referenceData && this.data.referenceData.baseProfile ? this.data.referenceData.baseProfile : null;
+    desc += `<p><strong>Base Profile:</strong> ${this.data._getBaseProfileText()}</p>`;
+
+        // Flora-specific display or World Type
         if (['DiffuseFlora','SmallFlora','LargeFlora','MassiveFlora'].includes(this.baseProfile)) {
             if (this.floraType !== 'NotFlora') {
                 const floraMap = {TrapPassive:'Trap, Passive', TrapActive:'Trap, Active', Combatant:'Combatant'};
+                const floraRef = this.data.referenceData && this.data.referenceData.floraType ? this.data.referenceData.floraType : null;
                 desc += `<p><strong>Flora Type:</strong> ${floraMap[this.floraType]||this.floraType}</p>`;
             }
         } else {
             desc += `<p><strong>World Type:</strong> ${this.worldType}</p>`;
         }
+
         desc += this._generateStatBlock();
+
+        // Consolidated References section (visible only when toggle is ON)
+        if (window.APP_STATE.settings.showPageNumbers) {
+            const items = [];
+            if (baseProfileRef) items.push(formatRefItem(baseProfileRef));
+            if (this.data.referenceData && this.data.referenceData.floraType) items.push(formatRefItem(this.data.referenceData.floraType));
+            if (this.data.referenceData && Array.isArray(this.data.referenceData.traits)) {
+                for (const tr of this.data.referenceData.traits) items.push(formatRefItem(tr));
+            }
+            if (items.length > 0) {
+                desc += `<h3>References</h3><ul>${items.join('')}</ul>`;
+            }
+        }
+
         this.description = desc;
+    }
+
+    // Override to suppress default footer pageReference and to refresh description based on current toggle
+    getNodeContent(includeChildren = false) {
+        // Always regenerate to reflect current Show page references state
+        this.updateDescription();
+
+        let content = `<h2>${this.nodeName}</h2>`;
+        if (this.description) {
+            content += `<div class="description-section">${this.description}</div>`;
+        }
+        if (this.customDescription) {
+            content += `<div class="description-section"><h3>Notes</h3>${this.customDescription}</div>`;
+        }
+        // Intentionally omit default pageReference footer for this node type
+
+        if (includeChildren) {
+            for (const child of this.children) {
+                content += '\n\n' + child.getDocumentContent(true);
+            }
+        }
+        return content;
     }
 
     getName(){

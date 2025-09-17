@@ -105,6 +105,25 @@ class XenosNode extends NodeBase {
     }
 
     updateDescription() {
+        // Helper: map human-readable book name from data layer to RuleBook enum used by createPageReference
+        const mapBookName = (name) => {
+            switch (name) {
+                case 'Rogue Trader Core Rulebook': return RuleBook.CoreRuleBook;
+                case 'Stars of Inequity': return RuleBook.StarsOfInequity;
+                case 'Battlefleet Koronus': return RuleBook.BattlefleetKoronus;
+                case 'The Koronus Bestiary': return RuleBook.TheKoronusBestiary;
+                case 'Into the Storm': return RuleBook.IntoTheStorm;
+                case 'The Soul Reaver': return RuleBook.TheSoulReaver;
+                default: return RuleBook.StarsOfInequity;
+            }
+        };
+        const formatRefItem = (docRef, overrideLabel = '') => {
+            if (!docRef) return '';
+            const label = overrideLabel || docRef.content || docRef.ruleName || '';
+            // For Xenos references we don't include the label again in the parentheses to avoid duplication
+            return `<li>${label} <span class=\"page-reference\">${createPageReference(docRef.pageNumber, '', mapBookName(docRef.book))}</span></li>`;
+        };
+
         let desc = `<h3>${this.nodeName}</h3>`;
         
         // Add specific details based on xenos type
@@ -112,9 +131,16 @@ class XenosNode extends NodeBase {
             desc += `<p><strong>Bestial Archetype:</strong> ${this.xenos.bestialArchetype}</p>`;
             desc += `<p><strong>Bestial Nature:</strong> ${this.xenos.bestialNature}</p>`;
         } else if (this.xenos instanceof XenosKoronusBestiary) {
-            desc += `<p><strong>Base Profile:</strong> ${this.xenos.baseProfile}</p>`;
+            const dataRef = this.xenos.data && this.xenos.data.referenceData ? this.xenos.data.referenceData : null;
+            // Base profile text if available via data (no inline refs; consolidated below)
+            const baseProfileText = (this.xenos.data && typeof this.xenos.data._getBaseProfileText === 'function') ? this.xenos.data._getBaseProfileText() : this.xenos.baseProfile;
+            const baseProfileRef = dataRef ? dataRef.baseProfile : null;
+            desc += `<p><strong>Base Profile:</strong> ${baseProfileText}</p>`;
+
             if (this.xenos.floraType !== 'NotFlora') {
-                desc += `<p><strong>Flora Type:</strong> ${this.xenos.floraType}</p>`;
+                const floraMap = {TrapPassive:'Trap, Passive', TrapActive:'Trap, Active', Combatant:'Combatant'};
+                const floraRef = dataRef ? dataRef.floraType : null;
+                desc += `<p><strong>Flora Type:</strong> ${floraMap[this.xenos.floraType]||this.xenos.floraType}</p>`;
             }
             desc += `<p><strong>World Type:</strong> ${this.xenos.worldType}</p>`;
         } else if (this.xenos instanceof XenosPrimitive) {
@@ -129,7 +155,45 @@ class XenosNode extends NodeBase {
         // Add stat block
         desc += this.generateStatBlock();
         
+        // Consolidated References section (visible only when toggle is ON) for Koronus Bestiary
+        if (this.xenos instanceof XenosKoronusBestiary) {
+            const dataRef = this.xenos.data && this.xenos.data.referenceData ? this.xenos.data.referenceData : null;
+            if (window.APP_STATE.settings.showPageNumbers && dataRef) {
+                const items = [];
+                if (dataRef.baseProfile) items.push(formatRefItem(dataRef.baseProfile));
+                if (dataRef.floraType) items.push(formatRefItem(dataRef.floraType));
+                if (Array.isArray(dataRef.traits)) {
+                    for (const tr of dataRef.traits) items.push(formatRefItem(tr));
+                }
+                if (items.length > 0) {
+                    desc += `<h3>References</h3><ul>${items.join('')}</ul>`;
+                }
+            }
+        }
+
         this.description = desc;
+    }
+
+    // Override to suppress default footer pageReference and to refresh description based on current toggle
+    getNodeContent(includeChildren = false) {
+        // Always regenerate to reflect current Show page references state
+        this.updateDescription();
+
+        let content = `<h2>${this.nodeName}</h2>`;
+        if (this.description) {
+            content += `<div class="description-section">${this.description}</div>`;
+        }
+        if (this.customDescription) {
+            content += `<div class="description-section"><h3>Notes</h3>${this.customDescription}</div>`;
+        }
+        // Intentionally omit default pageReference footer for this node type
+
+        if (includeChildren) {
+            for (const child of this.children) {
+                content += '\n\n' + child.getDocumentContent(true);
+            }
+        }
+        return content;
     }
 
     generateStatBlock() {
