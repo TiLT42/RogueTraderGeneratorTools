@@ -1,0 +1,7 @@
+
+> rogue-trader-generator-tools@2.0.0 start
+> electron . --no-sandbox
+
+[7426:0917/055752.361693:ERROR:ui/ozone/platform/x11/ozone_platform_x11.cc:249] Missing X server or $DISPLAY
+[7426:0917/055752.361755:ERROR:ui/aura/env.cc:257] The platform failed to initialize.  Exiting.
+/home/runner/work/RogueTraderGeneratorTools/RogueTraderGeneratorTools/electron-app/node_modules/electron/dist/electron exited with signal SIGSEGV
