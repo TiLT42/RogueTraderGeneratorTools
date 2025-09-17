@@ -30,7 +30,7 @@ class PlanetNode extends NodeBase {
         // Terrain
         this.numContinents = 0;
         this.numIslands = 0;
-        this.environment = null;
+        this.environment = null; // Will hold EnvironmentData environment object
         
         // Zone and system properties
         this.effectiveSystemZone = 'PrimaryBiosphere';
@@ -53,7 +53,7 @@ class PlanetNode extends NodeBase {
         
         // Resources
         this.mineralResources = [];
-        this.organicCompounds = [];
+        this.organicCompounds = []; // Will hold OrganicCompound objects {type, abundance}
         this.archeotechCaches = [];
         this.xenosRuins = [];
         
@@ -62,6 +62,8 @@ class PlanetNode extends NodeBase {
         this.inhabitantDevelopment = '';
         this.techLevel = '';
         this.population = '';
+        
+        this._environmentReferences = []; // cached DocReference[] from environment + landmarks
     }
 
     generate() {
@@ -77,7 +79,30 @@ class PlanetNode extends NodeBase {
         this.generateClimate();
         this.generateHabitability();
         this.generateTerrain();
+        // After basic terrain counts, generate environment territories if habitable
+        if (this.habitability !== 'Inhospitable') {
+            // Number of territories: simple heuristic based on continents (fallback 1)
+            const territories = Math.max(1, this.numContinents || 1);
+            if (window.EnvironmentData && typeof window.EnvironmentData.generateEnvironment === 'function') {
+                this.environment = window.EnvironmentData.generateEnvironment(territories);
+            }
+        } else {
+            this.environment = null;
+        }
         this.generateResources();
+        // Landmarks after resources since planet size known
+        if (this.environment && window.EnvironmentData) {
+            try {
+                window.EnvironmentData.generateLandmarksForEnvironment(this.environment, {
+                    climateType: this.climateType,
+                    atmosphereType: this.atmosphereType,
+                    effectivePlanetSize: this.body, // Body string maps loosely; Large/Vast logic only used
+                    numOrbitalFeatures: this.orbitalFeaturesNode ? this.orbitalFeaturesNode.children.length : 0
+                });
+                window.EnvironmentData.buildLandmarkReferences(this.environment);
+                this._environmentReferences = this.environment.references.slice();
+            } catch (e) { /* swallow to avoid hard crash; could log */ }
+        }
         this.generateInhabitants();
         this.generateOrbitalFeatures();
         
@@ -302,7 +327,7 @@ class PlanetNode extends NodeBase {
             const numOrganics = RollD3();
             for (let i = 0; i < numOrganics; i++) {
                 const organic = this.generateOrganicCompound();
-                if (organic && !this.organicCompounds.includes(organic)) {
+                if (organic && !this.organicCompounds.find(o=>o.type===organic.type)) {
                     this.organicCompounds.push(organic);
                 }
             }
@@ -336,18 +361,20 @@ class PlanetNode extends NodeBase {
 
     generateOrganicCompound() {
         const roll = RollD100();
-        
-        if (roll <= 25) {
-            return 'Curative Compounds';
-        } else if (roll <= 45) {
-            return 'Juvenat Compounds';
-        } else if (roll <= 65) {
-            return 'Toxins';
-        } else if (roll <= 80) {
-            return 'Vivid Accessories';
-        } else {
+        const data = window.OrganicCompoundData;
+        if (!data) { // fallback to legacy strings
+            if (roll <= 25) return 'Curative Compounds';
+            if (roll <= 45) return 'Juvenat Compounds';
+            if (roll <= 65) return 'Toxins';
+            if (roll <= 80) return 'Vivid Accessories';
             return 'Exotic Compounds';
         }
+        const { createOrganicCompound } = data;
+        if (roll <= 25) return createOrganicCompound('Curative Compounds', RollD5());
+        if (roll <= 45) return createOrganicCompound('Juvenat Compounds', RollD5());
+        if (roll <= 65) return createOrganicCompound('Toxins', RollD5());
+        if (roll <= 80) return createOrganicCompound('Vivid Accessories', RollD5());
+        return createOrganicCompound('Exotic Compounds', RollD5());
     }
 
     generateArcheotechCache() {
@@ -536,6 +563,35 @@ class PlanetNode extends NodeBase {
             if (this.numIslands > 0) {
                 desc += `<p><strong>Islands:</strong> ${this.numIslands}</p>`;
             }
+            if (this.environment) {
+                desc += `<p><strong>Territories:</strong></p><ul>`;
+                this.environment.territories.forEach(t => {
+                    const label = (function(t){
+                        let base = t.baseTerrain;
+                        const traits = window.EnvironmentData.getTerritoryTraitList(t);
+                        if (traits.length>0) base += ' ('+traits.join(', ')+')';
+                        return base;
+                    })(t);
+                    if (window.APP_STATE.settings.showPageNumbers) {
+                        // Find associated reference (first matching label start)
+                        const ref = this._environmentReferences.find(r => r.content.startsWith(label.split(' (')[0]));
+                        if (ref) {
+                            const pr = createPageReference(ref.pageNumber, '', Object.keys(RuleBook).find(k=>window.CommonData.RuleBooks[k]===ref.book)||RuleBook.StarsOfInequity);
+                            desc += `<li>${label} <span class="page-reference">${pr}</span></li>`;
+                        } else desc += `<li>${label}</li>`;
+                    } else desc += `<li>${label}</li>`;
+                });
+                desc += `</ul>`;
+                // Landmarks aggregated per territory
+                const landmarkBlocks = this.environment.territories.map(t => {
+                    const lm = window.EnvironmentData.buildLandmarkList(t);
+                    if (lm.length === 0) return null;
+                    return lm.map(x=>`<li>${x}</li>`).join('');
+                }).filter(Boolean);
+                if (landmarkBlocks.length>0) {
+                    desc += `<p><strong>Landmarks:</strong></p><ul>` + landmarkBlocks.join('') + `</ul>`;
+                }
+            }
         }
         
         if (this.mineralResources.length > 0) {
@@ -549,7 +605,11 @@ class PlanetNode extends NodeBase {
         if (this.organicCompounds.length > 0) {
             desc += `<h3>Organic Compounds</h3><ul>`;
             for (const compound of this.organicCompounds) {
-                desc += `<li>${compound}</li>`;
+                if (typeof compound === 'string') {
+                    desc += `<li>${compound}</li>`; // legacy saved format
+                } else {
+                    desc += `<li>${compound.type} (Abundance ${compound.abundance})</li>`;
+                }
             }
             desc += `</ul>`;
         }
@@ -598,6 +658,7 @@ class PlanetNode extends NodeBase {
         json.organicCompounds = this.organicCompounds;
         json.archeotechCaches = this.archeotechCaches;
         json.xenosRuins = this.xenosRuins;
+        json.environment = this.environment; // persist environment structure
         return json;
     }
 
@@ -661,6 +722,13 @@ class PlanetNode extends NodeBase {
                     node.primitiveXenosNode = restoredChild;
                 }
             }
+        }
+        
+        if (data.environment) {
+            // Rebuild references if needed
+            node._environmentReferences = [];
+            window.EnvironmentData.buildLandmarkReferences(node.environment);
+            node._environmentReferences = node.environment.references.slice();
         }
         
         return node;
