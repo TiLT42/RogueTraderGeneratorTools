@@ -2,7 +2,7 @@
 // Depends on xenosBase.js having populated window.XenosBaseData
 
 (function(){
-    const { XenosBase, XenosSizes, Weapon } = window.XenosBaseData;
+    const { XenosBase, XenosSizes, Weapon, RuleBooks, DocReference } = window.XenosBaseData;
 
     const BaseProfile = Object.freeze({
         DiffuseFlora: 'DiffuseFlora',
@@ -31,6 +31,25 @@
         OceanWorld: 'OceanWorld',
         TemperateWorld: 'TemperateWorld',
         VolcanicWorld: 'VolcanicWorld'
+    });
+
+    // Reference maps (page numbers from original C# BaseProfileText / FloraTypeText)
+    const BaseProfileReferences = Object.freeze({
+        DiffuseFlora: DocReference('Diffuse Flora', 127, '', RuleBooks.TheKoronusBestiary),
+        SmallFlora: DocReference('Small Flora', 128, '', RuleBooks.TheKoronusBestiary),
+        LargeFlora: DocReference('Large Flora', 128, '', RuleBooks.TheKoronusBestiary),
+        MassiveFlora: DocReference('Massive Flora', 128, '', RuleBooks.TheKoronusBestiary),
+        AvianBeast: DocReference('Avian Beast', 132, '', RuleBooks.TheKoronusBestiary),
+        HerdBeast: DocReference('Herd Beast', 132, '', RuleBooks.TheKoronusBestiary),
+        Predator: DocReference('Predator', 132, '', RuleBooks.TheKoronusBestiary),
+        Scavenger: DocReference('Scavenger', 132, '', RuleBooks.TheKoronusBestiary),
+        VerminousSwarm: DocReference('Verminous Swarm', 132, '', RuleBooks.TheKoronusBestiary)
+    });
+
+    const FloraTypeReferences = Object.freeze({
+        TrapPassive: DocReference('Trap, Passive', 127, '', RuleBooks.TheKoronusBestiary),
+        TrapActive: DocReference('Trap, Active', 127, '', RuleBooks.TheKoronusBestiary),
+        Combatant: DocReference('Combatant', 127, '', RuleBooks.TheKoronusBestiary)
     });
 
     // Normalize various climate/world labels used elsewhere in the app to supported Koronus Bestiary world types
@@ -123,6 +142,12 @@
             this.traitsList = this.traits.getTraitList();
             this.weaponsList = this.weapons.map(w=>this._formatWeapon(w));
             this.armour = this.getArmourText(false);
+
+            // Build reference data (non-breaking addition)
+            const baseProfileRef = this.baseProfile ? BaseProfileReferences[this.baseProfile] : null;
+            const floraTypeRef = (this.floraType && this.floraType !== FloraType.NotFlora) ? FloraTypeReferences[this.floraType] : null;
+            const traitRefs = this.buildTraitReferences();
+            this.referenceData = { baseProfile: baseProfileRef, floraType: floraTypeRef, traits: traitRefs };
         }
 
         getName(){

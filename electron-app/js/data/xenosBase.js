@@ -13,11 +13,98 @@ const XenosSizes = Object.freeze({
     Massive: 'Massive'
 });
 
+// Added: RuleBooks enum (mirrors C# RuleBook) for reference metadata usage
+const RuleBooks = Object.freeze({
+    CoreRuleBook: 'Rogue Trader Core Rulebook',
+    StarsOfInequity: 'Stars of Inequity',
+    BattlefleetKoronus: 'Battlefleet Koronus',
+    TheKoronusBestiary: 'The Koronus Bestiary',
+    IntoTheStorm: 'Into the Storm',
+    TheSoulReaver: 'The Soul Reaver'
+});
+
+// Simple factory to build a reference object (DocContent analogue without WPF types)
+function DocReference(content, pageNumber = 0, ruleName = '', book = RuleBooks.StarsOfInequity) {
+    return { content, pageNumber, ruleName, book };
+}
+
 const MovementScales = Object.freeze({
     HalfMove: 'HalfMove',
     FullMove: 'FullMove',
     Charge: 'Charge',
     Run: 'Run'
+});
+
+// Map of trait -> { page, book, ruleName(optional) }
+// Pages and sources taken from original C# XenosBase.cs GetTraitListDocContentItems()
+// Only traits used in Koronus Bestiary / Core relevant for now; can be extended later.
+const TraitReferenceMap = Object.freeze({
+    amorphous: { page: 139, book: RuleBooks.TheKoronusBestiary },
+    amphibious: { page: 140, book: RuleBooks.TheKoronusBestiary },
+    apex: { page: 139, book: RuleBooks.TheKoronusBestiary },
+    aquatic: { page: 140, book: RuleBooks.TheKoronusBestiary },
+    arboreal: { page: 140, book: RuleBooks.TheKoronusBestiary },
+    armoured: { page: 140, book: RuleBooks.TheKoronusBestiary },
+    bestial: { page: 364, book: RuleBooks.CoreRuleBook },
+    blind: { page: 364, book: RuleBooks.CoreRuleBook },
+    brutalCharge: { page: 364, book: RuleBooks.CoreRuleBook },
+    burrower: { page: 364, book: RuleBooks.CoreRuleBook },
+    crawler: { page: 141, book: RuleBooks.TheKoronusBestiary },
+    darkling: { page: 141, book: RuleBooks.TheKoronusBestiary },
+    deadly: { page: 141, book: RuleBooks.TheKoronusBestiary },
+    deathdweller: { page: 141, book: RuleBooks.TheKoronusBestiary },
+    deterrent: { page: 141, book: RuleBooks.TheKoronusBestiary },
+    diffuse: { page: 127, book: RuleBooks.TheKoronusBestiary },
+    disturbing: { page: 141, book: RuleBooks.TheKoronusBestiary },
+    fadeKind: { page: 141, book: RuleBooks.TheKoronusBestiary },
+    fear: { page: 365, book: RuleBooks.CoreRuleBook },
+    flexible: { page: 141, book: RuleBooks.TheKoronusBestiary },
+    flyerAgilityModified: { page: 365, book: RuleBooks.CoreRuleBook, ruleName: 'Flyer (AB / AB xN)' },
+    flyer: { page: 365, book: RuleBooks.CoreRuleBook },
+    foulAuraSoporific: { page: 141, book: RuleBooks.TheKoronusBestiary, ruleName: 'Foul Aura (Soporific)' },
+    foulAuraToxic: { page: 141, book: RuleBooks.TheKoronusBestiary, ruleName: 'Foul Aura (Toxic)' },
+    frictionless: { page: 141, book: RuleBooks.TheKoronusBestiary },
+    fromBeyond: { page: 365, book: RuleBooks.CoreRuleBook },
+    gestalt: { page: 142, book: RuleBooks.TheKoronusBestiary },
+    improvedNaturalWeapons: { page: 366, book: RuleBooks.CoreRuleBook, ruleName: 'Improved Natural Weapons' },
+    incorporeal: { page: 364, book: RuleBooks.CoreRuleBook },
+    hoverer: { page: 364, book: RuleBooks.CoreRuleBook },
+    lethalDefences: { page: 142, book: RuleBooks.TheKoronusBestiary },
+    mighty: { page: 142, book: RuleBooks.TheKoronusBestiary },
+    multipleArms: { page: 366, book: RuleBooks.CoreRuleBook },
+    naturalArmour: { page: 366, book: RuleBooks.CoreRuleBook, ruleName: 'Natural Armour' },
+    naturalWeapons: { page: 366, book: RuleBooks.CoreRuleBook, ruleName: 'Natural Weapons' },
+    overwhelming: { page: 132, book: RuleBooks.TheKoronusBestiary },
+    paralytic: { page: 142, book: RuleBooks.TheKoronusBestiary },
+    phase: { page: 366, book: RuleBooks.CoreRuleBook },
+    projectileAttack: { page: 142, book: RuleBooks.TheKoronusBestiary },
+    quadruped: { page: 367, book: RuleBooks.CoreRuleBook },
+    regeneration: { page: 367, book: RuleBooks.CoreRuleBook },
+    resilient: { page: 142, book: RuleBooks.TheKoronusBestiary },
+    silicate: { page: 142, book: RuleBooks.TheKoronusBestiary },
+    size: { page: 367, book: RuleBooks.CoreRuleBook, ruleName: 'Size (Miniscule/Puny/etc)' },
+    sizeSwarm: { page: 134, book: RuleBooks.TheKoronusBestiary, ruleName: 'Size (Swarm)' },
+    sonarSense: { page: 367, book: RuleBooks.CoreRuleBook, ruleName: 'Sonar Sense' },
+    stealthy: { page: 142, book: RuleBooks.TheKoronusBestiary },
+    sticky: { page: 142, book: RuleBooks.TheKoronusBestiary },
+    strangePhysiology: { page: 368, book: RuleBooks.CoreRuleBook },
+    sturdy: { page: 368, book: RuleBooks.CoreRuleBook },
+    sustainedLife: { page: 143, book: RuleBooks.TheKoronusBestiary },
+    swarmCreature: { page: 134, book: RuleBooks.TheKoronusBestiary, ruleName: 'Swarm Creature' },
+    swift: { page: 143, book: RuleBooks.TheKoronusBestiary },
+    thermalAdaptionCold: { page: 143, book: RuleBooks.TheKoronusBestiary, ruleName: 'Thermal Adaption (Cold)' },
+    thermalAdaptionHeat: { page: 143, book: RuleBooks.TheKoronusBestiary, ruleName: 'Thermal Adaption (Heat)' },
+    toxic: { page: 368, book: RuleBooks.CoreRuleBook },
+    tunneller: { page: 143, book: RuleBooks.TheKoronusBestiary },
+    unkillable: { page: 143, book: RuleBooks.TheKoronusBestiary },
+    unnaturalSenses: { page: 368, book: RuleBooks.CoreRuleBook, ruleName: 'Unnatural Senses' },
+    unnaturalSpeed: { page: 368, book: RuleBooks.CoreRuleBook, ruleName: 'Unnatural Speed' },
+    unnaturalStrength: { page: 368, book: RuleBooks.CoreRuleBook, ruleName: 'Unnatural Strength' },
+    unnaturalToughness: { page: 368, book: RuleBooks.CoreRuleBook, ruleName: 'Unnatural Toughness' },
+    uprootedMovement: { page: 143, book: RuleBooks.TheKoronusBestiary, ruleName: 'Uprooted Movement' },
+    valuable: { page: 144, book: RuleBooks.TheKoronusBestiary },
+    venomous: { page: 144, book: RuleBooks.TheKoronusBestiary },
+    warped: { page: 144, book: RuleBooks.TheKoronusBestiary }
 });
 
 // Helper formatting
@@ -295,11 +382,36 @@ class XenosBase {
         this.weapons = [];
         this.wounds = 0;
         this.uniqueArmourName = '';
+        // Newly added: store reference data after generation (traits / base profile etc.)
+        this.referenceData = null;
     }
 
     get baseMovement() { return this._baseMovementLookupValue; }
     set baseMovement(val) {
         if (val < 0) val = 0; if (val > 10) val = 10; this._baseMovementLookupValue = val;
+    }
+
+    // Build a list of DocReference entries for traits currently active
+    buildTraitReferences() {
+        const refs = [];
+        const t = this.traits;
+        Object.keys(TraitReferenceMap).forEach(key => {
+            if (t.hasOwnProperty(key)) {
+                const value = t[key];
+                if (value && value > 0) {
+                    const meta = TraitReferenceMap[key];
+                    // Convert internal camelCase key to human label by reusing existing display list logic where feasible
+                    let label = meta.ruleName || key;
+                    // Attempt nicer capitalization if ruleName not supplied
+                    if (!meta.ruleName) {
+                        label = key.replace(/([A-Z])/g, ' $1')
+                                   .replace(/^./, c=>c.toUpperCase());
+                    }
+                    refs.push(DocReference(label, meta.page, meta.ruleName || '', meta.book));
+                }
+            }
+        });
+        return refs;
     }
 
     _getMovementValue(scale) {
@@ -434,5 +546,7 @@ window.XenosBaseData = {
     Talents,
     Weapon,
     XenosSizes,
-    MovementScales
+    MovementScales,
+    RuleBooks,
+    DocReference
 };
