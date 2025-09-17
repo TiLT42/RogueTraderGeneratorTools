@@ -136,20 +136,17 @@ class XenosNode extends NodeBase {
         let desc = ``;
         
         // Add specific details based on xenos type
+        let baseProfileText = '';
         if (this.xenosType === 'StarsOfInequity') {
             desc += `<p><strong>Bestial Archetype:</strong> ${this.xenosData.bestialArchetype}</p>`;
             desc += `<p><strong>Bestial Nature:</strong> ${this.xenosData.bestialNature}</p>`;
         } else if (this.xenosType === 'KoronusBestiary') {
-            const dataRef = this.xenosData && this.xenosData.referenceData ? this.xenosData.referenceData : null;
             // Base profile text if available via data (no inline refs; consolidated below)
-            const baseProfileText = (this.xenosData && typeof this.xenosData._getBaseProfileText === 'function') ? this.xenosData._getBaseProfileText() : this.baseProfile;
-            desc += `<p><strong>Base Profile:</strong> ${baseProfileText}</p>`;
-
+            baseProfileText = (this.xenosData && typeof this.xenosData._getBaseProfileText === 'function') ? this.xenosData._getBaseProfileText() : this.baseProfile;
             if (this.floraType !== 'NotFlora') {
                 const floraMap = {TrapPassive:'Trap, Passive', TrapActive:'Trap, Active', Combatant:'Combatant'};
                 desc += `<p><strong>Flora Type:</strong> ${floraMap[this.floraType]||this.floraType}</p>`;
             }
-            desc += `<p><strong>World Type:</strong> ${this.worldType}</p>`;
         } else if (this.xenosType === 'Primitive') {
             if (this.unusualCommunication !== 'No') {
                 desc += `<p><strong>Unusual Communication:</strong> ${this.unusualCommunication}</p>`;
@@ -161,6 +158,25 @@ class XenosNode extends NodeBase {
         
         // Add stat block
         desc += this.generateStatBlock();
+
+        // After stat block: Movement, Wounds, Armour, Total TB
+        const totalTB = this._computeTotalTB();
+        desc += `<p><strong>Movement:</strong> ${this.movement}</p>`;
+        desc += `<p><strong>Wounds:</strong> ${this.wounds}</p>`;
+        desc += `<p><strong>Armour:</strong> ${this.armour}</p>`;
+        desc += `<p><strong>Total TB:</strong> ${totalTB}</p>`;
+
+        // Slightly bigger space before non-core fields
+        desc += `<div style="height: 8px;"></div>`;
+
+        // Base Profile (Koronus Bestiary only), then Skills, Talents, Traits, Weapons
+        if (this.xenosType === 'KoronusBestiary' && baseProfileText) {
+            desc += `<p><strong>Base Profile:</strong> ${baseProfileText}</p>`;
+        }
+        desc += `<p><strong>Skills:</strong> ${this.skills.length ? this.skills.join(', ') : 'None'}</p>`;
+        desc += `<p><strong>Talents:</strong> ${this.talents.length ? this.talents.join(', ') : 'None'}</p>`;
+        desc += `<p><strong>Traits:</strong> ${this.traits.length ? this.traits.join(', ') : 'None'}</p>`;
+        desc += `<p><strong>Weapons:</strong> ${this.weapons.length ? this.weapons.join(', ') : 'None'}</p>`;
         
         // Consolidated References for each data-backed xenos type
         const showRefs = window.APP_STATE.settings.showPageNumbers;
@@ -244,19 +260,26 @@ class XenosNode extends NodeBase {
         statBlock += `</tr>`;
         statBlock += `</table>`;
         statBlock += `</div>`;
-        
-        statBlock += `<p><strong>Wounds:</strong> ${this.wounds}</p>`;
-        statBlock += `<p><strong>Movement:</strong> ${this.movement}</p>`;
-    statBlock += `<p><strong>Skills:</strong> ${this.skills.length ? this.skills.join(', ') : 'None'}</p>`;
-        
-        statBlock += `<p><strong>Talents:</strong> ${this.talents.length ? this.talents.join(', ') : 'None'}</p>`;
-        
-        statBlock += `<p><strong>Traits:</strong> ${this.traits.length ? this.traits.join(', ') : 'None'}</p>`;
-        
-    statBlock += `<p><strong>Weapons:</strong> ${this.weapons.length ? this.weapons.join(', ') : 'None'}</p>`;
-        statBlock += `<p><strong>Armour:</strong> ${this.armour}</p>`;
-        
         return statBlock;
+    }
+
+    _computeTotalTB() {
+        // Prefer data-layer computation when available (Koronus Bestiary uses XenosBase)
+        try {
+            if (this.xenosType === 'KoronusBestiary' && this.xenosData && typeof this.xenosData.getTotalToughnessBonus === 'function') {
+                return this.xenosData.getTotalToughnessBonus();
+            }
+        } catch (e) { /* fallback below */ }
+        // Fallback: derive from base TB and look for an Unnatural Toughness trait indicator
+        const baseTB = Math.floor((this.stats && this.stats.toughness ? this.stats.toughness : 0) / 10);
+        const ut = (this.traits || []).find(t => t.toLowerCase().startsWith('unnatural toughness'));
+        if (!ut) return baseTB;
+        // Parse patterns like 'Unnatural Toughness (x2)' or 'Unnatural Toughness (2)'
+        const m = ut.match(/\((x)?(\d+)\)/i);
+        if (!m) return baseTB;
+        const mult = m[1] ? parseInt(m[2],10) : (parseInt(m[2],10) + 1);
+        if (!isFinite(mult) || mult <= 1) return baseTB;
+        return baseTB * mult;
     }
 
     formatStat(value) {
