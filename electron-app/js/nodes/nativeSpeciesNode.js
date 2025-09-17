@@ -3,70 +3,46 @@ class NativeSpeciesNode extends NodeBase {
     constructor(id = null) {
         super(NodeTypes.NativeSpecies, id);
         this.nodeName = 'Native Species';
-        this.speciesType = '';
-        this.intelligence = '';
-        this.characteristics = [];
     }
 
     generate() {
         super.generate();
-        this.generateSpeciesType();
-        this.generateIntelligence();
-        this.generateCharacteristics();
         this.updateDescription();
-    }
-
-    generateSpeciesType() {
-        const types = [
-            'Mammalian',
-            'Reptilian',
-            'Avian',
-            'Aquatic',
-            'Insectoid',
-            'Plant-like',
-            'Crystalline',
-            'Energy Being'
-        ];
-        this.speciesType = ChooseFrom(types);
-    }
-
-    generateIntelligence() {
-        const levels = ['Non-sentient', 'Semi-sentient', 'Sentient', 'Highly Intelligent'];
-        this.intelligence = ChooseFrom(levels);
-    }
-
-    generateCharacteristics() {
-        this.characteristics = [];
-        const possible = [
-            'Aggressive',
-            'Peaceful',
-            'Curious',
-            'Territorial',
-            'Social',
-            'Solitary',
-            'Adaptable',
-            'Specialized'
-        ];
-        
-        const num = RollD3();
-        for (let i = 0; i < num; i++) {
-            const char = ChooseFrom(possible);
-            if (!this.characteristics.includes(char)) {
-                this.characteristics.push(char);
-            }
-        }
     }
 
     updateDescription() {
         let desc = `<h3>Native Species</h3>`;
-        desc += `<p><strong>Type:</strong> ${this.speciesType}</p>`;
-        desc += `<p><strong>Intelligence:</strong> ${this.intelligence}</p>`;
         
-        if (this.characteristics.length > 0) {
-            desc += `<p><strong>Characteristics:</strong> ${this.characteristics.join(', ')}</p>`;
+        if (this.children.length > 0) {
+            desc += `<p>This planet hosts ${this.children.length} native species. Each species is detailed in the subnodes below.</p>`;
+        } else {
+            desc += `<p>This planet has the potential for native species, but none have been generated yet.</p>`;
+            desc += `<p>Use the context menu to add individual native species.</p>`;
         }
         
         this.description = desc;
+    }
+
+    addXenos(worldType = 'TemperateWorld') {
+        const xenosNode = createNode(NodeTypes.Xenos);
+        xenosNode.worldType = worldType;
+        xenosNode.generate(); // Generate first to get species name
+        xenosNode.nodeName = `Native Species (${xenosNode.species})`;
+        this.addChild(xenosNode);
+        this.updateDescription(); // Update description when child is added
+        return xenosNode;
+    }
+
+    // Override addChild to update description when children are added
+    addChild(child) {
+        super.addChild(child);
+        this.updateDescription();
+    }
+
+    // Override removeChild to update description when children are removed
+    removeChild(child) {
+        super.removeChild(child);
+        this.updateDescription();
     }
 
     getContextMenuItems() {
