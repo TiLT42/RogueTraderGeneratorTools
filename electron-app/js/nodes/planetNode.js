@@ -48,13 +48,15 @@ class PlanetNode extends NodeBase {
         this.warpStorm = false;
         this.maidenWorld = false;
         this.zone = 'PrimaryBiosphere';
+    this.warpStorm = false; // if set externally (warp turbulence)
+    this.isInhabitantHomeWorld = false;
         
         // System creation rules reference
         this.systemCreationRules = null;
         
         // Resources
         this.mineralResources = [];
-        this.organicCompounds = []; // Will hold OrganicCompound objects {type, abundance}
+    this.organicCompounds = []; // Will hold OrganicCompound objects {type, abundance}
         this.archeotechCaches = [];
         this.xenosRuins = [];
         
@@ -102,7 +104,7 @@ class PlanetNode extends NodeBase {
         // 10. Landmarks / references (if environment present)
         this.buildEnvironmentReferences();
         // 11. Inhabitants (retain simplified model for now; TODO full parity)
-        this.generateInhabitants();
+        this.generateInhabitants(); // (will be overridden to full parity below)
         // 12. Description
         this.updateDescription();
     }
@@ -410,6 +412,10 @@ class PlanetNode extends NodeBase {
         }
         if (numMinerals < 0) numMinerals = 0;
         for (let i = 0; i < numMinerals; i++) this._addRandomMineral();
+        // Extra minerals from system rules
+        if (this.systemCreationRules && this.systemCreationRules.numExtraMineralResourcesPerPlanet) {
+            for (let i=0;i<this.systemCreationRules.numExtraMineralResourcesPerPlanet;i++) this._addRandomMineral();
+        }
 
         // Organic compounds from territories (environment-driven)
         let numOrganicsFromTerritories = 0;
@@ -430,26 +436,166 @@ class PlanetNode extends NodeBase {
         for (let i=0;i<numAdditional;i++) {
             const r = RollD10();
             if (r <= 2) { // Archeotech
-                if (RollD100() <= 70) this.archeotechCaches.push(this.generateArcheotechCache());
-                else this.archeotechCaches.push(this.generateArcheotechCache()); // simplified same
+                this._addArcheotechCache();
             } else if (r <= 6) {
                 this._addRandomMineral();
             } else if (r <= 8) {
                 if (['Verdant','LimitedEcosystem'].includes(this.habitability)) this._addOrganic(); else i--; // reroll
             } else { // Xenos ruins
-                this.xenosRuins.push(this.generateXenosRuins());
+                this._addXenosRuins();
             }
+        }
+
+        // Chance for extra exotic materials (system rule)
+        if (this.systemCreationRules && this.systemCreationRules.chanceForExtraExoticMaterialsPerPlanet) {
+            if (RollD10() >= 6) this._addSpecificMineral('Exotic Materials');
         }
     }
 
     _addRandomMineral() {
-        const mineral = this.generateMineralResource();
-        if (mineral && !this.mineralResources.includes(mineral)) this.mineralResources.push(mineral);
+        const type = this.generateMineralResource();
+        this._addSpecificMineral(type);
+    }
+    _addSpecificMineral(type) {
+        if (!type) return;
+        let existing = this.mineralResources.find(m=>m.type===type);
+        if (!existing) {
+            const baseAbundance = 5 + RollD10();
+            existing = { type, abundance: baseAbundance };
+            this.mineralResources.push(existing);
+        } else {
+            existing.abundance += RollD5();
+        }
     }
     _addOrganic() {
         const organic = this.generateOrganicCompound();
         if (organic && !this.organicCompounds.find(o=> (typeof o==='string'? o: o.type) === (typeof organic==='string'?organic:organic.type))) this.organicCompounds.push(organic);
     }
+    _addArcheotechCache() {
+        // abundance bonus if system rule flag set
+        let abundance = 5 + RollD10();
+        if (this.systemCreationRules && this.systemCreationRules.ruinedEmpireIncreasedAbundanceArcheotechCaches) abundance += RollD10() + 5;
+        this.archeotechCaches.push({ type: this.generateArcheotechCache(), abundance });
+    }
+    _addXenosRuins() {
+        let abundance = 5 + RollD10();
+        if (this.systemCreationRules && this.systemCreationRules.ruinedEmpireIncreasedAbundanceXenosRuins) abundance += RollD10() + 5;
+        this.xenosRuins.push({ type: this.generateXenosRuins(), abundance });
+    }
+
+    /* ===================== INHABITANT PARITY ===================== */
+    generateInhabitants() { return this.generateInhabitantsFull(); }
+
+    generateInhabitantsFull() {
+        // Skip generation if planet not at least LimitedEcosystem or Verdant (match C# gating) with small chance otherwise
+        let generate = false;
+        if (['LimitedEcosystem','Verdant'].includes(this.habitability)) {
+            generate = RollD10() >= 8; // from C# logic threshold
+        } else {
+            generate = RollD10() >= 10;
+        }
+        if (!generate) { this.inhabitants = 'None'; return; }
+
+        // roll until a species selected (some may retry if not habitable)
+        let species = null;
+        while(!species) {
+            const r = RollD10();
+            switch (r) {
+                case 1: species = 'Eldar'; this._generateEldar(); break;
+                case 2: case 3: case 4: species = 'Human'; this._generateHuman(); break;
+                case 5: if (this._isPlanetInhabitable()) { species='Kroot'; this._generateKroot(); } break;
+                case 6: case 7: if (this._isPlanetInhabitable()) { species='Ork'; this._generateOrk(); } break;
+                case 8: species='Rak\'Gol'; this._generateRakGol(); break;
+                case 9: case 10: species='Other'; this._generateXenosOther(); break;
+            }
+        }
+        this.inhabitants = species;
+        // Home world tagging (Starfarers min planets not yet selecting) left as future enhancement
+    }
+
+    _isPlanetInhabitable() { return this.habitability==='Verdant' || this.habitability==='LimitedEcosystem'; }
+
+    _resourceCandidatesForReduction() {
+        const list = [];
+        this.mineralResources.forEach(m=>{ if (m.abundance>0) list.push(m); });
+        this.organicCompounds.forEach(o=>{ const abund = (typeof o==='string')?0:o.abundance; if (abund>0) list.push(o); });
+        this.archeotechCaches.forEach(a=>{ if (a.abundance>0) list.push(a); });
+        this.xenosRuins.forEach(x=>{ if (x.abundance>0) list.push(x); });
+        return list;
+    }
+    _reduceRandomResource(amount) {
+        // TODO: Add a history log so that users can see the planet's development over time. 
+        // Systematic extraction of resources is a significant event in a planet's history.
+        const pool = this._resourceCandidatesForReduction();
+        if (pool.length===0) return;
+        const target = pool[RandBetween(0,pool.length-1)];
+        if (typeof target === 'string') return; // legacy
+        target.abundance = Math.max(0, target.abundance - amount);
+    }
+    _reduceAllResources(amount) {
+        this.mineralResources.forEach(m=> m.abundance = Math.max(0, m.abundance - amount));
+        this.organicCompounds.forEach(o=> { if (typeof o!=='string') o.abundance = Math.max(0, o.abundance - amount); });
+        this.archeotechCaches.forEach(a=> a.abundance = Math.max(0, a.abundance - amount));
+        this.xenosRuins.forEach(x=> x.abundance = Math.max(0, x.abundance - amount));
+    }
+
+    _generateHuman(forcedLevel='Undefined') {
+        let roll = RollD10();
+        if (forcedLevel==='Voidfarers') roll=10; else if (forcedLevel==='Colony') roll=5; else if (forcedLevel==='OrbitalHabitation') roll=6;
+        if (roll <=2) { this._setDev('Advanced Industry'); for(let i=0;i<3;i++) this._reduceRandomResource(RollD10()+5); }
+        else if (roll <=4) { if (this._isPlanetInhabitable()) { this._setDev('Basic Industry'); for(let i=0;i<5;i++) this._reduceRandomResource(RollD10()+5); return;} }
+        else if (roll ===5) { this._setDev('Colony'); this._reduceAllResources(RollD5()); }
+        else if (roll ===6) { this._setDev('Orbital Habitation'); }
+        else if (roll <=8) { if (this._isPlanetInhabitable()) { this._setDev('Pre-Industrial'); const rn = RandBetween(0,2); for(let i=0;i<rn;i++) this._reduceRandomResource(RollD10()+5); return;} }
+        else if (roll ===9) { if (this._isPlanetInhabitable()) { this._setDev('Primitive Clans'); this._reduceRandomResource(RollD10()+2); return;} }
+        else { this._setDev('Voidfarers'); for(let i=0;i<5;i++) this._reduceRandomResource(RollD10()+5); }
+        if (this.inhabitantDevelopment==='') this._generateHuman(); // retry branch if invalid
+    }
+    _generateEldar() {
+        // maiden world chance if habitable
+        if (this._isPlanetInhabitable() && RollD10()>=9) {
+            this.maidenWorld = true; this.habitability = 'Verdant';
+            // boost organic compounds
+            this.organicCompounds.forEach(o=> { if (typeof o!=='string' && o.abundance>0) o.abundance += RollD10()+RollD10(); });
+        }
+        const roll = RollD10();
+        if (roll <=3) { if (this._isPlanetInhabitable()) { this._setDev('Primitive Clans (Exodites)'); this._reduceRandomResource(RollD10()+2); return;} }
+        else if (roll <=8) { this._setDev('Orbital Habitation'); return; }
+        else { this._setDev('Voidfarers'); return; }
+        this._generateEldar();
+    }
+    _generateKroot() {
+        const roll = RollD10();
+        if (roll <=7) { if (this._isPlanetInhabitable()) { this._setDev('Primitive Clans'); this._reduceRandomResource(RollD10()+2); return; } }
+        else { this._setDev('Colony'); this._reduceAllResources(RollD5()); return; }
+        this._generateKroot();
+    }
+    _generateOrk() {
+        const roll = RollD10();
+        if (roll <=4) { this._setDev('Advanced Industry'); for(let i=0;i<3;i++) this._reduceRandomResource(RollD10()+5); }
+        else if (roll ===5) { this._setDev('Colony'); this._reduceAllResources(RollD5()); }
+        else if (roll <=8) { this._setDev('Primitive Clans'); this._reduceRandomResource(RollD10()+2); }
+        else { this._setDev('Voidfarers'); for(let i=0;i<5;i++) this._reduceRandomResource(RollD10()+5); }
+    }
+    _generateRakGol() {
+        const roll = RollD10();
+        if (roll <=2) { this._setDev('Colony'); this._reduceAllResources(RollD5()); }
+        else if (roll <=4) { this._setDev('Orbital Habitation'); }
+        else { this._setDev('Voidfarers'); for(let i=0;i<5;i++) this._reduceRandomResource(RollD10()+5); }
+    }
+    _generateXenosOther(forcedLevel='Undefined') {
+        let roll = RollD10();
+        if (forcedLevel==='Voidfarers') roll=10; else if (forcedLevel==='Colony') roll=4; else if (forcedLevel==='OrbitalHabitation') roll=5;
+        if (roll <=1) { this._setDev('Advanced Industry'); for(let i=0;i<3;i++) this._reduceRandomResource(RollD10()+5); return; }
+        if (roll <=3) { if (this._isPlanetInhabitable()) { this._setDev('Basic Industry'); for(let i=0;i<5;i++) this._reduceRandomResource(RollD10()+5); return; } }
+        else if (roll ===4) { this._setDev('Colony'); this._reduceAllResources(RollD5()); return; }
+        else if (roll ===5) { this._setDev('Orbital Habitation'); return; }
+        else if (roll <=7) { if (this._isPlanetInhabitable()) { this._setDev('Pre-Industrial'); const rn = RandBetween(0,2); for(let i=0;i<rn;i++) this._reduceRandomResource(RollD10()+5); return; } }
+        else if (roll <=9) { if (this._isPlanetInhabitable()) { this._setDev('Primitive Clans'); this._reduceRandomResource(RollD10()+2); return; } }
+        else { this._setDev('Voidfarers'); for(let i=0;i<5;i++) this._reduceRandomResource(RollD10()+5); return; }
+        this._generateXenosOther();
+    }
+    _setDev(dev) { this.inhabitantDevelopment = dev; }
 
     buildEnvironmentReferences() {
         if (this.environment && window.EnvironmentData) {
@@ -899,6 +1045,8 @@ class PlanetNode extends NodeBase {
         desc += `<p><strong>Habitability:</strong> ${this.getHabitabilityDisplay()}${addPageRef(23,'Table 1-12: Habitability')}</p>`;
         desc += `<p><strong>Major Continents or Archipelagos:</strong> ${this.numContinents === 0 ? 'None' : this.numContinents}${addPageRef(23,'Landmasses')}</p>`;
         desc += `<p><strong>Smaller Islands:</strong> ${this.numIslands === 0 ? 'None' : this.numIslands}${addPageRef(23,'Landmasses')}</p>`;
+        if (this.maidenWorld) desc += `<p><strong>Special:</strong> Eldar Maiden World</p>`;
+        if (this.warpStorm) desc += `<p><strong>Warp Storm:</strong> This planet is engulfed in a permanent Warp storm.</p>`;
 
         // Territories & Landmarks
         if (this.environment) {
@@ -931,16 +1079,16 @@ class PlanetNode extends NodeBase {
         // Resources
         desc += `<h3>Base Mineral Resources</h3>`;
         if (this.mineralResources.length === 0) desc += '<p>None</p>'; else {
-            desc += '<ul>' + this.mineralResources.map(r=>`<li>${r}</li>`).join('') + '</ul>';
+            desc += '<ul>' + this.mineralResources.map(r=> (typeof r === 'string'? `<li>${r}</li>` : `<li>${r.type} (Abundance ${r.abundance})</li>`)).join('') + '</ul>';
         }
         desc += `<h3>Organic Compounds</h3>`;
         if (this.organicCompounds.length === 0) desc += '<p>None</p>'; else {
             desc += '<ul>' + this.organicCompounds.map(c=> typeof c==='string'? `<li>${c}</li>` : `<li>${c.type} (Abundance ${c.abundance})</li>`).join('') + '</ul>';
         }
         desc += `<h3>Archeotech Caches</h3>`;
-        if (this.archeotechCaches.length === 0) desc += '<p>None</p>'; else desc += '<ul>'+this.archeotechCaches.map(a=>`<li>${a}</li>`).join('')+'</ul>';
+        if (this.archeotechCaches.length === 0) desc += '<p>None</p>'; else desc += '<ul>'+this.archeotechCaches.map(a=> (typeof a==='string'? `<li>${a}</li>` : `<li>${a.type} (Abundance ${a.abundance})</li>`)).join('')+'</ul>';
         desc += `<h3>Xenos Ruins</h3>`;
-        if (this.xenosRuins.length === 0) desc += '<p>None</p>'; else desc += '<ul>'+this.xenosRuins.map(x=>`<li>${x}</li>`).join('')+'</ul>';
+        if (this.xenosRuins.length === 0) desc += '<p>None</p>'; else desc += '<ul>'+this.xenosRuins.map(x=> (typeof x==='string'? `<li>${x}</li>` : `<li>${x.type} (Abundance ${x.abundance})</li>`)).join('')+'</ul>';
 
         // Inhabitants (simplified model retained)
         desc += `<h3>Inhabitants</h3>`;
@@ -991,6 +1139,8 @@ class PlanetNode extends NodeBase {
         json.organicCompounds = this.organicCompounds;
         json.archeotechCaches = this.archeotechCaches;
         json.xenosRuins = this.xenosRuins;
+        json.maidenWorld = this.maidenWorld;
+        json.warpStorm = this.warpStorm;
         json.environment = this.environment; // persist environment structure
         return json;
     }
@@ -1037,8 +1187,15 @@ class PlanetNode extends NodeBase {
             mineralResources: data.mineralResources || [],
             organicCompounds: data.organicCompounds || [],
             archeotechCaches: data.archeotechCaches || [],
-            xenosRuins: data.xenosRuins || []
+            xenosRuins: data.xenosRuins || [],
+            maidenWorld: data.maidenWorld || false,
+            warpStorm: data.warpStorm || false
         });
+
+        // Backwards compatibility: convert legacy mineral resource strings to objects with default abundance
+        node.mineralResources = (node.mineralResources||[]).map(r=> typeof r==='string'? {type:r, abundance:10}: r);
+        node.archeotechCaches = (node.archeotechCaches||[]).map(a=> typeof a==='string'? {type:a, abundance:10}: a);
+        node.xenosRuins = (node.xenosRuins||[]).map(x=> typeof x==='string'? {type:x, abundance:10}: x);
         
         // Restore children
         if (data.children) {
