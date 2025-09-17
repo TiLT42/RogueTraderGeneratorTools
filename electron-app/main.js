@@ -3,6 +3,9 @@ const path = require('path');
 const fs = require('fs');
 
 let mainWindow;
+// Detect explicit dev mode from CLI. We intentionally do NOT use app.isPackaged here
+// so that `npm start` won't auto-open DevTools, only `npm run dev` (which passes --dev).
+const isDev = process.argv.includes('--dev');
 
 function createWindow() {
     mainWindow = new BrowserWindow({
@@ -20,6 +23,11 @@ function createWindow() {
     mainWindow.loadFile('index.html');
     mainWindow.maximize();
     
+    // In dev mode, open DevTools for easier debugging
+    if (isDev) {
+        mainWindow.webContents.openDevTools({ mode: 'detach' });
+    }
+    
     // Create application menu
     createMenu();
 
@@ -27,6 +35,14 @@ function createWindow() {
     mainWindow.on('closed', () => {
         mainWindow = null;
     });
+
+    // Enable Inspect Element on right-click in dev mode
+    if (isDev) {
+        mainWindow.webContents.on('context-menu', (_event, params) => {
+            if (!mainWindow || mainWindow.isDestroyed()) return;
+            mainWindow.webContents.inspectElement(params.x, params.y);
+        });
+    }
 }
 
 function createMenu() {
@@ -96,6 +112,33 @@ function createMenu() {
                     label: 'Exit',
                     role: 'quit'
                 }
+            ]
+        },
+        {
+            label: 'View',
+            submenu: [
+                { role: 'reload' },
+                { role: 'forceReload' },
+                { type: 'separator' },
+                // Use role to get OS-default accelerator (Ctrl+Shift+I on Win/Linux, Alt+Cmd+I on macOS)
+                { role: 'toggleDevTools' },
+                // Also provide F12 as an additional shortcut on Windows/Linux
+                {
+                    label: 'Toggle Developer Tools (F12)',
+                    accelerator: process.platform === 'darwin' ? undefined : 'F12',
+                    visible: process.platform !== 'darwin',
+                    click: () => {
+                        if (mainWindow && !mainWindow.isDestroyed()) {
+                            mainWindow.webContents.toggleDevTools();
+                        }
+                    }
+                },
+                { type: 'separator' },
+                { role: 'resetZoom' },
+                { role: 'zoomIn' },
+                { role: 'zoomOut' },
+                { type: 'separator' },
+                { role: 'togglefullscreen' }
             ]
         },
         {

@@ -56,39 +56,6 @@ namespace RogueTraderSystemGenerator
                 return 9;
             }
         }
-/*
-        public int FellowshipBonus
-        {
-            get
-            {
-                if (Fellowship <= 99)
-                    return Fellowship / 10;
-                return 9;
-            }
-        }
-*/
-/*
-        public int IntelligenceBonus
-        {
-            get
-            {
-                if (Intelligence <= 99)
-                    return Intelligence / 10;
-                return 9;
-            }
-        }
-*/
-/*
-        public int PerceptionBonus
-        {
-            get
-            {
-                if (Perception <= 99)
-                    return Perception / 10;
-                return 9;
-            }
-        }
-*/
         public int StrengthBonus
         {
             get
@@ -107,17 +74,6 @@ namespace RogueTraderSystemGenerator
                 return 9;
             }
         }
-/*
-        public int WillPowerBonus
-        {
-            get
-            {
-                if (WillPower <= 99)
-                    return WillPower / 10;
-                return 9;
-            }
-        }
-*/
 
         public string GetStatTextForTable(int value)
         {

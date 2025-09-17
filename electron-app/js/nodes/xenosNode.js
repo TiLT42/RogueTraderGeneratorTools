@@ -68,9 +68,10 @@ class XenosNode extends NodeBase {
     }
 
     generateKoronusBestiaryXenos() {
+        // Use the node wrapper which delegates to the data-layer generator
         this.xenos = new XenosKoronusBestiary(this.worldType);
         this.xenos.generate();
-        this.nodeName = this.xenos.getName();
+        this.nodeName = (typeof this.xenos.getName === 'function') ? this.xenos.getName() : this.xenos.nodeName;
         
         // Copy properties from the xenos generator
         this.stats = this.xenos.stats;
