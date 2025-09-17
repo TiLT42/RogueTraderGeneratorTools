@@ -24,10 +24,10 @@ class NativeSpeciesNode extends NodeBase {
     }
 
     addXenos(worldType = 'TemperateWorld') {
-        const xenosNode = createNode(NodeTypes.Xenos);
-        xenosNode.worldType = worldType;
+        const xenosNode = createNode(NodeTypes.Xenos, null, worldType, false);
         xenosNode.generate(); // Generate first to get species name
-        xenosNode.nodeName = `Native Species (${xenosNode.species})`;
+        const speciesName = xenosNode.nodeName; // Use the generated node name which contains the species
+        xenosNode.nodeName = `Native Species (${speciesName})`;
         this.addChild(xenosNode);
         this.updateDescription(); // Update description when child is added
         return xenosNode;
