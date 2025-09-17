@@ -218,18 +218,31 @@ class App {
     }
 
     generateNewPrimitiveSpecies() {
-        const species = createNode(NodeTypes.PrimitiveXenos);
+        const species = createNode(NodeTypes.Xenos, null, 'TemperateWorld', true);
         species.generate();
         window.treeView.addRootNode(species);
         window.treeView.selectNode(species);
     }
 
     generateNewXenos(worldType) {
-        const xenos = createNode(NodeTypes.Xenos);
-        xenos.nodeName = `Xenos (${worldType || 'random'} world)`;
+        const actualWorldType = worldType || this.getRandomWorldType();
+        const xenos = createNode(NodeTypes.Xenos, null, actualWorldType, false);
         xenos.generate();
         window.treeView.addRootNode(xenos);
         window.treeView.selectNode(xenos);
+    }
+
+    getRandomWorldType() {
+        const worldTypes = [
+            'TemperateWorld',
+            'DeathWorld', 
+            'DesertWorld',
+            'IceWorld',
+            'JungleWorld',
+            'OceanWorld',
+            'VolcanicWorld'
+        ];
+        return ChooseFrom(worldTypes);
     }
 
     generateNewTreasure(treasureType) {
