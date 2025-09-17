@@ -81,6 +81,19 @@ npm start
 npm run dev
 ```
 
+When running in development mode, the Developer Tools will open automatically in a separate window for easier debugging.
+
+## Developer Tools
+
+You can open the Chromium Developer Tools to inspect the UI, view console logs, and debug:
+
+- View → Toggle Developer Tools
+- Keyboard shortcuts:
+    - Windows/Linux: F12 or Ctrl+Shift+I
+    - macOS: Alt+Cmd+I
+
+Additional helpful view actions are available under the View menu: Reload, Force Reload, Zoom controls, and Toggle Full Screen. In dev mode, you can also right-click anywhere in the app and choose Inspect Element.
+
 ## Key Differences from Original WPF Version
 
 ### Advantages
