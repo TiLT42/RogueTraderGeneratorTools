@@ -210,11 +210,18 @@ class App {
     }
 
     generateNewStarship() {
-        const ship = createNode(NodeTypes.Ship);
-        ship.nodeName = 'Starship';
-        ship.generate();
-        window.treeView.addRootNode(ship);
-        window.treeView.selectNode(ship);
+        const shipNode = createNode(NodeTypes.Ship);
+        shipNode.nodeName = 'Starship';
+        // Human-only generation to mirror original WPF "New Starship" behavior
+        try {
+            const humanShip = window.StarshipToolsData.getRandomPirateShip(Species.Human);
+            shipNode.setShip(humanShip);
+        } catch (e) {
+            console.error('Failed to generate human starship, falling back to node.generate()', e);
+            shipNode.generate();
+        }
+        window.treeView.addRootNode(shipNode);
+        window.treeView.selectNode(shipNode);
     }
 
     generateNewPrimitiveSpecies() {

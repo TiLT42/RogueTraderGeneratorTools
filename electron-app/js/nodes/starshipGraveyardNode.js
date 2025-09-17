@@ -6,8 +6,7 @@ class StarshipGraveyardNode extends NodeBase {
         this.fontForeground = '#e74c3c';
         this.origin = '';
         this.numShips = 0;
-        this.dangers = [];
-        this.treasures = [];
+        this.hulks = [];
         this.pirateShips = null;
     }
 
@@ -18,9 +17,7 @@ class StarshipGraveyardNode extends NodeBase {
         this.pageReference = createPageReference(17, 'Table 1-5: Starship Graveyard Origins');
         
         this.generateOrigin();
-        this.generateShips();
-        this.generateDangers();
-        this.generateTreasures();
+        this.generateHulks();
         this.generatePirateShips();
         this.updateDescription();
     }
@@ -37,48 +34,54 @@ class StarshipGraveyardNode extends NodeBase {
         this.origin = ChooseFrom(origins);
     }
 
-    generateShips() {
-        this.numShips = RollD10() + RollD10();
-    }
-
-    generateDangers() {
-        this.dangers = [];
-        const possibleDangers = [
-            'Unstable Reactors',
-            'Automated Defenses',
-            'Scavenger Gangs',
-            'Warp Disturbances',
-            'Booby Traps',
-            'Hostile Survivors'
-        ];
-        
-        const numDangers = RollD3();
-        for (let i = 0; i < numDangers; i++) {
-            const danger = ChooseFrom(possibleDangers);
-            if (!this.dangers.includes(danger)) {
-                this.dangers.push(danger);
+    generateHulks() {
+        // Approximation: generate a handful of hulks and use StarshipToolsData for the hull selection
+        this.hulks = [];
+        const count = RollD10();
+        for (let i = 0; i < count; i++) {
+            let race = window.StarshipToolsData.getRandomSpecies();
+            // Respect enabled books: if Dark Eldar not available, substitute with Eldar
+            const enabled = window.APP_STATE.settings.enabledBooks;
+            if (race === Species.DarkEldar && !enabled.TheSoulReaver) race = Species.Eldar;
+            // Build a hulk entry by sampling a hull from the appropriate generator
+            let ship;
+            switch (race) {
+                case Species.Human:
+                    ship = window.StarshipToolsData.createEmptyShip();
+                    window.StarshipToolsData.generateRandomHumanShip(ship);
+                    break;
+                case Species.Ork:
+                    ship = window.StarshipToolsData.createEmptyShip();
+                    window.StarshipToolsData.generateRandomOrkShip(ship);
+                    break;
+                case Species.Eldar:
+                    ship = window.StarshipToolsData.createEmptyShip();
+                    window.StarshipToolsData.generateRandomEldarShip(ship);
+                    break;
+                case Species.DarkEldar:
+                    ship = window.StarshipToolsData.createEmptyShip();
+                    window.StarshipToolsData.generateRandomDarkEldarShip(ship);
+                    break;
+                case Species.RakGol:
+                    ship = window.StarshipToolsData.createEmptyShip();
+                    window.StarshipToolsData.generateRandomRakGolShip(ship);
+                    break;
+                case Species.ChaosReaver:
+                    ship = window.StarshipToolsData.createEmptyShip();
+                    window.StarshipToolsData.generateRandomChaosReaverShip(ship);
+                    break;
+                default:
+                    ship = { shipName: 'Starship', pageNumber: 0, bookSource: RuleBook.CoreRuleBook };
+                    break;
             }
+            this.hulks.push({
+                race,
+                shipName: ship.shipName,
+                pageNumber: ship.pageNumber,
+                bookSource: ship.bookSource
+            });
         }
-    }
-
-    generateTreasures() {
-        this.treasures = [];
-        const possibleTreasures = [
-            'Ship Components',
-            'Archeotech Devices',
-            'Navigation Data',
-            'Weapon Systems',
-            'Rare Materials',
-            'Imperial Records'
-        ];
-        
-        const numTreasures = RollD3();
-        for (let i = 0; i < numTreasures; i++) {
-            const treasure = ChooseFrom(possibleTreasures);
-            if (!this.treasures.includes(treasure)) {
-                this.treasures.push(treasure);
-            }
-        }
+        this.numShips = this.hulks.length;
     }
 
     generatePirateShips() {
@@ -91,22 +94,13 @@ class StarshipGraveyardNode extends NodeBase {
 
     updateDescription() {
         let desc = `<h3>Starship Graveyard</h3>`;
-        desc += `<p>The remains of ancient space battles, littered with derelict vessels and debris.</p>`;
         desc += `<p><strong>Origin:</strong> ${this.origin}</p>`;
         desc += `<p><strong>Number of Hulks:</strong> ${this.numShips}</p>`;
-        
-        if (this.dangers.length > 0) {
-            desc += `<h3>Dangers</h3><ul>`;
-            for (const danger of this.dangers) {
-                desc += `<li>${danger}</li>`;
-            }
-            desc += `</ul>`;
-        }
-        
-        if (this.treasures.length > 0) {
-            desc += `<h3>Potential Salvage</h3><ul>`;
-            for (const treasure of this.treasures) {
-                desc += `<li>${treasure}</li>`;
+        if (this.hulks.length > 0) {
+            desc += `<h3>Hulks</h3><ul>`;
+            for (const h of this.hulks) {
+                const ref = h.pageNumber ? ` ${createPageReference(h.pageNumber, '', h.bookSource)}` : '';
+                desc += `<li>${h.race} ${h.shipName}${ref}</li>`;
             }
             desc += `</ul>`;
         }
