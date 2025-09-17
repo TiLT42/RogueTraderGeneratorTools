@@ -1,5 +1,5 @@
 // Node factory function
-window.createNode = function(type, id = null) {
+window.createNode = function(type, id = null, ...args) {
     switch (type) {
         case NodeTypes.System:
             return new SystemNode(id);
@@ -32,7 +32,8 @@ window.createNode = function(type, id = null) {
         case NodeTypes.LesserMoon:
             return new LesserMoonNode(id);
         case NodeTypes.Xenos:
-            return new XenosNode(id);
+            // args[0] = worldType, args[1] = isPrimitiveXenos
+            return new XenosNode(args[0] || 'TemperateWorld', args[1] || false, id);
         case NodeTypes.PrimitiveXenos:
             return new PrimitiveXenosNode(id);
         case NodeTypes.NativeSpecies:

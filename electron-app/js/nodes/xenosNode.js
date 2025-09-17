@@ -1,120 +1,128 @@
 // XenosNode.js
 class XenosNode extends NodeBase {
-    constructor(id = null) {
+    constructor(worldType = 'TemperateWorld', isPrimitiveXenos = false, id = null) {
         super(NodeTypes.Xenos, id);
-        this.nodeName = 'Xenos';
+        this.nodeName = 'Xeno Creature';
         this.fontForeground = '#e74c3c';
-        this.species = '';
-        this.worldType = 'TemperateWorld';
-        this.techLevel = '';
-        this.hostility = '';
-        this.traits = [];
+        this.worldType = worldType;
+        this.isPrimitiveXenos = isPrimitiveXenos;
+        this.xenos = null; // Will hold the actual xenos implementation
         
-        // RPG Stats for advanced xenos
-        this.stats = {
-            weaponSkill: 40,
-            ballisticSkill: 35,
-            strength: 40,
-            toughness: 40,
-            agility: 35,
-            intelligence: 45,
-            perception: 40,
-            willPower: 35,
-            fellowship: 30
-        };
-        this.wounds = 15;
-        this.movement = '4/8/12/24';
-        this.skills = ['Awareness (Per)', 'Dodge (Ag)', 'Common Lore (Xenos) (Int)'];
-        this.talents = ['Swift Attack'];
-        this.xenosTraits = [];
-        this.weapons = ['Advanced Energy Weapon (100m; S/2/5; 1d10+4 E; Pen 3; Reliable)'];
-        this.armour = 'Xenos Carapace (All 4)';
+        // These will be populated by the xenos generator
+        this.stats = {};
+        this.wounds = 0;
+        this.movement = '';
+        this.skills = [];
+        this.talents = [];
+        this.traits = [];
+        this.weapons = [];
+        this.armour = '';
     }
 
     generate() {
         super.generate();
         
-        // Set page reference for xenos generation
-        this.pageReference = createPageReference(364, '', RuleBook.CoreRuleBook);
+        if (this.isPrimitiveXenos) {
+            this.generatePrimitiveXenos();
+        } else {
+            // Check settings to determine which rulebook to use (mimicking WPF logic)
+            const useStarsOfInequity = window.APP_STATE.settings.enabledBooks.StarsOfInequity;
+            const useKoronusBestiary = window.APP_STATE.settings.enabledBooks.TheKoronusBestiary;
+            
+            if (useStarsOfInequity && !useKoronusBestiary) {
+                this.generateStarsOfInequityXenos();
+            } else if (!useStarsOfInequity && useKoronusBestiary) {
+                this.generateKoronusBestiaryXenos();
+            } else if (useStarsOfInequity && useKoronusBestiary) {
+                // Both enabled - 30% chance for Stars of Inequity, 70% for Koronus Bestiary
+                if (RollD10() <= 3) {
+                    this.generateStarsOfInequityXenos();
+                } else {
+                    this.generateKoronusBestiaryXenos();
+                }
+            } else {
+                // Neither enabled - default to primitive
+                this.generatePrimitiveXenos();
+            }
+        }
         
-        this.generateSpecies();
-        this.generateTechLevel();
-        this.generateHostility();
-        this.generateTraits();
         this.updateDescription();
     }
 
-    generateSpecies() {
-        const species = [
-            'Undiscovered Species',
-            'Eldar',
-            'Ork',
-            'Kroot',
-            'Tau',
-            'Unique Xenos Race'
-        ];
-        this.species = ChooseFrom(species);
+    generateStarsOfInequityXenos() {
+        this.xenos = new XenosStarsOfInequity();
+        this.xenos.generate();
+        this.nodeName = this.xenos.getName();
+        
+        // Copy properties from the xenos generator
+        this.stats = this.xenos.stats;
+        this.wounds = this.xenos.wounds;
+        this.movement = this.xenos.movement;
+        this.skills = this.xenos.skills;
+        this.talents = this.xenos.talents;
+        this.traits = this.xenos.traits;
+        this.weapons = this.xenos.weapons;
+        this.armour = this.xenos.armour;
+        
+        this.pageReference = createPageReference(35, 'Bestial Archetypes', RuleBook.StarsOfInequity);
     }
 
-    generateTechLevel() {
-        const levels = ['Primitive', 'Industrial', 'Advanced', 'Highly Advanced'];
-        this.techLevel = ChooseFrom(levels);
+    generateKoronusBestiaryXenos() {
+        this.xenos = new XenosKoronusBestiary(this.worldType);
+        this.xenos.generate();
+        this.nodeName = this.xenos.getName();
+        
+        // Copy properties from the xenos generator
+        this.stats = this.xenos.stats;
+        this.wounds = this.xenos.wounds;
+        this.movement = this.xenos.movement;
+        this.skills = this.xenos.skills;
+        this.talents = this.xenos.talents;
+        this.traits = this.xenos.traits;
+        this.weapons = this.xenos.weapons;
+        this.armour = this.xenos.armour;
+        
+        this.pageReference = createPageReference(127, 'Xenos Generation', RuleBook.TheKoronusBestiary);
     }
 
-    generateHostility() {
-        const hostilities = ['Peaceful', 'Neutral', 'Suspicious', 'Hostile', 'Extremely Hostile'];
-        this.hostility = ChooseFrom(hostilities);
-    }
-
-    generateTraits() {
-        this.traits = [];
-        this.xenosTraits = [];
-        const possibleTraits = [
-            'Technologically Advanced',
-            'Psyker Abilities',
-            'Natural Weapons',
-            'Environmental Adaptation',
-            'Hive Mind',
-            'Aggressive Nature'
-        ];
+    generatePrimitiveXenos() {
+        this.xenos = new XenosPrimitive();
+        this.xenos.generate();
+        this.nodeName = 'Primitive Xenos';
         
-        const xenosGameTraits = [
-            'Fear (2)',
-            'Natural Armour (2)',
-            'Unnatural Intelligence (x2)',
-            'Dark Sight'
-        ];
+        // Copy properties from the xenos generator
+        this.stats = this.xenos.stats;
+        this.wounds = this.xenos.wounds;
+        this.movement = this.xenos.movement;
+        this.skills = this.xenos.skills;
+        this.talents = this.xenos.talents;
+        this.traits = this.xenos.traits;
+        this.weapons = this.xenos.weapons;
+        this.armour = this.xenos.armour;
         
-        const numTraits = RollD3();
-        for (let i = 0; i < numTraits; i++) {
-            const trait = ChooseFrom(possibleTraits);
-            if (!this.traits.includes(trait)) {
-                this.traits.push(trait);
-            }
-        }
-        
-        // Add game mechanical traits
-        const numGameTraits = RollD3();
-        for (let i = 0; i < numGameTraits; i++) {
-            const trait = ChooseFrom(xenosGameTraits);
-            if (!this.xenosTraits.includes(trait)) {
-                this.xenosTraits.push(trait);
-            }
-        }
+        this.pageReference = createPageReference(373, 'Primitive Xenos', RuleBook.StarsOfInequity);
     }
 
     updateDescription() {
-        let desc = `<h3>Xenos Species</h3>`;
-        desc += `<p><strong>Species:</strong> ${this.species}</p>`;
-        desc += `<p><strong>Technology Level:</strong> ${this.techLevel}</p>`;
-        desc += `<p><strong>Hostility:</strong> ${this.hostility}</p>`;
+        let desc = `<h3>${this.nodeName}</h3>`;
         
-        if (this.traits.length > 0) {
-            desc += `<h3>Notable Traits</h3><ul>`;
-            for (const trait of this.traits) {
-                desc += `<li>${trait}</li>`;
+        // Add specific details based on xenos type
+        if (this.xenos instanceof XenosStarsOfInequity) {
+            desc += `<p><strong>Bestial Archetype:</strong> ${this.xenos.bestialArchetype}</p>`;
+            desc += `<p><strong>Bestial Nature:</strong> ${this.xenos.bestialNature}</p>`;
+        } else if (this.xenos instanceof XenosKoronusBestiary) {
+            desc += `<p><strong>Base Profile:</strong> ${this.xenos.baseProfile}</p>`;
+            if (this.xenos.floraType !== 'NotFlora') {
+                desc += `<p><strong>Flora Type:</strong> ${this.xenos.floraType}</p>`;
             }
-            desc += `</ul>`;
+            desc += `<p><strong>World Type:</strong> ${this.xenos.worldType}</p>`;
+        } else if (this.xenos instanceof XenosPrimitive) {
+            if (this.xenos.unusualCommunication !== 'No') {
+                desc += `<p><strong>Unusual Communication:</strong> ${this.xenos.unusualCommunication}</p>`;
+            }
+            if (this.xenos.socialStructure !== 'None') {
+                desc += `<p><strong>Social Structure:</strong> ${this.xenos.socialStructure}</p>`;
+            }
         }
         
         // Add stat block
@@ -152,8 +160,8 @@ class XenosNode extends NodeBase {
             statBlock += `<p><strong>Talents:</strong> ${this.talents.join(', ')}</p>`;
         }
         
-        if (this.xenosTraits.length > 0) {
-            statBlock += `<p><strong>Traits:</strong> ${this.xenosTraits.join(', ')}</p>`;
+        if (this.traits.length > 0) {
+            statBlock += `<p><strong>Traits:</strong> ${this.traits.join(', ')}</p>`;
         }
         
         statBlock += `<p><strong>Weapons:</strong> ${this.weapons.join(', ')}</p>`;
@@ -175,21 +183,24 @@ class XenosNode extends NodeBase {
         return node;
     }
 
+    static fromJSON(data) {
+        const node = new XenosNode(data.worldType, data.isPrimitiveXenos, data.id);
+        Object.assign(node, data);
+        return node;
+    }
+
     toJSON() {
         const base = super.toJSON();
         return {
             ...base,
-            species: this.species,
             worldType: this.worldType,
-            techLevel: this.techLevel,
-            hostility: this.hostility,
-            traits: this.traits,
+            isPrimitiveXenos: this.isPrimitiveXenos,
             stats: this.stats,
             wounds: this.wounds,
             movement: this.movement,
             skills: this.skills,
             talents: this.talents,
-            xenosTraits: this.xenosTraits,
+            traits: this.traits,
             weapons: this.weapons,
             armour: this.armour
         };
