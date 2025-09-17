@@ -156,18 +156,39 @@ class XenosNode extends NodeBase {
         // Add stat block
         desc += this.generateStatBlock();
         
-        // Consolidated References section (visible only when toggle is ON) for Koronus Bestiary
-        if (this.xenos instanceof XenosKoronusBestiary) {
-            const dataRef = this.xenos.data && this.xenos.data.referenceData ? this.xenos.data.referenceData : null;
-            if (window.APP_STATE.settings.showPageNumbers && dataRef) {
-                const items = [];
-                if (dataRef.baseProfile) items.push(formatRefItem(dataRef.baseProfile));
-                if (dataRef.floraType) items.push(formatRefItem(dataRef.floraType));
-                if (Array.isArray(dataRef.traits)) {
-                    for (const tr of dataRef.traits) items.push(formatRefItem(tr));
+        // Consolidated References for each data-backed xenos type
+        const showRefs = window.APP_STATE.settings.showPageNumbers;
+        if (showRefs) {
+            if (this.xenos instanceof XenosKoronusBestiary) {
+                const dataRef = this.xenos.data && this.xenos.data.referenceData ? this.xenos.data.referenceData : null;
+                if (dataRef) {
+                    const items = [];
+                    if (dataRef.baseProfile) items.push(formatRefItem(dataRef.baseProfile));
+                    if (dataRef.floraType) items.push(formatRefItem(dataRef.floraType));
+                    if (Array.isArray(dataRef.traits)) {
+                        for (const tr of dataRef.traits) items.push(formatRefItem(tr));
+                    }
+                    if (items.length > 0) desc += `<h3>References</h3><ul>${items.join('')}</ul>`;
                 }
-                if (items.length > 0) {
-                    desc += `<h3>References</h3><ul>${items.join('')}</ul>`;
+            } else if (this.xenos instanceof XenosStarsOfInequity) {
+                const dataRef = this.xenos.data && this.xenos.data.referenceData ? this.xenos.data.referenceData : null;
+                if (dataRef) {
+                    const items = [];
+                    if (dataRef.baseArchetype) items.push(formatRefItem(dataRef.baseArchetype));
+                    if (Array.isArray(dataRef.traits)) {
+                        for (const tr of dataRef.traits) items.push(formatRefItem(tr));
+                    }
+                    if (items.length > 0) desc += `<h3>References</h3><ul>${items.join('')}</ul>`;
+                }
+            } else if (this.xenos instanceof XenosPrimitive) {
+                const dataRef = this.xenos.data && this.xenos.data.referenceData ? this.xenos.data.referenceData : null;
+                if (dataRef) {
+                    const items = [];
+                    if (dataRef.basePrimitive) items.push(formatRefItem(dataRef.basePrimitive));
+                    if (Array.isArray(dataRef.traits)) {
+                        for (const tr of dataRef.traits) items.push(formatRefItem(tr));
+                    }
+                    if (items.length > 0) desc += `<h3>References</h3><ul>${items.join('')}</ul>`;
                 }
             }
         }

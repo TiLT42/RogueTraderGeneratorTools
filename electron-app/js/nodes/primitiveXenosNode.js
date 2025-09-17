@@ -10,11 +10,25 @@ class PrimitiveXenosNode extends NodeBase {
     generate() {
         super.generate();
         
-        // Set page reference for primitive xenos generation
-        this.pageReference = createPageReference(373, 'Primitive Xenos', RuleBook.StarsOfInequity);
-        
-        // Generate description for the container
+        // Keep a basic description; page references are shown on individual Xenos children
         this.description = `<h3>Primitive Xenos</h3><p>A primitive alien species found on this world.</p>`;
+    }
+
+    // Override to avoid footer page reference and maintain consistency
+    getNodeContent(includeChildren = false) {
+        let content = `<h2>${this.nodeName}</h2>`;
+        if (this.description) {
+            content += `<div class="description-section">${this.description}</div>`;
+        }
+        if (this.customDescription) {
+            content += `<div class="description-section"><h3>Notes</h3>${this.customDescription}</div>`;
+        }
+        if (includeChildren) {
+            for (const child of this.children) {
+                content += '\n\n' + child.getDocumentContent(true);
+            }
+        }
+        return content;
     }
 
     // Method called by PlanetNode to add xenos creatures
