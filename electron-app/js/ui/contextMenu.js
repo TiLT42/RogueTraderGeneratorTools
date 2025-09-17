@@ -117,6 +117,11 @@ class ContextMenu {
             items.push({ type: 'separator' });
         }
 
+        if (node.type === NodeTypes.NativeSpecies) {
+            items.push({ label: 'Add Xenos', action: 'add-xenos' });
+            items.push({ type: 'separator' });
+        }
+
         // Common actions
         items.push({ label: 'Rename', action: 'rename' });
         items.push({ label: 'Delete', action: 'delete' });
@@ -186,6 +191,19 @@ class ContextMenu {
 
             case 'add-asteroid':
                 this.addChildNode(NodeTypes.Asteroid, 'Asteroid');
+                break;
+
+            case 'add-xenos':
+                if (this.currentNode.type === NodeTypes.NativeSpecies) {
+                    // Get the parent planet to determine world type
+                    let worldType = 'TemperateWorld';
+                    if (this.currentNode.parent && this.currentNode.parent.worldType) {
+                        worldType = this.currentNode.parent.worldType;
+                    }
+                    this.currentNode.addXenos(worldType);
+                    window.treeView.refresh();
+                    markDirty();
+                }
                 break;
 
             default:

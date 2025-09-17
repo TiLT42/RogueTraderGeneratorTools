@@ -435,6 +435,46 @@ class PlanetNode extends NodeBase {
         this.nativeSpeciesNode = createNode(NodeTypes.NativeSpecies);
         this.nativeSpeciesNode.generate();
         this.addChild(this.nativeSpeciesNode);
+        
+        // Determine number of native species based on habitability
+        let numNativeSpecies = 0;
+        
+        if (this.habitability === 'LimitedEcosystem') {
+            numNativeSpecies = RollD5() + 1;
+        } else if (this.habitability === 'Verdant') {
+            numNativeSpecies = RollD5() + 5;
+        } else if (this.habitability === 'LiquidWater') {
+            numNativeSpecies = RollD3();
+        } else {
+            // For other habitability levels, small chance
+            if (RollD100() <= 20) {
+                numNativeSpecies = 1;
+            }
+        }
+        
+        // Generate individual native species as XenosNode children
+        for (let i = 0; i < numNativeSpecies; i++) {
+            let worldType = this.worldType;
+            
+            // Vary world type based on climate for diversity
+            if (this.climateType === 'IceWorld') {
+                worldType = 'IceWorld';
+            } else if (this.climateType === 'BurningWorld') {
+                worldType = 'VolcanicWorld';
+            } else if (this.climateType === 'HotWorld' && RollD10() <= 6) {
+                worldType = 'DesertWorld';
+            } else if (this.climateType === 'ColdWorld' && RollD10() <= 6) {
+                worldType = 'IceWorld';
+            }
+            
+            this.nativeSpeciesNode.addXenos(worldType);
+        }
+        
+        // If no species were generated, remove the node
+        if (numNativeSpecies === 0) {
+            this.removeChild(this.nativeSpeciesNode);
+            this.nativeSpeciesNode = null;
+        }
     }
 
     generateMultipleSpecies() {
