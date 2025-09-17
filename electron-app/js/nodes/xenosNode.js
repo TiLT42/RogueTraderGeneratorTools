@@ -6,7 +6,8 @@ class XenosNode extends NodeBase {
         this.fontForeground = '#e74c3c';
         this.worldType = worldType;
         this.isPrimitiveXenos = isPrimitiveXenos;
-        this.xenos = null; // Will hold the actual xenos implementation
+        this.xenosType = null; // 'StarsOfInequity' | 'KoronusBestiary' | 'Primitive'
+        this.xenosData = null; // Holds the data-layer instance used for generation
         
         // These will be populated by the xenos generator
         this.stats = {};
@@ -50,57 +51,64 @@ class XenosNode extends NodeBase {
     }
 
     generateStarsOfInequityXenos() {
-        this.xenos = new XenosStarsOfInequity();
-        this.xenos.generate();
-        this.nodeName = this.xenos.getName();
-        
-        // Copy properties from the xenos generator
-        this.stats = this.xenos.stats;
-        this.wounds = this.xenos.wounds;
-        this.movement = this.xenos.movement;
-        this.skills = this.xenos.skills;
-        this.talents = this.xenos.talents;
-        this.traits = this.xenos.traits;
-        this.weapons = this.xenos.weapons;
-        this.armour = this.xenos.armour;
-        
+        const { XenosStarsOfInequityData } = window.XenosStarsOfInequityData;
+        this.xenosType = 'StarsOfInequity';
+        this.xenosData = new XenosStarsOfInequityData();
+        this.xenosData.generate();
+        this.nodeName = this.xenosData.getName();
+        // Copy outputs
+        this.stats = { ...this.xenosData.stats };
+        this.wounds = this.xenosData.wounds;
+        this.movement = this.xenosData.movement;
+        this.skills = [...this.xenosData.skills];
+        this.talents = [...this.xenosData.talents];
+        this.traits = [...this.xenosData.traits];
+        this.weapons = [...this.xenosData.weapons];
+        this.armour = this.xenosData.armour;
         this.pageReference = createPageReference(35, 'Bestial Archetypes', RuleBook.StarsOfInequity);
     }
 
     generateKoronusBestiaryXenos() {
-        // Use the node wrapper which delegates to the data-layer generator
-        this.xenos = new XenosKoronusBestiary(this.worldType);
-        this.xenos.generate();
-        this.nodeName = (typeof this.xenos.getName === 'function') ? this.xenos.getName() : this.xenos.nodeName;
-        
-        // Copy properties from the xenos generator
-        this.stats = this.xenos.stats;
-        this.wounds = this.xenos.wounds;
-        this.movement = this.xenos.movement;
-        this.skills = this.xenos.skills;
-        this.talents = this.xenos.talents;
-        this.traits = this.xenos.traits;
-        this.weapons = this.xenos.weapons;
-        this.armour = this.xenos.armour;
-        
+        const { XenosKoronusBestiaryData } = window.XenosKoronusBestiaryData;
+        this.xenosType = 'KoronusBestiary';
+        this.xenosData = new XenosKoronusBestiaryData(this.worldType);
+        this.xenosData.generate();
+        this.nodeName = this.xenosData.getName();
+        // Normalize worldType coming from data
+        this.worldType = this.xenosData.worldType;
+        // Copy outputs
+        this.stats = { ...this.xenosData.stats };
+        this.wounds = this.xenosData.wounds;
+        this.movement = this.xenosData.movement;
+        this.skills = this.xenosData.skillsList || this.xenosData.skills.getSkillList();
+        this.talents = this.xenosData.talentsList || this.xenosData.talents.getTalentList();
+        this.traits = this.xenosData.traitsList || this.xenosData.traits.getTraitList();
+        this.weapons = this.xenosData.weaponsList || this.xenosData.weapons.map(w=>this.xenosData._formatWeapon(w));
+        this.armour = this.xenosData.armour;
+        // Additional fields used for display
+        this.baseProfile = this.xenosData.baseProfile;
+        this.floraType = this.xenosData.floraType;
         this.pageReference = createPageReference(127, 'Xenos Generation', RuleBook.TheKoronusBestiary);
     }
 
     generatePrimitiveXenos() {
-        this.xenos = new XenosPrimitive();
-        this.xenos.generate();
+        const { XenosPrimitiveData } = window.XenosPrimitiveData;
+        this.xenosType = 'Primitive';
+        this.xenosData = new XenosPrimitiveData();
+        this.xenosData.generate();
         this.nodeName = 'Primitive Xenos';
-        
-        // Copy properties from the xenos generator
-        this.stats = this.xenos.stats;
-        this.wounds = this.xenos.wounds;
-        this.movement = this.xenos.movement;
-        this.skills = this.xenos.skills;
-        this.talents = this.xenos.talents;
-        this.traits = this.xenos.traits;
-        this.weapons = this.xenos.weapons;
-        this.armour = this.xenos.armour;
-        
+        // Copy outputs
+        this.stats = { ...this.xenosData.stats };
+        this.wounds = this.xenosData.wounds;
+        this.movement = this.xenosData.movement;
+        this.skills = [...this.xenosData.skills];
+        this.talents = [...this.xenosData.talents];
+        this.traits = [...this.xenosData.traits];
+        this.weapons = [...this.xenosData.weapons];
+        this.armour = this.xenosData.armour;
+        // Display helpers
+        this.unusualCommunication = this.xenosData.unusualCommunication;
+        this.socialStructure = this.xenosData.socialStructure;
         this.pageReference = createPageReference(373, 'Primitive Xenos', RuleBook.StarsOfInequity);
     }
 
@@ -128,28 +136,26 @@ class XenosNode extends NodeBase {
         let desc = ``;
         
         // Add specific details based on xenos type
-        if (this.xenos instanceof XenosStarsOfInequity) {
-            desc += `<p><strong>Bestial Archetype:</strong> ${this.xenos.bestialArchetype}</p>`;
-            desc += `<p><strong>Bestial Nature:</strong> ${this.xenos.bestialNature}</p>`;
-        } else if (this.xenos instanceof XenosKoronusBestiary) {
-            const dataRef = this.xenos.data && this.xenos.data.referenceData ? this.xenos.data.referenceData : null;
+        if (this.xenosType === 'StarsOfInequity') {
+            desc += `<p><strong>Bestial Archetype:</strong> ${this.xenosData.bestialArchetype}</p>`;
+            desc += `<p><strong>Bestial Nature:</strong> ${this.xenosData.bestialNature}</p>`;
+        } else if (this.xenosType === 'KoronusBestiary') {
+            const dataRef = this.xenosData && this.xenosData.referenceData ? this.xenosData.referenceData : null;
             // Base profile text if available via data (no inline refs; consolidated below)
-            const baseProfileText = (this.xenos.data && typeof this.xenos.data._getBaseProfileText === 'function') ? this.xenos.data._getBaseProfileText() : this.xenos.baseProfile;
-            const baseProfileRef = dataRef ? dataRef.baseProfile : null;
+            const baseProfileText = (this.xenosData && typeof this.xenosData._getBaseProfileText === 'function') ? this.xenosData._getBaseProfileText() : this.baseProfile;
             desc += `<p><strong>Base Profile:</strong> ${baseProfileText}</p>`;
 
-            if (this.xenos.floraType !== 'NotFlora') {
+            if (this.floraType !== 'NotFlora') {
                 const floraMap = {TrapPassive:'Trap, Passive', TrapActive:'Trap, Active', Combatant:'Combatant'};
-                const floraRef = dataRef ? dataRef.floraType : null;
-                desc += `<p><strong>Flora Type:</strong> ${floraMap[this.xenos.floraType]||this.xenos.floraType}</p>`;
+                desc += `<p><strong>Flora Type:</strong> ${floraMap[this.floraType]||this.floraType}</p>`;
             }
-            desc += `<p><strong>World Type:</strong> ${this.xenos.worldType}</p>`;
-        } else if (this.xenos instanceof XenosPrimitive) {
-            if (this.xenos.unusualCommunication !== 'No') {
-                desc += `<p><strong>Unusual Communication:</strong> ${this.xenos.unusualCommunication}</p>`;
+            desc += `<p><strong>World Type:</strong> ${this.worldType}</p>`;
+        } else if (this.xenosType === 'Primitive') {
+            if (this.unusualCommunication !== 'No') {
+                desc += `<p><strong>Unusual Communication:</strong> ${this.unusualCommunication}</p>`;
             }
-            if (this.xenos.socialStructure !== 'None') {
-                desc += `<p><strong>Social Structure:</strong> ${this.xenos.socialStructure}</p>`;
+            if (this.socialStructure !== 'None') {
+                desc += `<p><strong>Social Structure:</strong> ${this.socialStructure}</p>`;
             }
         }
         
@@ -159,8 +165,8 @@ class XenosNode extends NodeBase {
         // Consolidated References for each data-backed xenos type
         const showRefs = window.APP_STATE.settings.showPageNumbers;
         if (showRefs) {
-            if (this.xenos instanceof XenosKoronusBestiary) {
-                const dataRef = this.xenos.data && this.xenos.data.referenceData ? this.xenos.data.referenceData : null;
+            if (this.xenosType === 'KoronusBestiary') {
+                const dataRef = this.xenosData && this.xenosData.referenceData ? this.xenosData.referenceData : null;
                 if (dataRef) {
                     const items = [];
                     if (dataRef.baseProfile) items.push(formatRefItem(dataRef.baseProfile));
@@ -170,8 +176,8 @@ class XenosNode extends NodeBase {
                     }
                     if (items.length > 0) desc += `<h3>References</h3><ul>${items.join('')}</ul>`;
                 }
-            } else if (this.xenos instanceof XenosStarsOfInequity) {
-                const dataRef = this.xenos.data && this.xenos.data.referenceData ? this.xenos.data.referenceData : null;
+            } else if (this.xenosType === 'StarsOfInequity') {
+                const dataRef = this.xenosData && this.xenosData.referenceData ? this.xenosData.referenceData : null;
                 if (dataRef) {
                     const items = [];
                     if (dataRef.baseArchetype) items.push(formatRefItem(dataRef.baseArchetype));
@@ -180,8 +186,8 @@ class XenosNode extends NodeBase {
                     }
                     if (items.length > 0) desc += `<h3>References</h3><ul>${items.join('')}</ul>`;
                 }
-            } else if (this.xenos instanceof XenosPrimitive) {
-                const dataRef = this.xenos.data && this.xenos.data.referenceData ? this.xenos.data.referenceData : null;
+            } else if (this.xenosType === 'Primitive') {
+                const dataRef = this.xenosData && this.xenosData.referenceData ? this.xenosData.referenceData : null;
                 if (dataRef) {
                     const items = [];
                     if (dataRef.basePrimitive) items.push(formatRefItem(dataRef.basePrimitive));
@@ -261,12 +267,6 @@ class XenosNode extends NodeBase {
     }
 
     static fromJSON(data) {
-        const node = new XenosNode(data.id);
-        Object.assign(node, data);
-        return node;
-    }
-
-    static fromJSON(data) {
         const node = new XenosNode(data.worldType, data.isPrimitiveXenos, data.id);
         Object.assign(node, data);
         return node;
@@ -278,6 +278,7 @@ class XenosNode extends NodeBase {
             ...base,
             worldType: this.worldType,
             isPrimitiveXenos: this.isPrimitiveXenos,
+            xenosType: this.xenosType,
             stats: this.stats,
             wounds: this.wounds,
             movement: this.movement,
