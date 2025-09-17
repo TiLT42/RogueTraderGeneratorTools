@@ -144,3 +144,5 @@ window.Roll = (sides, numDice = 1) => window.Random.roll(sides, numDice);
 window.ChooseFrom = (array) => window.Random.chooseFrom(array);
 window.Shuffle = (array) => window.Random.shuffle(array);
 window.Chance = (probability) => window.Random.chance(probability);
+// Inclusive random between min and max
+window.RandBetween = (min, max) => window.Random.nextInt(min, max);
