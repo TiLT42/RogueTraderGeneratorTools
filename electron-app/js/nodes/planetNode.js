@@ -10,17 +10,18 @@ class PlanetNode extends NodeBase {
         this.isMoon = false;
         this.maxSize = 999;
         
-        // General planet properties
-        this.body = '';
-        this.bodyValue = 0;
-        this.gravity = '';
-        this.atmosphericPresence = '';
-        this.hasAtmosphere = false;
-        this.atmosphericComposition = '';
-        this.atmosphereTainted = false;
-        this.atmospherePure = false;
-        this.climate = '';
-        this.habitability = 'Inhospitable'; // Inhospitable, TrappedWater, LiquidWater, LimitedEcosystem, Verdant
+    // General planet properties (parity with WPF)
+    this.body = '';
+    this.bodyValue = 0;               // Original d10 roll result (1-10) potentially capped by maxSize
+    this.effectivePlanetSize = 'Small'; // Small | Large | Vast (derived grouping)
+    this.gravity = '';
+    this.atmosphericPresence = '';
+    this.hasAtmosphere = false;
+    this.atmosphericComposition = '';
+    this.atmosphereTainted = false;
+    this.atmospherePure = false;
+    this.climate = '';
+    this.habitability = 'Inhospitable'; // Inhospitable, TrappedWater, LiquidWater, LimitedEcosystem, Verdant
         
         // Child nodes
         this.orbitalFeaturesNode = null;
@@ -68,46 +69,413 @@ class PlanetNode extends NodeBase {
 
     generate() {
         super.generate();
-        
-        // Set page reference for planet generation
         this.pageReference = createPageReference(16);
-        
-        // Generate planet properties
-        this.generateBody();
-        this.generateGravity();
-        this.generateAtmosphere();
-        this.generateClimate();
-        this.generateHabitability();
-        this.generateTerrain();
-        // After basic terrain counts, generate environment territories if habitable
-        if (this.habitability !== 'Inhospitable') {
-            // Number of territories: simple heuristic based on continents (fallback 1)
-            const territories = Math.max(1, this.numContinents || 1);
-            if (window.EnvironmentData && typeof window.EnvironmentData.generateEnvironment === 'function') {
-                this.environment = window.EnvironmentData.generateEnvironment(territories);
+
+        // Reset collections that can be regenerated
+        this.mineralResources = [];
+        this.organicCompounds = [];
+        this.archeotechCaches = [];
+        this.xenosRuins = [];
+        this.orbitalFeaturesNode = null;
+        this.nativeSpeciesNode = null;
+        this.primitiveXenosNode = null;
+
+        // 1. Body & derived size
+        this.generateBodyParity();
+        // 2. Gravity (depends on body modifiers)
+        this.generateGravityParity();
+        // 3. Orbital Features (depends on gravity & moon status)
+        this.generateOrbitalFeaturesParity();
+        // 4. Atmosphere presence & composition
+        this.generateAtmospherePresenceParity();
+        this.generateAtmosphericCompositionParity();
+        // 5. Climate
+        this.generateClimateParity();
+        // 6. Habitability
+        this.generateHabitabilityParity();
+        // 7. Landmasses
+        this.generateLandmassesParity();
+        // 8. Environment (only for LimitedEcosystem / Verdant)
+        this.generateEnvironmentParity();
+        // 9. Resources (base + additional)
+        this.generateResourcesParity();
+        // 10. Landmarks / references (if environment present)
+        this.buildEnvironmentReferences();
+        // 11. Inhabitants (retain simplified model for now; TODO full parity)
+        this.generateInhabitants();
+        // 12. Description
+        this.updateDescription();
+    }
+
+    /* ===================== PARITY GENERATION SECTIONS ===================== */
+
+    // Body generation per WPF (d10 + maxSize cap) producing body name & modifiers
+    generateBodyParity() {
+        let roll = RollD10();
+        if (roll > this.maxSize) roll = this.maxSize;
+        this.bodyValue = roll;
+        this.gravityRollModifier = 0;
+        this.atmosphericPresenceModifier = 0; // applied later
+        this.atmosphericCompositionModifier = 0;
+        this.habitabilityModifier = 0;
+        this.maxHabitabilityRoll = 9999; // cap for extreme climates
+        this.mineralResourceAbundanceModifier = 0; // placeholder (abundance not modeled yet)
+        this.maximumMineralResourceAbundance = -1; // unused placeholder
+
+        switch (roll) {
+            case 1:
+                this.body = 'Low-Mass';
+                this.gravityRollModifier -= 7;
+                this.effectivePlanetSize = 'Small';
+                this.maximumMineralResourceAbundance = 40; // informational only
+                break;
+            case 2:
+            case 3:
+                this.body = 'Small';
+                this.gravityRollModifier -= 5;
+                this.effectivePlanetSize = 'Small';
+                break;
+            case 4:
+                this.body = 'Small and Dense';
+                this.effectivePlanetSize = 'Small';
+                this.mineralResourceAbundanceModifier += 10;
+                break;
+            case 5:
+            case 6:
+            case 7:
+                this.body = 'Large';
+                this.effectivePlanetSize = 'Large';
+                break;
+            case 8:
+                this.body = 'Large and Dense';
+                this.effectivePlanetSize = 'Large';
+                this.gravityRollModifier += 5;
+                this.mineralResourceAbundanceModifier += 10;
+                break;
+            case 9:
+            case 10:
+                this.body = 'Vast';
+                this.effectivePlanetSize = 'Vast';
+                this.gravityRollModifier += 4;
+                break;
+            default:
+                this.body = 'Unknown';
+        }
+    }
+
+    generateGravityParity() {
+        let roll = RollD10() + this.gravityRollModifier;
+        if (roll <= 2) {
+            this.gravity = 'Low';
+            this.orbitalFeaturesModifier = -10;
+            this.atmosphericPresenceModifier -= 2;
+            this.numOrbitalFeaturesToGenerate = RollD5() - 3;
+        } else if (roll <= 8) {
+            this.gravity = 'Normal';
+            this.orbitalFeaturesModifier = 0;
+            this.numOrbitalFeaturesToGenerate = RollD5() - 2;
+        } else {
+            this.gravity = 'High';
+            this.orbitalFeaturesModifier = 10;
+            this.atmosphericPresenceModifier += 1;
+            this.numOrbitalFeaturesToGenerate = RollD5() - 1;
+        }
+        if (this.numOrbitalFeaturesToGenerate < 1) this.numOrbitalFeaturesToGenerate = 1;
+        if (this.isMoon) this.numOrbitalFeaturesToGenerate = 0; // moons don't have their own orbital feature sets in parity
+    }
+
+    generateOrbitalFeaturesParity() {
+        if (this.numOrbitalFeaturesToGenerate <= 0) return;
+        for (let i = 0; i < this.numOrbitalFeaturesToGenerate; i++) {
+            const roll = RollD100() + this.orbitalFeaturesModifier;
+            if (roll <= 45) {
+                // no feature
+            } else if (roll <= 60) {
+                // Asteroid
+                this._ensureOrbitalFeaturesNode();
+                this.orbitalFeaturesNode.addChild(this._createAsteroid());
+            } else if (roll <= 90) {
+                // Lesser Moon
+                this._ensureOrbitalFeaturesNode();
+                this.orbitalFeaturesNode.addChild(this._createLesserMoon());
+            } else {
+                // Moon (full planet moon)
+                this._ensureOrbitalFeaturesNode();
+                const moon = createNode(NodeTypes.Planet);
+                moon.isMoon = true;
+                moon.maxSize = this.bodyValue; // size capped by parent body value (simplified)
+                moon.zone = this.zone; // inherits zone
+                moon.generate();
+                this.orbitalFeaturesNode.addChild(moon);
             }
+        }
+        if (this.orbitalFeaturesNode) {
+            this._assignNamesToOrbitalFeatures();
+            this.addChild(this.orbitalFeaturesNode);
+        }
+    }
+
+    _ensureOrbitalFeaturesNode() {
+        if (!this.orbitalFeaturesNode) {
+            this.orbitalFeaturesNode = createNode(NodeTypes.OrbitalFeatures);
+            this.orbitalFeaturesNode.children = []; // ensure empty
+        }
+    }
+    _createAsteroid() { const a = createNode(NodeTypes.Asteroid); a.generate(); return a; }
+    _createLesserMoon() { const m = createNode(NodeTypes.LesserMoon); m.generate(); return m; }
+
+    _assignNamesToOrbitalFeatures() {
+        if (!this.orbitalFeaturesNode) return;
+        let count = 1;
+        for (const child of this.orbitalFeaturesNode.children) {
+            if (child.type === NodeTypes.Planet || child.type === NodeTypes.LesserMoon || child.type === NodeTypes.Asteroid) {
+                child.nodeName = `${this.nodeName}-${count}`;
+                // Recurse for nested moons
+                if (child.type === NodeTypes.Planet && typeof child._assignNamesToOrbitalFeatures === 'function') {
+                    child._assignNamesToOrbitalFeatures();
+                }
+                count++;
+            }
+        }
+    }
+
+    generateAtmospherePresenceParity() {
+        // System creation rule: HavenThickerAtmospheresInPrimaryBiosphere could add +1 & +2 comps; placeholder
+        let modifier = this.atmosphericPresenceModifier;
+        let roll = RollD10() + modifier;
+        if (roll <= 1 && !this.forceInhabitable) {
+            this.atmosphereType = 'None';
+            this.atmosphericPresence = 'None';
+            this.hasAtmosphere = false;
+        } else if (roll <= 4) {
+            this.atmosphereType = 'Thin';
+            this.atmosphericPresence = 'Thin';
+            this.hasAtmosphere = true;
+        } else if (roll <= 9) {
+            this.atmosphereType = 'Moderate';
+            this.atmosphericPresence = 'Moderate';
+            this.hasAtmosphere = true;
+        } else {
+            this.atmosphereType = 'Heavy';
+            this.atmosphericPresence = 'Heavy';
+            this.hasAtmosphere = true;
+        }
+    }
+
+    generateAtmosphericCompositionParity() {
+        if (!this.hasAtmosphere) {
+            this.atmosphericComposition = 'None';
+            this.atmosphereTainted = false;
+            this.atmospherePure = false;
+            return;
+        }
+        let roll = RollD10() + this.atmosphericCompositionModifier;
+        if (roll <= 1 && !this.forceInhabitable) {
+            this.atmosphericComposition = 'Deadly';
+        } else if (roll <= 2 && !this.forceInhabitable) {
+            this.atmosphericComposition = 'Corrosive';
+        } else if (roll <= 5 && !this.forceInhabitable) {
+            this.atmosphericComposition = 'Toxic';
+        } else if (roll <= 7) {
+            this.atmosphericComposition = 'Tainted';
+            this.atmosphereTainted = true;
+        } else {
+            this.atmosphericComposition = 'Pure';
+            this.atmospherePure = true;
+        }
+    }
+
+    generateClimateParity() {
+        if (this.hasAtmosphere) {
+            let climateModifier = 0;
+            if (this.zone === 'InnerCauldron') climateModifier -= 6;
+            else if (this.zone === 'OuterReaches') climateModifier += 6;
+            let roll = RollD10() + climateModifier;
+            if (roll <= 0 && !this.forceInhabitable) {
+                this.climate = 'Burning World';
+                this.climateType = 'BurningWorld';
+                this.habitabilityModifier -= 7;
+                this.maxHabitabilityRoll = 3;
+            } else if (roll <= 3) {
+                this.climate = 'Hot World';
+                this.climateType = 'HotWorld';
+                this.habitabilityModifier -= 2;
+            } else if (roll <= 7) {
+                this.climate = 'Temperate World';
+                this.climateType = 'TemperateWorld';
+            } else if (roll <= 10 || this.forceInhabitable) {
+                this.climate = 'Cold World';
+                this.climateType = 'ColdWorld';
+                this.habitabilityModifier -= 2;
+            } else {
+                this.climate = 'Ice World';
+                this.climateType = 'IceWorld';
+                this.habitabilityModifier -= 7;
+                this.maxHabitabilityRoll = 3;
+            }
+        } else {
+            // No atmosphere fallback
+            if (this.zone === 'InnerCauldron') {
+                this.climate = 'Burning World';
+                this.habitabilityModifier -= 7;
+            } else if (this.zone === 'OuterReaches') {
+                this.climate = 'Ice World';
+                this.habitabilityModifier -= 7;
+            } else if (RollD10() <= 5) {
+                this.climate = 'Burning World';
+                this.habitabilityModifier -= 7;
+            } else {
+                this.climate = 'Ice World';
+                this.habitabilityModifier -= 7;
+            }
+            // climateType tracking (approx)
+            if (this.climate.startsWith('Burning')) this.climateType = 'BurningWorld';
+            else if (this.climate.startsWith('Ice')) this.climateType = 'IceWorld';
+        }
+        this.worldType = this.climateType === 'BurningWorld' ? 'VolcanicWorld' : (this.climateType || 'TemperateWorld');
+    }
+
+    generateHabitabilityParity() {
+        let chanceOfAdaptedLife = false;
+        if (RollD100() <= 2) { // tiny chance on normally hostile worlds
+            chanceOfAdaptedLife = true;
+            this.maxHabitabilityRoll = 9999;
+        }
+        if ((this.hasAtmosphere && (this.atmosphereTainted || this.atmospherePure)) || chanceOfAdaptedLife) {
+            let roll = RollD10() + this.habitabilityModifier;
+            if (roll > this.maxHabitabilityRoll) roll = this.maxHabitabilityRoll;
+            if (roll <= 1) this.habitability = 'Inhospitable';
+            else if (roll <= 3) this.habitability = 'TrappedWater';
+            else if (roll <= 5) this.habitability = 'LiquidWater';
+            else if (roll <= 7) this.habitability = 'LimitedEcosystem';
+            else this.habitability = 'Verdant';
+        } else {
+            this.habitability = 'Inhospitable';
+        }
+        if (this.forceInhabitable && !(this.habitability === 'LimitedEcosystem' || this.habitability === 'Verdant')) {
+            this.habitability = RollD5() <= 2 ? 'LimitedEcosystem' : 'Verdant';
+        }
+    }
+
+    generateLandmassesParity() {
+        this.numContinents = 0; this.numIslands = 0;
+        let addLand = false;
+        if (['LiquidWater','LimitedEcosystem','Verdant'].includes(this.habitability)) {
+            if (RollD10() >= 4) addLand = true;
+        } else if (RollD10() >= 8) addLand = true;
+        if (!addLand) return;
+        this.numContinents = RollD5();
+        let temp1 = RollD100();
+        let temp2 = RollD100();
+        this.numIslands = Math.min(temp1, temp2);
+        if (this.effectivePlanetSize === 'Small') {
+            this.numIslands -= 15;
+            if (this.numIslands > 20) this.numIslands = 10 + RollD10();
+        }
+        if (this.effectivePlanetSize === 'Large') {
+            this.numIslands -= 10;
+            if (this.numIslands > 50) this.numIslands = 40 + RollD10();
+        }
+        if (['Inhospitable','TrappedWater'].includes(this.habitability)) this.numIslands -= 30;
+        if (this.numIslands < 0) this.numIslands = 0;
+    }
+
+    generateEnvironmentParity() {
+        if (!(this.habitability === 'LimitedEcosystem' || this.habitability === 'Verdant')) {
+            this.environment = null;
+            return;
+        }
+        let numTerritories = RollD5();
+        if (this.effectivePlanetSize === 'Small') numTerritories -= 2;
+        if (this.effectivePlanetSize === 'Vast') numTerritories += 3;
+        if (this.habitability === 'Verdant') numTerritories += 2;
+        if (numTerritories < 1) numTerritories = 1;
+        if (window.EnvironmentData && typeof window.EnvironmentData.generateEnvironment === 'function') {
+            this.environment = window.EnvironmentData.generateEnvironment(numTerritories);
         } else {
             this.environment = null;
         }
-        this.generateResources();
-        // Landmarks after resources since planet size known
+    }
+
+    generateResourcesParity() {
+        // Base mineral resources based on size
+        let numMinerals = 0;
+        switch (this.effectivePlanetSize) {
+            case 'Small':
+                numMinerals = RollD5() - 2; break;
+            case 'Large':
+                numMinerals = RollD5(); break;
+            case 'Vast':
+                numMinerals = RollD10(); break;
+        }
+        if (numMinerals < 0) numMinerals = 0;
+        for (let i = 0; i < numMinerals; i++) this._addRandomMineral();
+
+        // Organic compounds from territories (environment-driven)
+        let numOrganicsFromTerritories = 0;
+        if (this.environment && this.environment.territories) {
+            // Simplified heuristic: each territory 20% chance
+            numOrganicsFromTerritories = this.environment.territories.reduce((acc)=> acc + (RollD100()<=20?1:0),0);
+        }
+        for (let i=0;i<numOrganicsFromTerritories;i++) this._addOrganic();
+
+        // Additional resources based on size
+        let numAdditional = 0;
+        switch (this.effectivePlanetSize) {
+            case 'Small': numAdditional = RollD5() - 3; break;
+            case 'Large': numAdditional = RollD5() - 2; break;
+            case 'Vast': numAdditional = RollD5() - 1; break;
+        }
+        if (numAdditional < 0) numAdditional = 0;
+        for (let i=0;i<numAdditional;i++) {
+            const r = RollD10();
+            if (r <= 2) { // Archeotech
+                if (RollD100() <= 70) this.archeotechCaches.push(this.generateArcheotechCache());
+                else this.archeotechCaches.push(this.generateArcheotechCache()); // simplified same
+            } else if (r <= 6) {
+                this._addRandomMineral();
+            } else if (r <= 8) {
+                if (['Verdant','LimitedEcosystem'].includes(this.habitability)) this._addOrganic(); else i--; // reroll
+            } else { // Xenos ruins
+                this.xenosRuins.push(this.generateXenosRuins());
+            }
+        }
+    }
+
+    _addRandomMineral() {
+        const mineral = this.generateMineralResource();
+        if (mineral && !this.mineralResources.includes(mineral)) this.mineralResources.push(mineral);
+    }
+    _addOrganic() {
+        const organic = this.generateOrganicCompound();
+        if (organic && !this.organicCompounds.find(o=> (typeof o==='string'? o: o.type) === (typeof organic==='string'?organic:organic.type))) this.organicCompounds.push(organic);
+    }
+
+    buildEnvironmentReferences() {
         if (this.environment && window.EnvironmentData) {
             try {
                 window.EnvironmentData.generateLandmarksForEnvironment(this.environment, {
                     climateType: this.climateType,
                     atmosphereType: this.atmosphereType,
-                    effectivePlanetSize: this.body, // Body string maps loosely; Large/Vast logic only used
+                    effectivePlanetSize: this.effectivePlanetSize,
                     numOrbitalFeatures: this.orbitalFeaturesNode ? this.orbitalFeaturesNode.children.length : 0
                 });
                 window.EnvironmentData.buildLandmarkReferences(this.environment);
                 this._environmentReferences = this.environment.references.slice();
-            } catch (e) { /* swallow to avoid hard crash; could log */ }
+            } catch (e) { /* ignore */ }
         }
-        this.generateInhabitants();
-        this.generateOrbitalFeatures();
-        
-        this.updateDescription();
     }
+
+    /* ===================== LEGACY SIMPLE GENERATORS (unused after parity) ===================== */
+    // Keeping original methods in case external callers rely; now wrappers or unused.
+    generateBody() { return this.generateBodyParity(); }
+    generateGravity() { return this.generateGravityParity(); }
+    generateAtmosphere() { return this.generateAtmospherePresenceParity(); }
+    generateClimate() { return this.generateClimateParity(); }
+    generateHabitability() { return this.generateHabitabilityParity(); }
+    generateTerrain() { return this.generateLandmassesParity(); }
+    generateResources() { return this.generateResourcesParity(); }
+    generateOrbitalFeatures() { return this.generateOrbitalFeaturesParity(); }
 
     generateBody() {
         let roll = RollD100();
@@ -521,116 +889,78 @@ class PlanetNode extends NodeBase {
     }
 
     updateDescription() {
-        let desc = `<h3>Planet Classification</h3>`;
-        
-        // Helper function to conditionally add page references
-        const addPageRef = (pageNum, tableName = '') => {
-            if (window.APP_STATE.settings.showPageNumbers) {
-                return ` <span class="page-reference">${createPageReference(pageNum, tableName)}</span>`;
-            }
-            return '';
-        };
-        
-        desc += `<p><strong>Body:</strong> ${this.body}${addPageRef(19, "Table 1-6: Body")}</p>`;
-        desc += `<p><strong>Gravity:</strong> ${this.gravity}${addPageRef(20, "Table 1-7: Gravity")}</p>`;
-        desc += `<p><strong>Atmosphere:</strong> ${this.atmosphericPresence}`;
-        if (this.hasAtmosphere) {
-            desc += ` (${this.atmosphericComposition})`;
-        }
-        desc += `${addPageRef(21, "Table 1-9: Atmospheric Presence")}</p>`;
-        desc += `<p><strong>Climate:</strong> ${this.climate}${addPageRef(22, "Table 1-11: Climate")}</p>`;
-        desc += `<p><strong>Habitability:</strong> ${this.habitability}${addPageRef(23, "Table 1-12: Habitability")}</p>`;
-        
-        if (this.inhabitants !== 'None') {
-            desc += `<h3>Inhabitants</h3>`;
-            desc += `<p><strong>Species:</strong> ${this.inhabitants}</p>`;
-            if (this.inhabitantDevelopment) {
-                desc += `<p><strong>Development:</strong> ${this.inhabitantDevelopment}</p>`;
-            }
-            if (this.techLevel) {
-                desc += `<p><strong>Technology Level:</strong> ${this.techLevel}</p>`;
-            }
-            if (this.population) {
-                desc += `<p><strong>Population:</strong> ${this.population}</p>`;
-            }
-        }
-        
-        if (this.numContinents > 0 || this.numIslands > 0) {
-            desc += `<h3>Terrain</h3>`;
-            if (this.numContinents > 0) {
-                desc += `<p><strong>Continents:</strong> ${this.numContinents}</p>`;
-            }
-            if (this.numIslands > 0) {
-                desc += `<p><strong>Islands:</strong> ${this.numIslands}</p>`;
-            }
-            if (this.environment) {
-                desc += `<p><strong>Territories:</strong></p><ul>`;
-                this.environment.territories.forEach(t => {
-                    const label = (function(t){
-                        let base = t.baseTerrain;
-                        const traits = window.EnvironmentData.getTerritoryTraitList(t);
-                        if (traits.length>0) base += ' ('+traits.join(', ')+')';
-                        return base;
-                    })(t);
+        let desc = `<h3>${this.isMoon ? 'Moon' : 'Planet'} Classification</h3>`;
+        const addPageRef = (p,t='') => window.APP_STATE.settings.showPageNumbers ? ` <span class="page-reference">${createPageReference(p,t)}</span>` : '';
+        desc += `<p><strong>Body:</strong> ${this.body}${addPageRef(19,'Table 1-6: Body')}</p>`;
+        desc += `<p><strong>Gravity:</strong> ${this.gravity}${addPageRef(20,'Table 1-7: Gravity')}</p>`;
+        desc += `<p><strong>Atmospheric Presence:</strong> ${this.atmosphericPresence}${addPageRef(21,'Table 1-9: Atmospheric Presence')}</p>`;
+        desc += `<p><strong>Atmospheric Composition:</strong> ${this.atmosphericComposition}${addPageRef(21,'Table 1-10: Atmospheric Composition')}</p>`;
+        desc += `<p><strong>Climate:</strong> ${this.climate}${addPageRef(22,'Table 1-11: Climate')}</p>`;
+        desc += `<p><strong>Habitability:</strong> ${this.getHabitabilityDisplay()}${addPageRef(23,'Table 1-12: Habitability')}</p>`;
+        desc += `<p><strong>Major Continents or Archipelagos:</strong> ${this.numContinents === 0 ? 'None' : this.numContinents}${addPageRef(23,'Landmasses')}</p>`;
+        desc += `<p><strong>Smaller Islands:</strong> ${this.numIslands === 0 ? 'None' : this.numIslands}${addPageRef(23,'Landmasses')}</p>`;
+
+        // Territories & Landmarks
+        if (this.environment) {
+            const territories = this.environment.territories || [];
+            desc += `<h3>Territories</h3>`;
+            if (territories.length === 0) desc += '<p>None</p>'; else {
+                desc += '<ul>';
+                territories.forEach(t => {
+                    let base = t.baseTerrain;
+                    const traits = window.EnvironmentData.getTerritoryTraitList(t);
+                    if (traits.length>0) base += ' ('+traits.join(', ')+')';
                     if (window.APP_STATE.settings.showPageNumbers) {
-                        // Find associated reference (first matching label start)
-                        const ref = this._environmentReferences.find(r => r.content.startsWith(label.split(' (')[0]));
+                        const ref = this._environmentReferences.find(r => r.content.startsWith(base.split(' (')[0]));
                         if (ref) {
                             const pr = createPageReference(ref.pageNumber, '', Object.keys(RuleBook).find(k=>window.CommonData.RuleBooks[k]===ref.book)||RuleBook.StarsOfInequity);
-                            desc += `<li>${label} <span class="page-reference">${pr}</span></li>`;
-                        } else desc += `<li>${label}</li>`;
-                    } else desc += `<li>${label}</li>`;
+                            desc += `<li>${base} <span class="page-reference">${pr}</span></li>`;
+                        } else desc += `<li>${base}</li>`;
+                    } else desc += `<li>${base}</li>`;
                 });
-                desc += `</ul>`;
-                // Landmarks aggregated per territory
-                const landmarkBlocks = this.environment.territories.map(t => {
-                    const lm = window.EnvironmentData.buildLandmarkList(t);
-                    if (lm.length === 0) return null;
-                    return lm.map(x=>`<li>${x}</li>`).join('');
-                }).filter(Boolean);
-                if (landmarkBlocks.length>0) {
-                    desc += `<p><strong>Landmarks:</strong></p><ul>` + landmarkBlocks.join('') + `</ul>`;
-                }
+                desc += '</ul>';
             }
+            const landmarkBlocks = territories.map(t => {
+                const lm = window.EnvironmentData.buildLandmarkList(t);
+                if (lm.length === 0) return null;
+                return lm.map(x=>`<li>${x}</li>`).join('');
+            }).filter(Boolean);
+            if (landmarkBlocks.length>0) desc += `<h3>Landmarks</h3><ul>${landmarkBlocks.join('')}</ul>`;
         }
-        
-        if (this.mineralResources.length > 0) {
-            desc += `<h3>Mineral Resources</h3><ul>`;
-            for (const resource of this.mineralResources) {
-                desc += `<li>${resource}</li>`;
-            }
-            desc += `</ul>`;
+
+        // Resources
+        desc += `<h3>Base Mineral Resources</h3>`;
+        if (this.mineralResources.length === 0) desc += '<p>None</p>'; else {
+            desc += '<ul>' + this.mineralResources.map(r=>`<li>${r}</li>`).join('') + '</ul>';
         }
-        
-        if (this.organicCompounds.length > 0) {
-            desc += `<h3>Organic Compounds</h3><ul>`;
-            for (const compound of this.organicCompounds) {
-                if (typeof compound === 'string') {
-                    desc += `<li>${compound}</li>`; // legacy saved format
-                } else {
-                    desc += `<li>${compound.type} (Abundance ${compound.abundance})</li>`;
-                }
-            }
-            desc += `</ul>`;
+        desc += `<h3>Organic Compounds</h3>`;
+        if (this.organicCompounds.length === 0) desc += '<p>None</p>'; else {
+            desc += '<ul>' + this.organicCompounds.map(c=> typeof c==='string'? `<li>${c}</li>` : `<li>${c.type} (Abundance ${c.abundance})</li>`).join('') + '</ul>';
         }
-        
-        if (this.archeotechCaches.length > 0) {
-            desc += `<h3>Archeotech</h3><ul>`;
-            for (const cache of this.archeotechCaches) {
-                desc += `<li>${cache}</li>`;
-            }
-            desc += `</ul>`;
-        }
-        
-        if (this.xenosRuins.length > 0) {
-            desc += `<h3>Xenos Ruins</h3><ul>`;
-            for (const ruins of this.xenosRuins) {
-                desc += `<li>${ruins}</li>`;
-            }
-            desc += `</ul>`;
-        }
-        
+        desc += `<h3>Archeotech Caches</h3>`;
+        if (this.archeotechCaches.length === 0) desc += '<p>None</p>'; else desc += '<ul>'+this.archeotechCaches.map(a=>`<li>${a}</li>`).join('')+'</ul>';
+        desc += `<h3>Xenos Ruins</h3>`;
+        if (this.xenosRuins.length === 0) desc += '<p>None</p>'; else desc += '<ul>'+this.xenosRuins.map(x=>`<li>${x}</li>`).join('')+'</ul>';
+
+        // Inhabitants (simplified model retained)
+        desc += `<h3>Inhabitants</h3>`;
+        desc += `<p><strong>Species:</strong> ${this.inhabitants}</p>`;
+        if (this.inhabitantDevelopment) desc += `<p><strong>Development:</strong> ${this.inhabitantDevelopment}</p>`;
+        if (this.techLevel) desc += `<p><strong>Technology Level:</strong> ${this.techLevel}</p>`;
+        if (this.population) desc += `<p><strong>Population:</strong> ${this.population}</p>`;
+
         this.description = desc;
+    }
+
+    getHabitabilityDisplay() {
+        switch (this.habitability) {
+            case 'Inhospitable': return 'Inhospitable';
+            case 'TrappedWater': return 'Trapped Water';
+            case 'LiquidWater': return 'Liquid Water';
+            case 'LimitedEcosystem': return 'Limited Ecosystem';
+            case 'Verdant': return 'Verdant';
+            default: return this.habitability;
+        }
     }
 
     toJSON() {
@@ -638,10 +968,13 @@ class PlanetNode extends NodeBase {
         json.isMoon = this.isMoon;
         json.body = this.body;
         json.bodyValue = this.bodyValue;
+        json.effectivePlanetSize = this.effectivePlanetSize;
         json.gravity = this.gravity;
         json.atmosphericPresence = this.atmosphericPresence;
         json.hasAtmosphere = this.hasAtmosphere;
         json.atmosphericComposition = this.atmosphericComposition;
+        json.atmosphereTainted = this.atmosphereTainted;
+        json.atmospherePure = this.atmospherePure;
         json.climate = this.climate;
         json.habitability = this.habitability;
         json.climateType = this.climateType;
@@ -682,10 +1015,13 @@ class PlanetNode extends NodeBase {
             isMoon: data.isMoon || false,
             body: data.body || '',
             bodyValue: data.bodyValue || 0,
+            effectivePlanetSize: data.effectivePlanetSize || 'Small',
             gravity: data.gravity || '',
             atmosphericPresence: data.atmosphericPresence || '',
             hasAtmosphere: data.hasAtmosphere || false,
             atmosphericComposition: data.atmosphericComposition || '',
+            atmosphereTainted: data.atmosphereTainted || false,
+            atmospherePure: data.atmospherePure || false,
             climate: data.climate || '',
             habitability: data.habitability || 'Inhospitable',
             climateType: data.climateType || 'Undefined',

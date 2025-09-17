@@ -74,40 +74,42 @@ class ContextMenu {
 
     getContextMenuItems(node) {
         const items = [];
-        
-        // Generate action
-        if (this.canGenerate(node)) {
+
+        // Generate / Edit Description (excluded entirely for Zone nodes per WPF parity)
+        if (node.type !== NodeTypes.Zone && this.canGenerate(node)) {
             items.push({ label: 'Generate', action: 'generate' });
             items.push({ label: 'Edit Description', action: 'edit-description' });
             items.push({ type: 'separator' });
         }
 
         // Movement actions
-        if (this.canMoveUp(node)) {
-            items.push({ label: 'Move Up', action: 'move-up', shortcut: 'Ctrl+U' });
-        }
-        if (this.canMoveDown(node)) {
-            items.push({ label: 'Move Down', action: 'move-down', shortcut: 'Ctrl+D' });
-        }
-        if (this.canMoveToOuterScope(node)) {
-            items.push({ 
-                label: 'Move To Outer Scope', 
-                action: 'move-to-outer-scope', 
-                shortcut: 'Ctrl+A',
-                enabled: window.APP_STATE.settings.allowFreeMovement
-            });
-        }
-
-        if (items.length > 0 && items[items.length - 1].type !== 'separator') {
-            items.push({ type: 'separator' });
+        // Node movement disabled for Zone nodes in this parity pass
+        if (node.type !== NodeTypes.Zone) {
+            if (this.canMoveUp(node)) {
+                items.push({ label: 'Move Up', action: 'move-up' });
+            }
+            if (this.canMoveDown(node)) {
+                items.push({ label: 'Move Down', action: 'move-down' });
+            }
+            if (this.canMoveUp(node) || this.canMoveDown(node)) {
+                items.push({ type: 'separator' });
+            }
         }
 
         // Node-specific actions
         if (node.type === NodeTypes.Zone) {
+            // Only Add-* actions for zones
             items.push({ label: 'Add Planet', action: 'add-planet' });
             items.push({ label: 'Add Gas Giant', action: 'add-gas-giant' });
             items.push({ label: 'Add Asteroid Belt', action: 'add-asteroid-belt' });
-            items.push({ type: 'separator' });
+            items.push({ label: 'Add Asteroid Cluster', action: 'add-asteroid-cluster' });
+            items.push({ label: 'Add Derelict Station', action: 'add-derelict-station' });
+            items.push({ label: 'Add Dust Cloud', action: 'add-dust-cloud' });
+            items.push({ label: 'Add Gravity Riptide', action: 'add-gravity-riptide' });
+            items.push({ label: 'Add Radiation Bursts', action: 'add-radiation-bursts' });
+            items.push({ label: 'Add Solar Flares', action: 'add-solar-flares' });
+            items.push({ label: 'Add Starship Graveyard', action: 'add-starship-graveyard' });
+            // No separator or other actions
         }
 
         if (node.type === NodeTypes.OrbitalFeatures) {
@@ -123,8 +125,15 @@ class ContextMenu {
         }
 
         // Common actions
-        items.push({ label: 'Rename', action: 'rename' });
-        items.push({ label: 'Delete', action: 'delete' });
+        // Rename / Delete excluded for Zone nodes in parity scope
+        if (node.type !== NodeTypes.Zone) {
+            if (this.canRename(node)) {
+                items.push({ label: 'Rename', action: 'rename' });
+            }
+            if (this.canDelete(node)) {
+                items.push({ label: 'Delete', action: 'delete' });
+            }
+        }
 
         return items;
     }
@@ -170,15 +179,47 @@ class ContextMenu {
                 break;
 
             case 'add-planet':
-                this.addChildNode(NodeTypes.Planet, 'New Planet');
+                if (this.currentNode.type === NodeTypes.Zone) this.currentNode.addPlanet();
+                else this.addChildNode(NodeTypes.Planet, 'New Planet');
+                window.treeView.refresh(); markDirty();
                 break;
-
             case 'add-gas-giant':
-                this.addChildNode(NodeTypes.GasGiant, 'New Gas Giant');
+                if (this.currentNode.type === NodeTypes.Zone) this.currentNode.addGasGiant();
+                else this.addChildNode(NodeTypes.GasGiant, 'New Gas Giant');
+                window.treeView.refresh(); markDirty();
                 break;
-
             case 'add-asteroid-belt':
-                this.addChildNode(NodeTypes.AsteroidBelt, 'Asteroid Belt');
+                if (this.currentNode.type === NodeTypes.Zone) this.currentNode.addAsteroidBelt();
+                else this.addChildNode(NodeTypes.AsteroidBelt, 'Asteroid Belt');
+                window.treeView.refresh(); markDirty();
+                break;
+            case 'add-asteroid-cluster':
+                if (this.currentNode.type === NodeTypes.Zone) this.currentNode.addAsteroidCluster();
+                window.treeView.refresh(); markDirty();
+                break;
+            case 'add-derelict-station':
+                if (this.currentNode.type === NodeTypes.Zone) this.currentNode.addDerelictStation();
+                window.treeView.refresh(); markDirty();
+                break;
+            case 'add-dust-cloud':
+                if (this.currentNode.type === NodeTypes.Zone) this.currentNode.addDustCloud();
+                window.treeView.refresh(); markDirty();
+                break;
+            case 'add-gravity-riptide':
+                if (this.currentNode.type === NodeTypes.Zone) this.currentNode.addGravityRiptide();
+                window.treeView.refresh(); markDirty();
+                break;
+            case 'add-radiation-bursts':
+                if (this.currentNode.type === NodeTypes.Zone) this.currentNode.addRadiationBursts();
+                window.treeView.refresh(); markDirty();
+                break;
+            case 'add-solar-flares':
+                if (this.currentNode.type === NodeTypes.Zone) this.currentNode.addSolarFlares();
+                window.treeView.refresh(); markDirty();
+                break;
+            case 'add-starship-graveyard':
+                if (this.currentNode.type === NodeTypes.Zone) this.currentNode.addStarshipGraveyard();
+                window.treeView.refresh(); markDirty();
                 break;
 
             case 'add-moon':
@@ -220,7 +261,8 @@ class ContextMenu {
     }
 
     canGenerate(node) {
-        return true; // Most nodes can be regenerated
+        if (node.type === NodeTypes.Zone) return false; // Hide generate for Zone nodes
+        return true; // Others remain regenerable for now
     }
 
     canMoveUp(node) {
@@ -237,6 +279,20 @@ class ContextMenu {
 
     canMoveToOuterScope(node) {
         return node.parent && node.parent.parent;
+    }
+
+    // Basic rename permission: allow for any node that has a name property and is not a Zone placeholder restriction target
+    canRename(node) {
+        if (!node) return false;
+        if (node.type === NodeTypes.Zone) return false; // intentionally suppressed per parity requirement
+        return true;
+    }
+
+    // Basic delete permission: allow if node has a parent (never delete root) and is not a Zone (zones currently immutable in UI parity)
+    canDelete(node) {
+        if (!node) return false;
+        if (node.type === NodeTypes.Zone) return false; // per parity scope
+        return !!node.parent;
     }
 }
 
