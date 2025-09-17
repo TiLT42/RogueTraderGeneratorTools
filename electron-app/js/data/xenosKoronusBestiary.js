@@ -2,7 +2,8 @@
 // Depends on xenosBase.js having populated window.XenosBaseData
 
 (function(){
-    const { XenosBase, XenosSizes, Weapon, RuleBooks, DocReference } = window.XenosBaseData;
+    const { RuleBooks, DocReference } = window.CommonData;
+    const { XenosBase, XenosSizes, Weapon } = window.XenosBaseData;
 
     const BaseProfile = Object.freeze({
         DiffuseFlora: 'DiffuseFlora',
@@ -24,13 +25,13 @@
     });
 
     const WorldType = Object.freeze({
-        DeathWorld: 'DeathWorld',
-        DesertWorld: 'DesertWorld',
-        IceWorld: 'IceWorld',
-        JungleWorld: 'JungleWorld',
-        OceanWorld: 'OceanWorld',
-        TemperateWorld: 'TemperateWorld',
-        VolcanicWorld: 'VolcanicWorld'
+        DeathWorld: 'Death World',
+        DesertWorld: 'Desert World',
+        IceWorld: 'Ice World',
+        JungleWorld: 'Jungle World',
+        OceanWorld: 'Ocean World',
+        TemperateWorld: 'Temperate World',
+        VolcanicWorld: 'Volcanic World'
     });
 
     // Reference maps (page numbers from original C# BaseProfileText / FloraTypeText)
@@ -78,7 +79,7 @@
 
         generate() {
             // Flora-only worlds chance mirrors C# (RollD10() > 6 and world type in list)
-            if (RollD10() > 6 && ['DeathWorld','JungleWorld','OceanWorld','TemperateWorld'].includes(this.worldType)) {
+            if (RollD10() > 6 && ['Death World','Jungle World','Ocean World','Temperate World'].includes(this.worldType)) {
                 switch (RollD10()) {
                     case 1: this._generateDiffuseFlora(); break;
                     case 2: case 3: case 4: this._generateSmallFlora(); break;

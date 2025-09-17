@@ -234,13 +234,13 @@ class App {
 
     getRandomWorldType() {
         const worldTypes = [
-            'TemperateWorld',
-            'DeathWorld', 
-            'DesertWorld',
-            'IceWorld',
-            'JungleWorld',
-            'OceanWorld',
-            'VolcanicWorld'
+            'Temperate World',
+            'Death World',
+            'Desert World',
+            'Ice World',
+            'Jungle World',
+            'Ocean World',
+            'Volcanic World'
         ];
         return ChooseFrom(worldTypes);
     }

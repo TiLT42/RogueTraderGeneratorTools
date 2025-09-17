@@ -13,20 +13,8 @@ const XenosSizes = Object.freeze({
     Massive: 'Massive'
 });
 
-// Added: RuleBooks enum (mirrors C# RuleBook) for reference metadata usage
-const RuleBooks = Object.freeze({
-    CoreRuleBook: 'Rogue Trader Core Rulebook',
-    StarsOfInequity: 'Stars of Inequity',
-    BattlefleetKoronus: 'Battlefleet Koronus',
-    TheKoronusBestiary: 'The Koronus Bestiary',
-    IntoTheStorm: 'Into the Storm',
-    TheSoulReaver: 'The Soul Reaver'
-});
-
-// Simple factory to build a reference object (DocContent analogue without WPF types)
-function DocReference(content, pageNumber = 0, ruleName = '', book = RuleBooks.StarsOfInequity) {
-    return { content, pageNumber, ruleName, book };
-}
+// Pull shared reference constructs from CommonData
+const { RuleBooks, DocReference } = window.CommonData;
 
 const MovementScales = Object.freeze({
     HalfMove: 'HalfMove',

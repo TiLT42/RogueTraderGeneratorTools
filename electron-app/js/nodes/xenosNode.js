@@ -124,7 +124,8 @@ class XenosNode extends NodeBase {
             return `<li>${label} <span class=\"page-reference\">${createPageReference(docRef.pageNumber, '', mapBookName(docRef.book))}</span></li>`;
         };
 
-        let desc = `<h3>${this.nodeName}</h3>`;
+        //let desc = `<h3>${this.nodeName}</h3>`;
+        let desc = ``;
         
         // Add specific details based on xenos type
         if (this.xenos instanceof XenosStarsOfInequity) {
@@ -219,17 +220,13 @@ class XenosNode extends NodeBase {
         
         statBlock += `<p><strong>Wounds:</strong> ${this.wounds}</p>`;
         statBlock += `<p><strong>Movement:</strong> ${this.movement}</p>`;
-        statBlock += `<p><strong>Skills:</strong> ${this.skills.join(', ')}</p>`;
+    statBlock += `<p><strong>Skills:</strong> ${this.skills.length ? this.skills.join(', ') : 'None'}</p>`;
         
-        if (this.talents.length > 0) {
-            statBlock += `<p><strong>Talents:</strong> ${this.talents.join(', ')}</p>`;
-        }
+        statBlock += `<p><strong>Talents:</strong> ${this.talents.length ? this.talents.join(', ') : 'None'}</p>`;
         
-        if (this.traits.length > 0) {
-            statBlock += `<p><strong>Traits:</strong> ${this.traits.join(', ')}</p>`;
-        }
+        statBlock += `<p><strong>Traits:</strong> ${this.traits.length ? this.traits.join(', ') : 'None'}</p>`;
         
-        statBlock += `<p><strong>Weapons:</strong> ${this.weapons.join(', ')}</p>`;
+    statBlock += `<p><strong>Weapons:</strong> ${this.weapons.length ? this.weapons.join(', ') : 'None'}</p>`;
         statBlock += `<p><strong>Armour:</strong> ${this.armour}</p>`;
         
         return statBlock;
