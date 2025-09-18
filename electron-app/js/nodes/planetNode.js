@@ -858,19 +858,17 @@ class PlanetNode extends NodeBase {
     }
 
     generateMineralResource() {
-        const roll = RollD100();
-        
-        if (roll <= 40) {
-            return 'Industrial Metals';
-        } else if (roll <= 60) {
-            return 'Ornamental Materials';
-        } else if (roll <= 75) {
-            return 'Radioactive Materials';
-        } else if (roll <= 90) {
-            return 'Exotic Materials';
-        } else {
-            return 'Rare Earth Elements';
+        // Delegated to shared generator in common.js for reuse by other nodes (asteroids, etc.)
+        if (window.CommonData && typeof window.CommonData.generateMineralResource === 'function') {
+            return window.CommonData.generateMineralResource();
         }
+        // Fallback (should rarely happen if common.js loaded first)
+        const roll = RollD100();
+        if (roll <= 40) return 'Industrial Metals';
+        if (roll <= 60) return 'Ornamental Materials';
+        if (roll <= 75) return 'Radioactive Materials';
+        if (roll <= 90) return 'Exotic Materials';
+        return 'Rare Earth Elements';
     }
 
     generateOrganicCompound() {
