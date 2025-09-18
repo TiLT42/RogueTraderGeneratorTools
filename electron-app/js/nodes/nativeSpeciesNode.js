@@ -17,10 +17,12 @@ class NativeSpeciesNode extends NodeBase {
 
     addXenos(worldType='TemperateWorld') {
         // Mirrors C# AddXenos: create XenosNode(worldType,false,systemCreationRules)
+        // Parity NOTE: systemCreationRules now propagated to child if present so future dominant species / bonuses can reference.
         const xenos = createNode(NodeTypes.Xenos, null, worldType, false);
         if (!xenos) return null;
         // Pass through systemCreationRules if the Xenos node expects it (constructor signature in JS version may differ)
         // We simply call generate and add as child.
+        if (this.systemCreationRules) xenos.systemCreationRules = this.systemCreationRules;
         xenos.generate?.();
         this.addChild(xenos);
         this.updateDescription();
@@ -61,6 +63,7 @@ class NativeSpeciesNode extends NodeBase {
             for (const childData of data.children) {
                 const child = createNode(childData.type);
                 const restoredChild = child.constructor.fromJSON ? child.constructor.fromJSON(childData) : NodeBase.fromJSON(childData);
+                if (this.systemCreationRules && restoredChild) restoredChild.systemCreationRules = this.systemCreationRules;
                 node.addChild(restoredChild);
             }
         }

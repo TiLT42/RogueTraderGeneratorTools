@@ -5,6 +5,7 @@ class PrimitiveXenosNode extends NodeBase {
         this.nodeName = 'Primitive Xenos';
         this.fontForeground = '#e74c3c';
         this.worldType = 'TemperateWorld';
+        this.systemCreationRules = null; // parity: allow propagation for future dominant species hooks
     }
 
     generate() {
@@ -35,6 +36,7 @@ class PrimitiveXenosNode extends NodeBase {
     addXenos(worldType) {
         const xenos = createNode(NodeTypes.Xenos, null, worldType, true);
         xenos.parent = this;
+        if (this.systemCreationRules) xenos.systemCreationRules = this.systemCreationRules; // propagate
         this.children.push(xenos);
         xenos.generate();
     }
@@ -42,6 +44,10 @@ class PrimitiveXenosNode extends NodeBase {
     static fromJSON(data) {
         const node = new PrimitiveXenosNode(data.id);
         Object.assign(node, data);
+        // Ensure propagation after load
+        if (node.children && node.systemCreationRules) {
+            node.children.forEach(c => { c.systemCreationRules = node.systemCreationRules; });
+        }
         
         // Restore children
         if (data.children && data.children.length > 0) {

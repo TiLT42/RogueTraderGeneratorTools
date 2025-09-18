@@ -973,46 +973,48 @@ class PlanetNode extends NodeBase {
     }
 
     generateNativeSpecies() {
+        // Parity NOTE: Rewritten to approximate C# logic using Environment notable species counts + habitability modifiers.
+        // Original C# pipeline:
+        //   - Create NativeSpeciesNode container
+        //   - Base species count = Sum(Notable Species trait across territories)
+        //   - Habitability modifiers: LimitedEcosystem (+d5+1), Verdant (+d5+5)
+        //   - If neither Stars of Inequity nor Koronus Bestiary enabled => 0 species (do not generate)
+        //   - Ordered world types derived from territories; consumed in order when creating Xenos
+        // TODO: Replace heuristic world type mapping in EnvironmentData.getOrderedWorldTypesForNotableSpecies() with a full port if needed.
+
+        const enabled = window.APP_STATE.settings.enabledBooks || {};
+        const hasXenosBooks = (enabled.StarsOfInequity || enabled.TheKoronusBestiary);
+        if (!hasXenosBooks) return; // gating – same behavior: no supported xenos rulebook -> skip generation entirely
+
+        // Ensure environment exists (C# environment already created earlier in planet gen; if missing, skip)
+    const env = this.environment; // environment already generated earlier and stored on planet
+        const { getTotalNotableSpecies, getOrderedWorldTypesForNotableSpecies } = window.EnvironmentData;
+        let baseCount = 0;
+        if (env) baseCount = getTotalNotableSpecies(env);
+
+        // Habitability adjustments
+        if (this.habitability === 'LimitedEcosystem') baseCount += (RollD5() + 1);
+        else if (this.habitability === 'Verdant') baseCount += (RollD5() + 5);
+        // Other habitability levels add no automatic species in parity model.
+
+        if (baseCount <= 0) return; // nothing to add
+
         this.nativeSpeciesNode = createNode(NodeTypes.NativeSpecies);
+        this.nativeSpeciesNode.systemCreationRules = this.systemCreationRules || this._findSystemCreationRules?.();
         this.nativeSpeciesNode.generate();
         this.addChild(this.nativeSpeciesNode);
-        
-        // Determine number of native species based on habitability
-        let numNativeSpecies = 0;
-        
-        if (this.habitability === 'LimitedEcosystem') {
-            numNativeSpecies = RollD5() + 1;
-        } else if (this.habitability === 'Verdant') {
-            numNativeSpecies = RollD5() + 5;
-        } else if (this.habitability === 'LiquidWater') {
-            numNativeSpecies = RollD3();
-        } else {
-            // For other habitability levels, small chance
-            if (RollD100() <= 20) {
-                numNativeSpecies = 1;
-            }
+
+        // Build ordered world types list; if shorter than count, pad with planet worldType
+        let orderedWorldTypes = [];
+        if (env) orderedWorldTypes = getOrderedWorldTypesForNotableSpecies(env, this);
+        while (orderedWorldTypes.length < baseCount) orderedWorldTypes.push(this.worldType);
+
+        for (let i = 0; i < baseCount; i++) {
+            const wt = orderedWorldTypes[i] || this.worldType;
+            this.nativeSpeciesNode.addXenos(wt);
         }
-        
-        // Generate individual native species as XenosNode children
-        for (let i = 0; i < numNativeSpecies; i++) {
-            let worldType = this.worldType;
-            
-            // Vary world type based on climate for diversity
-            if (this.climateType === 'IceWorld') {
-                worldType = 'IceWorld';
-            } else if (this.climateType === 'BurningWorld') {
-                worldType = 'VolcanicWorld';
-            } else if (this.climateType === 'HotWorld' && RollD10() <= 6) {
-                worldType = 'DesertWorld';
-            } else if (this.climateType === 'ColdWorld' && RollD10() <= 6) {
-                worldType = 'IceWorld';
-            }
-            
-            this.nativeSpeciesNode.addXenos(worldType);
-        }
-        
-        // If no species were generated, remove the node
-        if (numNativeSpecies === 0) {
+        // If somehow no children, remove node (defensive)
+        if (!this.nativeSpeciesNode.children.length) {
             this.removeChild(this.nativeSpeciesNode);
             this.nativeSpeciesNode = null;
         }

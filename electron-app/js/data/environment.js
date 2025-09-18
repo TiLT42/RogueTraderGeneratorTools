@@ -303,6 +303,43 @@
         getTerritoryTraitList,
         generateLandmarksForEnvironment,
         buildLandmarkList,
-        buildLandmarkReferences
+        buildLandmarkReferences,
+        // Added for Native Species parity (PlanetNode) – lightweight helpers approximating C# Environment methods
+        // TODO: When full Environment.cs parity is required, replace these with direct ports of GetNumNotableSpecies()
+        //       and GetWorldTypesForNotableSpecies(). Current approach derives values from existing territory data.
+        getTotalNotableSpecies(env){
+            if(!env || !env.territories) return 0;
+            return env.territories.reduce((sum,t)=> sum + (t.notableSpecies||0), 0);
+        },
+        getOrderedWorldTypesForNotableSpecies(env, planet){
+            // C# creates an ordered list of world types associated to the notable species territories.
+            // We approximate by mapping each territory base terrain to a plausible world type influence.
+            // Mapping heuristic (TODO: refine if source mapping table is later ported):
+            // Forest -> TemperateWorld; Mountain -> MountainWorld (fallback TemperateWorld if not defined elsewhere);
+            // Plains -> TemperateWorld; Swamp -> DeathWorld (hostile wetlands) with 40% chance, else TemperateWorld;
+            // Wasteland -> DeadWorld (barren) with 50% chance else DesertWorld.
+            const list = [];
+            if(!env || !env.territories) return list;
+            for(const t of env.territories){
+                for(let i=0;i<(t.notableSpecies||0);i++){
+                    switch(t.baseTerrain){
+                        case TerritoryBaseTerrain.Forest:
+                            list.push('TemperateWorld'); break;
+                        case TerritoryBaseTerrain.Mountain:
+                            list.push('MountainWorld'); break; // consumer will normalize if unsupported
+                        case TerritoryBaseTerrain.Plains:
+                            list.push('TemperateWorld'); break;
+                        case TerritoryBaseTerrain.Swamp:
+                            list.push(window.RollD100() <= 40 ? 'DeathWorld' : 'TemperateWorld'); break;
+                        case TerritoryBaseTerrain.Wasteland:
+                            list.push(window.RollD100() <= 50 ? 'DeadWorld' : 'DesertWorld'); break;
+                        default:
+                            list.push('TemperateWorld'); break;
+                    }
+                }
+            }
+            // Fallback: if no territories had notable species, return empty (PlanetNode will handle).
+            return list;
+        }
     };
 })();
