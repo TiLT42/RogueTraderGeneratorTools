@@ -606,7 +606,7 @@ class SystemNode extends NodeBase {
     generateAdditionalXenosRuins() {
         const count = this.systemCreationRules.ruinedEmpireExtraXenosRuinsOnDifferentPlanets || 0;
         if (count <= 0) return;
-        // TODO Parity: Confirm base abundance 10 for added ruins matches C# (may derive from table roll + modifier instead of fixed constant).
+        // Parity: Base abundance is a fresh d100 roll; bonus is (d10 + 5) when increased abundance flag set (mirrors C# GenerateAdditionalXenosRuins).
         // Collect candidates
         const all = [];
         const collect = (n)=>{ all.push(n); if (n.children) n.children.forEach(collect); };

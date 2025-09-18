@@ -18,10 +18,19 @@ class GasGiantNode extends NodeBase {
         this.zone = 'PrimaryBiosphere';
     }
 
+    // Override reset to ensure regeneration clears any existing orbital feature tree
+    reset() {
+        super.reset();
+        // Remove existing child orbital features node (if present)
+        this.removeAllChildren();
+        this.resetParityState();
+    }
+
     generate() {
+        // Regeneration invariant: always clear state & children first
+        this.reset();
         super.generate();
         this.pageReference = createPageReference(19,'Table 1-6: Body'); // first referenced table in WPF flow doc
-        this.resetParityState();
         this.generateBodyParity();
         this.generateGravityAndOrbitalFeaturePlan();
         this.generateOrbitalFeaturesParity();

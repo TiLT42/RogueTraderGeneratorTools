@@ -137,7 +137,8 @@ class RandomGenerator {
         if (!choices || choices.length === 0) return null;
         
         const totalWeight = choices.reduce((sum, choice) => sum + choice.weight, 0);
-        let random = Math.random() * totalWeight;
+        // Use internal RNG so seeding affects weighted choices deterministically
+        let random = this._randomFloat() * totalWeight;
         
         for (const choice of choices) {
             random -= choice.weight;

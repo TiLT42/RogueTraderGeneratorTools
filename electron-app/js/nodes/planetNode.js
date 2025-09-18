@@ -457,12 +457,10 @@ class PlanetNode extends NodeBase {
         }
 
         // Organic compounds from territories (environment-driven)
-        let numOrganicsFromTerritories = 0;
-        if (this.environment && this.environment.territories) {
-            // Simplified heuristic: each territory 20% chance
-            numOrganicsFromTerritories = this.environment.territories.reduce((acc)=> acc + (RollD100()<=20?1:0),0);
+        if (this.environment && window.EnvironmentData) {
+            const baseOrganicCount = window.EnvironmentData.getNumOrganicCompounds(this.environment);
+            for (let i=0;i<baseOrganicCount;i++) this._addOrganic();
         }
-        for (let i=0;i<numOrganicsFromTerritories;i++) this._addOrganic();
 
         // Additional resources based on size
         let numAdditional = 0;
@@ -682,43 +680,43 @@ class PlanetNode extends NodeBase {
     generateOrbitalFeatures() { return this.generateOrbitalFeaturesParity(); }
 
     generateBody() {
-        let roll = RollD100();
-        
-        // Apply zone modifiers
-        switch (this.zone) {
-            case 'InnerCauldron':
-                roll += 20;
-                break;
-            case 'OuterReaches':
-                roll -= 20;
-                break;
+        // Parity: base mineral count varies by effective size
+        let numMinerals;
+        switch (this.effectivePlanetSize) {
+            case 'Small': numMinerals = RollD5() - 2; if (numMinerals < 0) numMinerals = 0; break;
+            case 'Large': numMinerals = RollD5(); break;
+            case 'Vast': numMinerals = RollD10(); break;
+            default: numMinerals = RollD5();
         }
-        
-        if (this.isMoon) {
-            roll -= 30; // Moons tend to be smaller
-        }
-        
-        if (roll <= 10) {
-            this.body = 'Small and Dense';
-            this.bodyValue = 1;
-        } else if (roll <= 30) {
-            this.body = 'Small';
-            this.bodyValue = 2;
-        } else if (roll <= 60) {
-            this.body = 'Large';
-            this.bodyValue = 3;
-        } else if (roll <= 90) {
-            this.body = 'Vast';
-            this.bodyValue = 4;
-        } else {
-            this.body = 'Immense';
-            this.bodyValue = 5;
-        }
-    }
+        if (this.systemCreationRules?.numExtraMineralResourcesPerPlanet)
+            numMinerals += this.systemCreationRules.numExtraMineralResourcesPerPlanet;
+        for (let i=0;i<numMinerals;i++) this._addRandomMineral();
 
-    generateGravity() {
-        const roll = RollD100();
-        
+        // Exotic materials chance (Bountiful effect flag)
+        if (this.systemCreationRules?.chanceForExtraExoticMaterialsPerPlanet) {
+            this._addSpecificMineral('Exotic Materials');
+        }
+
+        // Additional resources counts by size
+        let numAdditional;
+        switch (this.effectivePlanetSize) {
+            case 'Small': numAdditional = RollD5() - 3; if (numAdditional < 0) numAdditional = 0; break;
+            case 'Large': numAdditional = RollD5() - 2; if (numAdditional < 0) numAdditional = 0; break;
+            case 'Vast': numAdditional = RollD5() - 1; if (numAdditional < 0) numAdditional = 0; break;
+            default: numAdditional = RollD5() - 2; if (numAdditional < 0) numAdditional = 0; break;
+        }
+        for (let i=0;i<numAdditional;i++) {
+            const roll = RollD10();
+            if (roll <= 2) { // Archeotech cache (+Ruined Empire abundance handled inside helper flags already)
+                this._addArcheotechCache();
+            } else if (roll <= 6) { // Mineral resource OR organic reroll logic
+                this._addRandomMineral();
+            } else if (roll <= 8) { // Organic compound only if inhabitable else reroll slot
+                if (['Verdant','LimitedEcosystem'].includes(this.habitability)) this._addOrganic(); else { i--; continue; }
+            } else { // Xenos Ruins
+                this._addXenosRuins();
+            }
+        }
         if (roll <= 15) {
             this.gravity = 'Low Gravity';
         } else if (roll <= 85) {
@@ -935,6 +933,18 @@ class PlanetNode extends NodeBase {
         if (!data) { // fallback to legacy strings
             if (roll <= 25) return 'Curative Compounds';
             if (roll <= 45) return 'Juvenat Compounds';
+                    // Environment-driven organic compounds (territories produce base organics in C#)
+                    if (this.environment && (this.habitability==='Verdant' || this.habitability==='LimitedEcosystem')) {
+                        // Approximate: each territory may produce 0-1 organics; C# uses Environment.GetNumOrganicCompounds()
+                        // Until full environment parity port, derive a simple count from environment.numTerritories if present.
+                        const territoryCount = this.environment.numTerritories || this.environment.territories?.length || 0;
+                        let baseOrganics = 0;
+                        if (territoryCount > 0) {
+                            // Heuristic: half of territories (rounded up) produce organics, matching typical average of d5-based original
+                            baseOrganics = Math.ceil(territoryCount / 2);
+                        }
+                        for (let i=0;i<baseOrganics;i++) this._addOrganic();
+                    }
             if (roll <= 65) return 'Toxins';
             if (roll <= 80) return 'Vivid Accessories';
             return 'Exotic Compounds';
@@ -1006,39 +1016,47 @@ class PlanetNode extends NodeBase {
         //   - If neither Stars of Inequity nor Koronus Bestiary enabled => 0 species (do not generate)
         //   - Ordered world types derived from territories; consumed in order when creating Xenos
         // TODO: Replace heuristic world type mapping in EnvironmentData.getOrderedWorldTypesForNotableSpecies() with a full port if needed.
-
         const enabled = window.APP_STATE.settings.enabledBooks || {};
         const hasXenosBooks = (enabled.StarsOfInequity || enabled.TheKoronusBestiary);
-        if (!hasXenosBooks) return; // gating – same behavior: no supported xenos rulebook -> skip generation entirely
+        if (!hasXenosBooks) return; // No valid rulebooks enabled -> skip entirely
 
-        // Ensure environment exists (C# environment already created earlier in planet gen; if missing, skip)
-    const env = this.environment; // environment already generated earlier and stored on planet
+        const env = this.environment; // parity: environment exists only on inhabitable worlds
         const { getTotalNotableSpecies, getOrderedWorldTypesForNotableSpecies } = window.EnvironmentData;
-        let baseCount = 0;
-        if (env) baseCount = getTotalNotableSpecies(env);
+        let speciesCount = 0;
+        if (env) speciesCount = getTotalNotableSpecies(env);
 
-        // Habitability adjustments
-        if (this.habitability === 'LimitedEcosystem') baseCount += (RollD5() + 1);
-        else if (this.habitability === 'Verdant') baseCount += (RollD5() + 5);
-        // Other habitability levels add no automatic species in parity model.
+        // Habitability bonuses mirror C# Native species logic (bonus dice added after territory sum)
+        if (this.habitability === 'LimitedEcosystem') {
+            speciesCount += (RollD5() + 1);
+        } else if (this.habitability === 'Verdant') {
+            speciesCount += (RollD5() + 5);
+        }
 
-        if (baseCount <= 0) return; // nothing to add
+        if (speciesCount <= 0) return; // Nothing to add
 
+        // Create container
         this.nativeSpeciesNode = createNode(NodeTypes.NativeSpecies);
         this.nativeSpeciesNode.systemCreationRules = this.systemCreationRules || this._findSystemCreationRules?.();
         this.nativeSpeciesNode.generate();
         this.addChild(this.nativeSpeciesNode);
 
-        // Build ordered world types list; if shorter than count, pad with planet worldType
-        let orderedWorldTypes = [];
-        if (env) orderedWorldTypes = getOrderedWorldTypesForNotableSpecies(env, this);
-        while (orderedWorldTypes.length < baseCount) orderedWorldTypes.push(this.worldType);
+        // Ordered world types derived from territories. We intentionally DO NOT pad yet; padding handled only if we still have fewer than required after territory expansion.
+        let orderedWorldTypes = env ? getOrderedWorldTypesForNotableSpecies(env, this) : [];
+        if (orderedWorldTypes.length < speciesCount) {
+            // Pad with planet baseline worldType for any overflow (C# falls back to general world classification)
+            while (orderedWorldTypes.length < speciesCount) orderedWorldTypes.push(this.worldType);
+        } else if (orderedWorldTypes.length > speciesCount) {
+            // In rare case environment produced more (shouldn't happen but defensive): trim
+            orderedWorldTypes = orderedWorldTypes.slice(0, speciesCount);
+        }
 
-        for (let i = 0; i < baseCount; i++) {
+        // Generate species nodes
+        for (let i = 0; i < speciesCount; i++) {
             const wt = orderedWorldTypes[i] || this.worldType;
             this.nativeSpeciesNode.addXenos(wt);
         }
-        // If somehow no children, remove node (defensive)
+
+        // Defensive cleanup
         if (!this.nativeSpeciesNode.children.length) {
             this.removeChild(this.nativeSpeciesNode);
             this.nativeSpeciesNode = null;
@@ -1168,6 +1186,8 @@ class PlanetNode extends NodeBase {
         json.atmosphereType = this.atmosphereType;
         json.worldType = this.worldType;
         json.zone = this.zone;
+        json.effectiveSystemZone = this.effectiveSystemZone;
+        json.effectiveSystemZoneCloserToSun = this.effectiveSystemZoneCloserToSun;
         json.inhabitants = this.inhabitants;
         json.inhabitantDevelopment = this.inhabitantDevelopment;
         json.techLevel = this.techLevel;
@@ -1182,6 +1202,10 @@ class PlanetNode extends NodeBase {
         json.warpStorm = this.warpStorm;
         json.environment = this.environment; // persist environment structure
         json.isInhabitantHomeWorld = this.isInhabitantHomeWorld;
+        json.forceInhabitable = this.forceInhabitable;
+        json.systemCreationRules = this.systemCreationRules || null;
+        // Store minimal copy of environment references for offline viewing (they can be rebuilt, but this preserves display immediately after load)
+        json._environmentReferences = this._environmentReferences;
         return json;
     }
 
@@ -1218,6 +1242,8 @@ class PlanetNode extends NodeBase {
             atmosphereType: data.atmosphereType || 'Undefined',
             worldType: data.worldType || 'TemperateWorld',
             zone: data.zone || 'PrimaryBiosphere',
+            effectiveSystemZone: data.effectiveSystemZone || 'PrimaryBiosphere',
+            effectiveSystemZoneCloserToSun: data.effectiveSystemZoneCloserToSun || false,
             inhabitants: data.inhabitants || 'None',
             inhabitantDevelopment: data.inhabitantDevelopment || '',
             techLevel: data.techLevel || '',
@@ -1230,7 +1256,9 @@ class PlanetNode extends NodeBase {
             xenosRuins: data.xenosRuins || [],
             maidenWorld: data.maidenWorld || false,
             warpStorm: data.warpStorm || false,
-            isInhabitantHomeWorld: data.isInhabitantHomeWorld || false
+            isInhabitantHomeWorld: data.isInhabitantHomeWorld || false,
+            forceInhabitable: data.forceInhabitable || false,
+            systemCreationRules: data.systemCreationRules || null
         });
 
         // Backwards compatibility: convert legacy mineral resource strings to objects with default abundance
@@ -1259,10 +1287,16 @@ class PlanetNode extends NodeBase {
         }
         
         if (data.environment) {
-            // Rebuild references if needed
+            // Rebuild or use stored references
             node._environmentReferences = [];
-            window.EnvironmentData.buildLandmarkReferences(node.environment);
-            node._environmentReferences = node.environment.references.slice();
+            try {
+                if (data._environmentReferences && data._environmentReferences.length) {
+                    node._environmentReferences = data._environmentReferences.slice();
+                } else if (window.EnvironmentData) {
+                    window.EnvironmentData.buildLandmarkReferences(node.environment);
+                    node._environmentReferences = (node.environment.references||[]).slice();
+                }
+            } catch(e) { /* ignore */ }
         }
         
         return node;

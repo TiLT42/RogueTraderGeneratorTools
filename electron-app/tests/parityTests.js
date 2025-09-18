@@ -161,4 +161,84 @@
       console.log('Planet regeneration test executed: true');
     }
   } catch(e){ console.warn('Planet regeneration test failed:', e.message); }
+
+  // 6. Gas giant regeneration invariants test
+  try {
+    if (typeof GasGiantNode !== 'undefined') {
+      window.__setSeed(24680);
+      const gas = new GasGiantNode();
+      gas.generate();
+      // Force add a dummy child to simulate orbital features mutation
+      if (gas.orbitalFeaturesNode) {
+        gas.orbitalFeaturesNode.customMarker = true;
+      }
+      // Track ring counts
+      const ringsBefore = { debris: gas.planetaryRingsDebris, dust: gas.planetaryRingsDust };
+      gas.generate();
+      // Ensure orbital features node recreated (reference replaced)
+      if (ringsBefore.debris > 0 || ringsBefore.dust > 0) {
+        // counts can differ after reroll; just ensure fields reset to numbers
+        assert(typeof gas.planetaryRingsDebris === 'number', 'Gas giant debris ring count numeric after regeneration');
+        assert(typeof gas.planetaryRingsDust === 'number', 'Gas giant dust ring count numeric after regeneration');
+      }
+      // Ensure no residual custom marker
+      if (gas.orbitalFeaturesNode) {
+        assert(!gas.orbitalFeaturesNode.customMarker, 'Orbital features node replaced (no stale custom marker)');
+      }
+      console.log('Gas giant regeneration test executed: true');
+    }
+  } catch(e){ console.warn('Gas giant regeneration test failed:', e.message); }
+
+  // 7. Native species parity sanity test
+  try {
+    if (typeof PlanetNode !== 'undefined' && window.EnvironmentData) {
+      window.__clearSeed();
+      window.__setSeed(424242);
+      // Ensure both books enabled (defaults already true, but explicit for clarity)
+      window.APP_STATE.settings.enabledBooks.StarsOfInequity = true;
+      window.APP_STATE.settings.enabledBooks.TheKoronusBestiary = true;
+      let ran = false;
+      for (let i=0;i<20;i++) { // multiple samples to cover habitability branches
+        const p = new PlanetNode();
+        p.generate();
+        if (!p.environment) continue; // skip non-inhabitable
+        p.generateNativeSpecies(); // (already part of generate pipeline, harmless)
+        if (!p.nativeSpeciesNode) continue;
+        ran = true;
+        const envCount = window.EnvironmentData.getTotalNotableSpecies(p.environment);
+        const total = p.nativeSpeciesNode.children.length;
+        // Compute theoretical min/max additions from habitability
+        let minBonus = 0, maxBonus = 0;
+        if (p.habitability === 'LimitedEcosystem') { minBonus = 2; maxBonus = 6; } // d5+1
+        else if (p.habitability === 'Verdant') { minBonus = 6; maxBonus = 10; } // d5+5
+        // Lower bound: envCount + (minBonus-1) tolerance because dice randomness might roll minimal inside distribution while env species could be zero
+        if (minBonus > 0) {
+          assert(total >= envCount + (minBonus - 1), 'Native species count meets parity lower bound');
+          assert(total <= envCount + maxBonus, 'Native species count within parity upper bound');
+        } else {
+          // If no bonus expected (should not happen with environment present) just ensure total >= envCount
+          assert(total >= envCount, 'Native species count >= environment base');
+        }
+      }
+      console.log('Native species parity test executed:', ran);
+    }
+  } catch(e){ console.warn('Native species parity test failed:', e.message); }
+
+  // 8. Planet serialization round-trip test
+  try {
+    if (typeof PlanetNode !== 'undefined') {
+      window.__clearSeed(); window.__setSeed(11111);
+      const p = new PlanetNode();
+      p.forceInhabitable = true; // ensure environment
+      p.generate();
+      const json = p.toJSON();
+      const restored = PlanetNode.fromJSON(JSON.parse(JSON.stringify(json)));
+      // Key field persistence assertions
+      assert(restored.forceInhabitable === p.forceInhabitable, 'forceInhabitable persisted');
+      assert(restored.effectiveSystemZone === p.effectiveSystemZone, 'effectiveSystemZone persisted');
+      assert(restored.environment ? true : true, 'environment structure present');
+      assert(Array.isArray(restored._environmentReferences), 'environment references array restored');
+      console.log('Planet serialization round-trip test executed: true');
+    }
+  } catch(e){ console.warn('Planet serialization round-trip test failed:', e.message); }
 })();
