@@ -928,14 +928,21 @@ class PlanetNode extends NodeBase {
             this.inhabitants = 'Human';
             this.generateHumanDevelopment();
         } else if (roll <= 70) {
+            // NOTE: Original WPF implementation does NOT have this simple branch; primitive xenos appear
+            // only as a side-effect of certain starfarer (Species: Other) development results (Pre-Industrial / Primitive Clans)
+            // when Koronus Bestiary is enabled. For now, mark inhabitants but defer actual primitive creature
+            // creation to a gating routine so we avoid producing an empty container.
             this.inhabitants = 'Primitive Xenos';
-            this.generatePrimitiveXenos();
+            this._maybeGeneratePrimitiveXenosDirect();
         } else if (roll <= 85) {
             this.inhabitants = 'Native Species';
             this.generateNativeSpecies();
         } else {
             this.inhabitants = 'Multiple Species';
             this.generateMultipleSpecies();
+            // Multiple Species previously triggered primitive generation 50% of the time but without parity logic.
+            // We now rely on _maybeGeneratePrimitiveXenosDirect() which enforces Koronus Bestiary + habitability.
+            if (this.inhabitants === 'Multiple Species') this._maybeGeneratePrimitiveXenosDirect(true);
         }
     }
 
@@ -965,11 +972,27 @@ class PlanetNode extends NodeBase {
         }
     }
 
-    generatePrimitiveXenos() {
-        this.primitiveXenosNode = createNode(NodeTypes.PrimitiveXenos);
-        this.primitiveXenosNode.worldType = this.worldType;
-        this.primitiveXenosNode.generate();
-        this.addChild(this.primitiveXenosNode);
+    // Internal helper: parity gating for creating primitive xenos directly when we explicitly
+    // rolled 'Primitive Xenos' or as an adjunct in a multi-species case. The true WPF logic couples
+    // primitive xenos appearance to certain starfarer development outcomes; until that full port is done
+    // we enforce strict gating (Koronus Bestiary + inhabitable) and never leave an empty container.
+    _maybeGeneratePrimitiveXenosDirect(fromMultiple = false) {
+        const enabled = window.APP_STATE.settings.enabledBooks || {};
+        if (!enabled.TheKoronusBestiary) return; // required book not enabled
+        if (!this._isPlanetInhabitable()) return; // planet must be inhabitable
+        // If multiple species branch, add a little stochastic gating to avoid overproduction (retain prior ~50% intent)
+        if (fromMultiple) {
+            if (RollD100() > 50) return;
+        }
+        const node = createNode(NodeTypes.PrimitiveXenos);
+        node.worldType = this.worldType;
+        node.systemCreationRules = this.systemCreationRules || this._findSystemCreationRules?.();
+        node.generate();
+        node.addXenos(this.worldType);
+        if (node.children.length > 0) {
+            this.primitiveXenosNode = node;
+            this.addChild(node);
+        }
     }
 
     generateNativeSpecies() {
@@ -1103,6 +1126,17 @@ class PlanetNode extends NodeBase {
         if (this.population) desc += `<p><strong>Population:</strong> ${this.population}</p>`;
 
         this.description = desc;
+        this._pruneEmptyPrimitiveXenos();
+    }
+
+    // After inhabitants & species generation, ensure we haven't retained an empty primitive xenos
+    // container (defensive parity with WPF which removes it if child count < 1).
+    _pruneEmptyPrimitiveXenos() {
+        if (this.primitiveXenosNode && (!this.primitiveXenosNode.children || this.primitiveXenosNode.children.length === 0)) {
+            // remove from children array
+            this.children = this.children.filter(c => c !== this.primitiveXenosNode);
+            this.primitiveXenosNode = null;
+        }
     }
 
     getHabitabilityDisplay() {

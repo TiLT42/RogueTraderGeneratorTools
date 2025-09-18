@@ -10,9 +10,8 @@ class PrimitiveXenosNode extends NodeBase {
 
     generate() {
         super.generate();
-        
-        // Keep a basic description; page references are shown on individual Xenos children
-        this.description = `<h3>Primitive Xenos</h3><p>A primitive alien species found on this world.</p>`;
+        // Parity: C# only adds a header (no count text). Keep minimal for consistency.
+        this.description = `<h3>Primitive Xenos</h3>`;
     }
 
     // Override to avoid footer page reference and maintain consistency
