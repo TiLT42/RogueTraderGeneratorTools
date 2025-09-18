@@ -253,7 +253,16 @@ class App {
     }
 
     generateNewTreasure(treasureType) {
-        const treasure = createNode(NodeTypes.Treasure);
+        // treasureType indicates origin variant from menu (random, finely-wrought, ancient-miracle, alien-technology, cursed-artefact)
+        let forcedOrigin = TreasureOrigin.Undefined;
+        switch (treasureType) {
+            case 'finely-wrought': forcedOrigin = TreasureOrigin.FinelyWrought; break;
+            case 'ancient-miracle': forcedOrigin = TreasureOrigin.AncientMiracle; break;
+            case 'alien-technology': forcedOrigin = TreasureOrigin.AlienTechnology; break;
+            case 'cursed-artefact': forcedOrigin = TreasureOrigin.CursedArtefact; break;
+            default: forcedOrigin = TreasureOrigin.Undefined; break; // random
+        }
+        const treasure = new TreasureNode(null, forcedOrigin);
         treasure.nodeName = `Treasure (${treasureType || 'random'})`;
         treasure.generate();
         window.treeView.addRootNode(treasure);
