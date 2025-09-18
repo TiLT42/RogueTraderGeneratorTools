@@ -13,6 +13,9 @@ class NodeBase {
         this.fontForeground = '#000000';
         this.pageReference = '';
         this.customDescription = '';
+        // Generic inhabitant fields used by many concrete nodes (not all nodes set these)
+        this.inhabitants = this.inhabitants || 'None';
+        this.inhabitantDevelopment = this.inhabitantDevelopment || '';
     }
 
     addChild(child) {
@@ -101,6 +104,28 @@ class NodeBase {
             fontForeground: this.fontForeground,
             children: this.children.map(child => child.toJSON())
         };
+    }
+
+    // Parity helper for Starfarers feature (mirrors C# SetInhabitantDevelopmentLevelForStarfarers)
+    // level: 'Voidfarers' | 'Colony' | 'Orbital Habitation'
+    setInhabitantDevelopmentLevelForStarfarers(level) {
+        if (!level) return;
+        switch (level) {
+            case 'Colony':
+                this.inhabitantDevelopment = 'Colony';
+                // Resource reduction omitted: only Planets currently model discrete resources; if needed we can hook here.
+                break;
+            case 'Orbital Habitation':
+                this.inhabitantDevelopment = 'Orbital Habitation';
+                break;
+            case 'Voidfarers':
+                this.inhabitantDevelopment = 'Voidfarers';
+                // Parity note: WPF reduces random resources 5 times – not replicated (planet resource system differs)
+                break;
+            default:
+                // Invalid level ignored silently (C# throws). We log for debugging.
+                if (window && window.console) console.warn('Invalid Starfarer development level:', level);
+        }
     }
 }
 

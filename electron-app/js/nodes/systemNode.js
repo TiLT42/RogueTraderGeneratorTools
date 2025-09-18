@@ -137,14 +137,18 @@ class SystemNode extends NodeBase {
         this.getAllDescendantNodesOfType && this.getAllDescendantNodesOfType('Planet').forEach(p=> planets.push(p));
         let inhabitable = planets.filter(p=> p.isPlanetInhabitable && p.isPlanetInhabitable());
         if (inhabitable.length===0 && this.primaryBiosphereZone) {
-            // create an emergency habitable planet
+            // create an emergency habitable planet (added after initial naming pass)
             const planet = createNode(NodeTypes.Planet); planet.generate?.(); planet.habitability = 'LimitedEcosystem';
             this.primaryBiosphereZone.addChild(planet);
+            // Re-run naming to give this planet a proper system-based name
+            this.assignSequentialBodyNames();
             inhabitable = [planet];
         }
         if (inhabitable.length===0) return;
         const home = inhabitable[RandBetween(0, inhabitable.length-1)];
         home.isInhabitantHomeWorld = true;
+        // Safety: if its name is still generic 'Planet', re-run naming
+        if (/^Planet$/.test(home.nodeName)) this.assignSequentialBodyNames();
     }
 
     generateSystemName() {
@@ -505,9 +509,113 @@ class SystemNode extends NodeBase {
     }
 
     generateStarfarers() {
-        const num = this.systemCreationRules.starfarersNumSystemFeaturesInhabited || 0;
-        if (num <= 0) return;
-        // TODO: Implement full inhabitant logic (homeworld selection, tiers, development levels) once supporting fields exist on nodes.
+        const totalToInhabit = this.systemCreationRules.starfarersNumSystemFeaturesInhabited || 0;
+        if (totalToInhabit <= 0) return;
+
+        // We'll implement after elements generated but BEFORE post-processing homeworld wrapper.
+        // 1. Collect all nodes in hierarchy (including this)
+        const all = [];
+        const collect = (n) => { all.push(n); if (n.children) n.children.forEach(collect); };
+        collect(this);
+        // 2. Filter potential planets for homeworld (inhabitable)
+        let planets = all.filter(n=> n.type === NodeTypes.Planet);
+        // Ensure minimum planets (C# enforces earlier; already handled in generation)
+        // If no inhabitable planets create one in Primary Biosphere (will name later)
+        const inhabitablePlanets = planets.filter(p=> typeof p.isPlanetInhabitable === 'function' && p.isPlanetInhabitable());
+        let createdEmergencyPlanet = false;
+        let candidatePlanets = [...inhabitablePlanets];
+        if (candidatePlanets.length === 0 && this.primaryBiosphereZone) {
+            const newPlanet = this.addPlanet('PrimaryBiosphere', true); // force inhabitable
+            planets.push(newPlanet);
+            candidatePlanets.push(newPlanet);
+            createdEmergencyPlanet = true;
+        }
+        if (candidatePlanets.length === 0) return; // safety
+
+        // 3. Select homeworld & race
+        const homeWorld = candidatePlanets[RandBetween(0, candidatePlanets.length-1)];
+        const race = (RollD10() <= 5) ? 'Human' : 'Other'; // Species.Human vs Species.Other parity
+        // Clear primitive xenos if present
+        if (homeWorld.primitiveXenosNode) { homeWorld.primitiveXenosNode.children = []; homeWorld.primitiveXenosNode = null; }
+        homeWorld.inhabitants = race;
+        // Development level for homeworld always Voidfarers in WPF initial set
+        homeWorld.setInhabitantDevelopmentLevelForStarfarers('Voidfarers');
+        homeWorld.isInhabitantHomeWorld = true;
+
+        // 4. Remaining settlements
+        let remaining = totalToInhabit - 1; // one used by homeworld
+        if (remaining <= 0) {
+            if (createdEmergencyPlanet) this.assignSequentialBodyNames();
+            return; // done
+        }
+
+        // Build tier lists (parity ordering)
+        const tier1 = []; // Planets + LesserMoons (excluding homeworld already assigned)
+        const tier2 = []; // AsteroidBelt, AsteroidCluster, Asteroid, DerelictStation, GasGiant, StarshipGraveyard
+        for (const n of all) {
+            if (n === homeWorld) continue;
+            switch (n.type) {
+                case NodeTypes.Planet:
+                case NodeTypes.LesserMoon:
+                    tier1.push(n); break;
+                case NodeTypes.AsteroidBelt:
+                case NodeTypes.AsteroidCluster:
+                case NodeTypes.Asteroid:
+                case NodeTypes.DerelictStation:
+                case NodeTypes.GasGiant:
+                case NodeTypes.StarshipGraveyard:
+                    tier2.push(n); break;
+                default: break;
+            }
+        }
+
+        const randFrom = (arr) => arr.splice(RandBetween(0, arr.length-1),1)[0];
+        while (remaining > 0 && (tier1.length + tier2.length) > 0) {
+            let targetNode = null;
+            let tier = null;
+            if (RollD10() <= 8 && tier1.length > 0) { // 80% preference tier1
+                targetNode = randFrom(tier1); tier = 1; }
+            else if (tier2.length > 0) { targetNode = randFrom(tier2); tier = 2; }
+            else { break; }
+            if (!targetNode) break;
+
+            // Assign inhabitants & development level probabilities
+            targetNode.inhabitants = race;
+            if (targetNode.type === NodeTypes.Planet) {
+                // Clear primitive xenos
+                if (targetNode.primitiveXenosNode) { targetNode.primitiveXenosNode.children = []; targetNode.primitiveXenosNode = null; }
+                let level;
+                if (typeof targetNode.isPlanetInhabitable === 'function' && targetNode.isPlanetInhabitable()) {
+                    // Inhabitable planet: 70% Voidfarers else Colony
+                    level = (RollD10() <= 7) ? 'Voidfarers' : 'Colony';
+                } else {
+                    const r = RollD10();
+                    if (r <= 3) level = 'Voidfarers'; else if (r <= 8) level = 'Colony'; else level = 'Orbital Habitation';
+                }
+                targetNode.setInhabitantDevelopmentLevelForStarfarers(level);
+            } else if (tier === 1) { // Lesser Moon in tier1
+                const level = (RollD10() <= 7) ? 'Colony' : 'Orbital Habitation';
+                targetNode.setInhabitantDevelopmentLevelForStarfarers(level);
+            } else { // tier2 node types
+                let level;
+                if (targetNode.type === NodeTypes.GasGiant) {
+                    level = 'Orbital Habitation';
+                } else if (targetNode.type === NodeTypes.AsteroidBelt || targetNode.type === NodeTypes.AsteroidCluster || targetNode.type === NodeTypes.Asteroid || targetNode.type === NodeTypes.DerelictStation || targetNode.type === NodeTypes.StarshipGraveyard) {
+                    level = (RollD10() <= 3) ? 'Colony' : 'Orbital Habitation';
+                } else {
+                    level = 'Orbital Habitation';
+                }
+                targetNode.setInhabitantDevelopmentLevelForStarfarers(level);
+            }
+            remaining--;
+        }
+
+        // If we inserted an emergency planet or altered counts we need to re-run naming
+        if (createdEmergencyPlanet) this.assignSequentialBodyNames();
+        else {
+            // Safety: ensure any new planet inserted earlier or naming changes propagate
+            this.assignSequentialBodyNames();
+        }
     }
 
     generateAdditionalXenosRuins() {
@@ -521,36 +629,41 @@ class SystemNode extends NodeBase {
     }
 
     assignSequentialBodyNames() {
-        // First pass: assign primary sequence numbers to main planets/gas giants.
+        // Centralized hierarchical naming for planets, gas giants, and their satellites.
+        // 1. Collect primaries (Planets + GasGiants) in zone order.
         let primaryIndex = 1;
         const primaries = [];
-        const processZone = (zoneNode) => {
-            for (const child of zoneNode.children) {
+        const zonesInOrder = [this.innerCauldronZone, this.primaryBiosphereZone, this.outerReachesZone];
+        for (const zone of zonesInOrder) {
+            if (!zone) continue;
+            for (const child of zone.children) {
                 if (child.type === NodeTypes.Planet || child.type === NodeTypes.GasGiant) {
-                    child._primarySequenceNumber = primaryIndex; // internal temp marker
+                    child._primarySequenceNumber = primaryIndex;
                     child.nodeName = `${this.nodeName} ${primaryIndex}`;
                     primaries.push(child);
                     primaryIndex++;
                 }
             }
-        };
-        processZone(this.innerCauldronZone); processZone(this.primaryBiosphereZone); processZone(this.outerReachesZone);
+        }
 
-        // Second pass: name orbital feature child planets/moons that are themselves Planet nodes
-        const nameSatellitePlanets = (parentPlanet) => {
-            if (!parentPlanet.orbitalFeaturesNode) return;
+        // 2. Name satellites (Planet, LesserMoon, Asteroid) for each primary.
+        const nameSatellites = (primary) => {
+            if (!primary.orbitalFeaturesNode) return;
             let subIndex = 1;
-            for (const feature of parentPlanet.orbitalFeaturesNode.children) {
-                if (feature.type === NodeTypes.Planet) {
-                    feature.nodeName = `${this.nodeName} ${parentPlanet._primarySequenceNumber}-${subIndex}`;
+            for (const sat of primary.orbitalFeaturesNode.children) {
+                if (sat.type === NodeTypes.Planet || sat.type === NodeTypes.LesserMoon || sat.type === NodeTypes.Asteroid) {
+                    sat.nodeName = `${this.nodeName} ${primary._primarySequenceNumber}-${subIndex}`;
                     subIndex++;
                 }
-                // If gas giants can have nested orbital feature planets, recurse
-                if (feature.orbitalFeaturesNode) nameSatellitePlanets(feature);
+                // Recurse for nested moons of satellite planets (rare but supported)
+                if (sat.orbitalFeaturesNode && sat.type === NodeTypes.Planet) {
+                    nameSatellites(sat);
+                }
             }
         };
-        for (const p of primaries) nameSatellitePlanets(p);
-        // Cleanup temp markers
+        for (const p of primaries) nameSatellites(p);
+
+        // 3. Cleanup temp markers
         for (const p of primaries) delete p._primarySequenceNumber;
     }
 
