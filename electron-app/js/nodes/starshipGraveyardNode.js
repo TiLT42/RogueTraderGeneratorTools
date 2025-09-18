@@ -16,6 +16,8 @@ class StarshipGraveyardNode extends NodeBase {
         this.systemCreationRules = null; // injected via ZoneNode like other feature nodes
         this.xenosRuins = [];
         this.archeotechCaches = [];
+    this._resourceArcheotechTotal = 0; // aggregated abundance sum (parity with _resourceArcheotechCache in C#)
+    this._resourceXenosTotal = 0;      // aggregated abundance sum (parity with _resourceXenosRuins in C#)
         // No pirate ships child in parity version (placeholder feature removed)
     }
 
@@ -175,30 +177,33 @@ class StarshipGraveyardNode extends NodeBase {
         if (xenotech && archeotech) {
             const numArcheo = RandBetween(1, total-1); // at least 1 of each
             const numXeno = total - numArcheo;
-            for (let i=0;i<numArcheo;i++) this._addArcheotechPacket();
-            for (let i=0;i<numXeno;i++) this._addXenosPacket();
+            for (let i=0;i<numArcheo;i++) this._accumulateArcheotech();
+            for (let i=0;i<numXeno;i++) this._accumulateXenotech();
         } else if (xenotech) {
-            for (let i=0;i<total;i++) this._addXenosPacket();
+            for (let i=0;i<total;i++) this._accumulateXenotech();
         } else if (archeotech) {
-            for (let i=0;i<total;i++) this._addArcheotechPacket();
+            for (let i=0;i<total;i++) this._accumulateArcheotech();
         }
     }
 
-    _addArcheotechPacket() {
-        const base = RollD100();
-        let abundance = base;
-        if (this.systemCreationRules?.ruinedEmpireIncreasedAbundanceArcheotechCaches) abundance += RollD10() + 5;
-        const type = this.generateArcheotechCache();
-        if (!this.archeotechCaches) this.archeotechCaches = [];
-        this.archeotechCaches.push({ type, abundance });
+    _accumulateArcheotech() {
+        let val = RollD100();
+        if (this.systemCreationRules?.ruinedEmpireIncreasedAbundanceArcheotechCaches) val += (RollD10() + 5);
+        this._resourceArcheotechTotal += val;
     }
-    _addXenosPacket() {
-        const base = RollD100();
-        let abundance = base;
-        if (this.systemCreationRules?.ruinedEmpireIncreasedAbundanceXenosRuins) abundance += RollD10() + 5;
-        const type = this.generateXenosRuins();
-        if (!this.xenosRuins) this.xenosRuins = [];
-        this.xenosRuins.push({ type, abundance });
+    _accumulateXenotech() {
+        let val = RollD100();
+        if (this.systemCreationRules?.ruinedEmpireIncreasedAbundanceXenosRuins) val += (RollD10() + 5);
+        this._resourceXenosTotal += val;
+    }
+
+    _getResourceAbundanceText(total) {
+        if (total <= 15) return 'Minimal';
+        if (total <= 40) return 'Limited';
+        if (total <= 65) return 'Sustainable';
+        if (total <= 85) return 'Significant';
+        if (total <= 98) return 'Major';
+        return 'Plentiful';
     }
 
     // ----- Dominant Ruined Species Bias / Adoption -----
@@ -280,11 +285,22 @@ class StarshipGraveyardNode extends NodeBase {
         } else {
             desc += '<p><strong>Hulks:</strong> None</p>';
         }
-        const archeo = (this.archeotechCaches||[]).filter(a=>a.abundance>0);
-        const xenos = (this.xenosRuins||[]).filter(r=>r.abundance>0);
-        if (archeo.length>0) desc += '<h4>Archeotech Resources</h4><ul>' + archeo.map(a=>`<li>${a.type} (Abundance ${a.abundance})</li>`).join('') + '</ul>';
-        if (xenos.length>0) desc += '<h4>Xenotech Resources</h4><ul>' + xenos.map(r=>`<li>${r.type} (Abundance ${r.abundance})</li>`).join('') + '</ul>';
-        if (archeo.length===0 && xenos.length===0) desc += '<p><strong>Resources:</strong> None</p>';
+    const archeoTotal = this._resourceArcheotechTotal;
+    const xenoTotal = this._resourceXenosTotal;
+        if (archeoTotal>0 || xenoTotal>0) {
+            if (archeoTotal>0) {
+                const cat = this._getResourceAbundanceText(archeoTotal);
+                const ref = showPages ? ` <span class="page-reference">${createPageReference(28,'', RuleBook.StarsOfInequity)}</span>` : '';
+                desc += `<p><strong>Archeotech Resources:</strong> ${cat} (${archeoTotal})${ref}</p>`;
+            }
+            if (xenoTotal>0) {
+                const cat2 = this._getResourceAbundanceText(xenoTotal);
+                const ref2 = showPages ? ` <span class="page-reference">${createPageReference(31,'', RuleBook.StarsOfInequity)}</span>` : '';
+                desc += `<p><strong>Xenotech Resources:</strong> ${cat2} (${xenoTotal})${ref2}</p>`;
+            }
+        } else {
+            desc += '<p><strong>Resources:</strong> None</p>';
+        }
         if (this.inhabitants && this.inhabitants !== 'None') {
             desc += `<p><strong>Inhabitants:</strong> ${this.inhabitants}</p>`;
             if (this.inhabitantDevelopment) desc += `<p><strong>Inhabitant Development:</strong> ${this.inhabitantDevelopment}</p>`;
