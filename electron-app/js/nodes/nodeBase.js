@@ -41,6 +41,16 @@ class NodeBase {
         markDirty();
     }
 
+    // Remove all child nodes (used prior to regeneration to avoid residue from earlier generations)
+    removeAllChildren() {
+        if (!this.children || this.children.length === 0) return;
+        for (const c of this.children) {
+            if (c) c.parent = null;
+        }
+        this.children = [];
+        markDirty();
+    }
+
     getDocumentContent(includeChildren = false) {
         let content = this.getNodeContent();
         

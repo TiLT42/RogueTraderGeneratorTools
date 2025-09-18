@@ -143,6 +143,12 @@ class ContextMenu {
 
         switch (action) {
             case 'generate':
+                // Clear existing children before regeneration to avoid stale sub-nodes persisting
+                if (typeof this.currentNode.removeAllChildren === 'function') {
+                    this.currentNode.removeAllChildren();
+                } else {
+                    this.currentNode.children = []; // fallback
+                }
                 this.currentNode.generate();
                 window.treeView.refresh();
                 window.documentViewer.refresh();
