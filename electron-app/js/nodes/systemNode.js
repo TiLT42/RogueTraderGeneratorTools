@@ -106,33 +106,25 @@ class SystemNode extends NodeBase {
         this.generateAdditionalXenosRuins();
         this.generateAdditionalArcheotechCaches();
 
-        // Warp storms application
-        this.generateWarpStorms();
-
-        // Sequential naming for planets & gas giants
+        // Sequential naming for planets & gas giants (naming before warp storms so storm flag appears in planet description after update)
         this.assignSequentialBodyNames();
 
-    // After naming, apply warp storms and starfarer home world if needed
-    this.applyWarpStormsToPlanets();
-    this.applyStarfarersHomeWorld();
+        // Warp storms + starfarer homeworld handled in their respective generators (avoid duplicate passes)
+        this.generateWarpStorms();
+        this.applyStarfarersHomeWorld();
 
         this.updateDescription();
     }
 
-    applyWarpStormsToPlanets() {
-        const count = this.systemCreationRules.numPlanetsInWarpStorms || this.numPlanetsInWarpStorms;
-        if (!count) return;
-        const planets = [];
-        this.getAllDescendantNodesOfType && this.getAllDescendantNodesOfType('Planet').forEach(p=> planets.push(p));
-        if (planets.length===0) return;
-        for (let i=0;i<count;i++) {
-            const idx = RandBetween(0, planets.length-1);
-            planets[idx].warpStorm = true;
-        }
-    }
+    // applyWarpStormsToPlanets deprecated: logic merged into generateWarpStorms for single-pass uniqueness.
+    applyWarpStormsToPlanets() { /* deprecated – no-op for backward compatibility */ }
 
     applyStarfarersHomeWorld() {
         if (!this.systemCreationRules.starfarersNumSystemFeaturesInhabited) return;
+        // If generateStarfarers already assigned a homeworld (any planet with isInhabitantHomeWorld) skip.
+        const existingHome = [];
+        this.getAllDescendantNodesOfType && this.getAllDescendantNodesOfType('Planet').forEach(p=> { if (p.isInhabitantHomeWorld) existingHome.push(p); });
+        if (existingHome.length > 0) return; // no-op; distribution already occurred.
         // TODO Starfarers Parity:
         // 1. Implement full multi-settlement distribution across Tier 1 (planets, lesser moons) and Tier 2 (asteroids, stations, gas giants, graveyards)
         // 2. Apply correct per-node development level probabilities (Voidfarers vs Colony vs Orbital Habitation) based on habitability checks
@@ -379,6 +371,7 @@ class SystemNode extends NodeBase {
 
     chooseMultipleEffects(max, callback) {
         // Simulate the C# 'one or more' chooser. We'll pick at least one, and keep adding with 50% until stop or all chosen.
+        // TODO Parity: C# uses iterative d10 comparisons with decreasing continuation chance (verify exact distribution and adjust if necessary).
         const available = Array.from({length:max}, (_,i)=>i+1);
         let pickedAny = false;
         while (available.length > 0) {
@@ -629,6 +622,7 @@ class SystemNode extends NodeBase {
     generateAdditionalXenosRuins() {
         const count = this.systemCreationRules.ruinedEmpireExtraXenosRuinsOnDifferentPlanets || 0;
         if (count <= 0) return;
+        // TODO Parity: Confirm base abundance 10 for added ruins matches C# (may derive from table roll + modifier instead of fixed constant).
         // Collect candidates
         const all = [];
         const collect = (n)=>{ all.push(n); if (n.children) n.children.forEach(collect); };
@@ -728,7 +722,19 @@ class SystemNode extends NodeBase {
         }
     }
     generateWarpStorms() {
-        const num = this.systemCreationRules.numPlanetsInWarpStorms || 0; if (num <= 0) return; // TODO
+        const num = this.systemCreationRules.numPlanetsInWarpStorms || this.numPlanetsInWarpStorms || 0;
+        if (num <= 0) return;
+        const planets = [];
+        this.getAllDescendantNodesOfType && this.getAllDescendantNodesOfType('Planet').forEach(p=> planets.push(p));
+        if (planets.length === 0) return;
+        const selected = new Set();
+        let attempts = 0;
+        while (selected.size < num && attempts < 100) { // safety loop
+            const idx = RandBetween(0, planets.length-1);
+            selected.add(idx);
+            attempts++;
+        }
+        selected.forEach(i => { planets[i].warpStorm = true; planets[i].updateDescription?.(); });
     }
 
     assignSequentialBodyNames() {

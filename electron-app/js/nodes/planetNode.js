@@ -244,6 +244,10 @@ class PlanetNode extends NodeBase {
     generateAtmospherePresenceParity() {
         // System creation rule: HavenThickerAtmospheresInPrimaryBiosphere could add +1 & +2 comps; placeholder
         let modifier = this.atmosphericPresenceModifier;
+        // Haven feature: thicker atmospheres in Primary Biosphere (C# applies +1 to roll making heavier atmospheres more likely)
+        if (this.systemCreationRules?.havenThickerAtmospheresInPrimaryBiosphere && this.zone === 'PrimaryBiosphere') {
+            modifier += 1; // parity assumption: small shift toward heavier categories
+        }
         let roll = RollD10() + modifier;
         if (roll <= 1 && !this.forceInhabitable) {
             this.atmosphereType = 'None';
@@ -345,6 +349,10 @@ class PlanetNode extends NodeBase {
         }
         if ((this.hasAtmosphere && (this.atmosphereTainted || this.atmospherePure)) || chanceOfAdaptedLife) {
             let roll = RollD10() + this.habitabilityModifier;
+            // Haven feature: better habitability in Primary Biosphere boosts result by +1 (bounded later by max cap)
+            if (this.systemCreationRules?.havenBetterHabitability && this.zone === 'PrimaryBiosphere') {
+                roll += 1;
+            }
             if (roll > this.maxHabitabilityRoll) roll = this.maxHabitabilityRoll;
             if (roll <= 1) this.habitability = 'Inhospitable';
             else if (roll <= 3) this.habitability = 'TrappedWater';
@@ -446,9 +454,15 @@ class PlanetNode extends NodeBase {
             }
         }
 
-        // Chance for extra exotic materials (system rule)
-        if (this.systemCreationRules && this.systemCreationRules.chanceForExtraExoticMaterialsPerPlanet) {
-            if (RollD10() >= 6) this._addSpecificMineral('Exotic Materials');
+        // Extra Exotic Materials (parity): C# effect grants a guaranteed additional Exotic Materials deposit (not probabilistic)
+        if (this.systemCreationRules?.chanceForExtraExoticMaterialsPerPlanet) {
+            if (!this.mineralResources.find(m=>m.type==='Exotic Materials')) {
+                this._addSpecificMineral('Exotic Materials');
+            } else {
+                // If already present, increase its abundance slightly to reflect "extra" benefit
+                const existing = this.mineralResources.find(m=>m.type==='Exotic Materials');
+                existing.abundance += RollD5();
+            }
         }
     }
 
@@ -484,6 +498,7 @@ class PlanetNode extends NodeBase {
     }
 
     /* ===================== INHABITANT PARITY ===================== */
+    // Public entry point (parity): always route to the full parity generator.
     generateInhabitants() { return this.generateInhabitantsFull(); }
 
     generateInhabitantsFull() {
@@ -514,6 +529,8 @@ class PlanetNode extends NodeBase {
     }
 
     _isPlanetInhabitable() { return this.habitability==='Verdant' || this.habitability==='LimitedEcosystem'; }
+    // Public alias used by System / Starfarer routines (C# naming parity: IsPlanetInhabitable)
+    isPlanetInhabitable() { return this._isPlanetInhabitable(); }
 
     _resourceCandidatesForReduction() {
         const list = [];
@@ -526,6 +543,7 @@ class PlanetNode extends NodeBase {
     _reduceRandomResource(amount) {
         // TODO: Add a history log so that users can see the planet's development over time. 
         // Systematic extraction of resources is a significant event in a planet's history.
+        // TODO Parity: Verify depletion dice (D10+5, D5) exactly match C# for each species/dev branch; adjust if discrepancies found.
         const pool = this._resourceCandidatesForReduction();
         if (pool.length===0) return;
         const target = pool[RandBetween(0,pool.length-1)];
@@ -912,63 +930,8 @@ class PlanetNode extends NodeBase {
         return ChooseFrom(species);
     }
 
-    generateInhabitants() {
-        if (this.habitability === 'Inhospitable') {
-            this.inhabitants = 'None';
-            return;
-        }
-        
-        const roll = RollD100();
-        
-        if (roll <= 30) {
-            this.inhabitants = 'None';
-        } else if (roll <= 50) {
-            this.inhabitants = 'Human';
-            this.generateHumanDevelopment();
-        } else if (roll <= 70) {
-            // NOTE: Original WPF implementation does NOT have this simple branch; primitive xenos appear
-            // only as a side-effect of certain starfarer (Species: Other) development results (Pre-Industrial / Primitive Clans)
-            // when Koronus Bestiary is enabled. For now, mark inhabitants but defer actual primitive creature
-            // creation to a gating routine so we avoid producing an empty container.
-            this.inhabitants = 'Primitive Xenos';
-            this._maybeGeneratePrimitiveXenosDirect();
-        } else if (roll <= 85) {
-            this.inhabitants = 'Native Species';
-            this.generateNativeSpecies();
-        } else {
-            this.inhabitants = 'Multiple Species';
-            this.generateMultipleSpecies();
-            // Multiple Species previously triggered primitive generation 50% of the time but without parity logic.
-            // We now rely on _maybeGeneratePrimitiveXenosDirect() which enforces Koronus Bestiary + habitability.
-            if (this.inhabitants === 'Multiple Species') this._maybeGeneratePrimitiveXenosDirect(true);
-        }
-    }
-
-    generateHumanDevelopment() {
-        const roll = RollD100();
-        
-        if (roll <= 20) {
-            this.inhabitantDevelopment = 'Feral World';
-            this.techLevel = 'Stone Age to Medieval';
-            this.population = 'Scattered Tribes';
-        } else if (roll <= 40) {
-            this.inhabitantDevelopment = 'Feudal World';
-            this.techLevel = 'Medieval to Gunpowder';
-            this.population = 'Kingdoms and Nations';
-        } else if (roll <= 60) {
-            this.inhabitantDevelopment = 'Imperial World';
-            this.techLevel = 'Imperial Standard';
-            this.population = 'Billions';
-        } else if (roll <= 80) {
-            this.inhabitantDevelopment = 'Hive World';
-            this.techLevel = 'High Imperial';
-            this.population = 'Tens of Billions';
-        } else {
-            this.inhabitantDevelopment = 'Forge World';
-            this.techLevel = 'Advanced Imperial';
-            this.population = 'Tech-Adepts and Servitors';
-        }
-    }
+    // Legacy simple inhabitant generation removed for parity: C# does not perform this separate random table once
+    // Starfarers / species generation is integrated. Development levels now only set via detailed species generators.
 
     // Internal helper: parity gating for creating primitive xenos directly when we explicitly
     // rolled 'Primitive Xenos' or as an adjunct in a multi-species case. The true WPF logic couples
@@ -978,6 +941,7 @@ class PlanetNode extends NodeBase {
         const enabled = window.APP_STATE.settings.enabledBooks || {};
         if (!enabled.TheKoronusBestiary) return; // required book not enabled
         if (!this._isPlanetInhabitable()) return; // planet must be inhabitable
+        // TODO Parity: Replace direct primitive generation with Starfarer Other species development branch linkage once starfarer parity finalized.
         // If multiple species branch, add a little stochastic gating to avoid overproduction (retain prior ~50% intent)
         if (fromMultiple) {
             if (RollD100() > 50) return;
