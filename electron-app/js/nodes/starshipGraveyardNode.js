@@ -26,6 +26,10 @@ class StarshipGraveyardNode extends NodeBase {
         this.hulks = [];
         this.xenosRuins = [];
         this.archeotechCaches = [];
+        // Fallback injection: if systemCreationRules not provided by ZoneNode (edge cases like manual insertion)
+        if (!this.systemCreationRules) {
+            let p = this.parent; while (p && !this.systemCreationRules) { if (p.systemCreationRules) this.systemCreationRules = p.systemCreationRules; p = p.parent; }
+        }
         this._generateCompositionAndHulks();
         this.updateDescription();
     }
