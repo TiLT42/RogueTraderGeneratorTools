@@ -108,4 +108,23 @@
   console.log('Abundance test executed:', abundanceTestRan);
 
   console.log('Parity tests completed.');
+
+  // 4. Regeneration reset test
+  try {
+    if (typeof SystemNode !== 'undefined') {
+      window.__setSeed(9999);
+      const sys1 = new SystemNode();
+      sys1.systemCreationRules.starfarersNumSystemFeaturesInhabited = 3;
+      sys1.generate();
+      // Mutate some state post-generation
+      sys1.systemFeatures.push('TestFeatureMarker');
+      sys1.gravityTidesGravityWellsAroundPlanets = true;
+      // Regenerate
+      sys1.generate();
+      assert(!sys1.systemFeatures.includes('TestFeatureMarker'),'System features should be cleared on regeneration');
+      assert(sys1.gravityTidesGravityWellsAroundPlanets === false,'Feature sub-flags should reset on regeneration');
+      assert(sys1.systemCreationRules.dominantRuinedSpecies === 'Undefined','SystemCreationRules reinitialized on regeneration');
+      console.log('Regeneration reset test executed: true');
+    }
+  } catch(e){ console.warn('Regeneration reset test failed:', e.message); }
 })();

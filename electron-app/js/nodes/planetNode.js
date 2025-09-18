@@ -48,6 +48,7 @@ class PlanetNode extends NodeBase {
         this.warpStorm = false;
         this.maidenWorld = false;
         this.zone = 'PrimaryBiosphere';
+    // Duplicate flags kept in one place
     this.warpStorm = false; // if set externally (warp turbulence)
     this.isInhabitantHomeWorld = false;
         
@@ -69,18 +70,48 @@ class PlanetNode extends NodeBase {
         this._environmentReferences = []; // cached DocReference[] from environment + landmarks
     }
 
-    generate() {
-        super.generate();
-        this.pageReference = createPageReference(16);
-
-        // Reset collections that can be regenerated
+    reset() {
+        super.reset();
+        this.body = '';
+        this.bodyValue = 0;
+        this.effectivePlanetSize = 'Small';
+        this.gravity = '';
+        this.atmosphericPresence = '';
+        this.hasAtmosphere = false;
+        this.atmosphericComposition = '';
+        this.atmosphereTainted = false;
+        this.atmospherePure = false;
+        this.climate = '';
+        this.habitability = 'Inhospitable';
+        this.orbitalFeaturesNode = null;
+        this.nativeSpeciesNode = null;
+        this.primitiveXenosNode = null;
+        this.numContinents = 0;
+        this.numIslands = 0;
+        this.environment = null;
+        this.effectiveSystemZone = 'PrimaryBiosphere';
+        this.effectiveSystemZoneCloserToSun = false;
+        this.isInhabitantHomeWorld = false;
+        this.climateType = 'Undefined';
+        this.atmosphereType = 'Undefined';
+        this.worldType = 'TemperateWorld';
+        this.forceInhabitable = false;
+        this.warpStorm = false;
+        this.maidenWorld = false;
+        this.zone = 'PrimaryBiosphere';
         this.mineralResources = [];
         this.organicCompounds = [];
         this.archeotechCaches = [];
         this.xenosRuins = [];
-        this.orbitalFeaturesNode = null;
-        this.nativeSpeciesNode = null;
-        this.primitiveXenosNode = null;
+        this.techLevel = '';
+        this.population = '';
+        this._environmentReferences = [];
+    }
+
+    generate() {
+        this.reset();
+        super.generate();
+        this.pageReference = createPageReference(16);
 
         // 1. Body & derived size
         this.generateBodyParity();

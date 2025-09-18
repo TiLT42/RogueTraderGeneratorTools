@@ -14,9 +14,9 @@ class SystemNode extends NodeBase {
 
         // Star & features
         this.star = '';
-        this.systemFeatures = []; // simple strings (title only)
+        this.systemFeatures = [];
 
-        // Feature sub-effect flags (parity with C# where used in FlowDocument)
+        // Feature sub-effect flags
         this.gravityTidesGravityWellsAroundPlanets = false;
         this.gravityTidesTravelTimeBetweenPlanetsHalves = false;
         this.illOmenedFickleFatePoints = false;
@@ -26,9 +26,31 @@ class SystemNode extends NodeBase {
         this.warpStasisFocusPowerPenalties = false;
         this.warpStasisNoPush = false;
         this.warpStasisReducedPsychicPhenomena = false;
-        this.numPlanetsInWarpStorms = 0; // Warp Turbulence effect
+        this.numPlanetsInWarpStorms = 0;
 
-        // System creation rule counters / modifiers (mirroring C# SystemCreationRules subset)
+        // Initial creation rules (will be reinitialized each generate in reset)
+        this.systemCreationRules = {};
+    }
+
+    reset() {
+        super.reset();
+        // Clear children + core references
+        this.removeAllChildren && this.removeAllChildren();
+        this.innerCauldronZone = null;
+        this.primaryBiosphereZone = null;
+        this.outerReachesZone = null;
+        this.star = '';
+        this.systemFeatures = [];
+        this.gravityTidesGravityWellsAroundPlanets = false;
+        this.gravityTidesTravelTimeBetweenPlanetsHalves = false;
+        this.illOmenedFickleFatePoints = false;
+        this.illOmenedWillPowerPenalty = false;
+        this.illOmenedDoubledInsanity = false;
+        this.illOmenedFearFromPsychicExploration = false;
+        this.warpStasisFocusPowerPenalties = false;
+        this.warpStasisNoPush = false;
+        this.warpStasisReducedPsychicPhenomena = false;
+        this.numPlanetsInWarpStorms = 0;
         this.systemCreationRules = {
             innerCauldronWeak: false,
             innerCauldronDominant: false,
@@ -36,57 +58,34 @@ class SystemNode extends NodeBase {
             primaryBiosphereDominant: false,
             outerReachesWeak: false,
             outerReachesDominant: false,
-
-            // Bountiful
             numExtraAsteroidBelts: 0,
             numExtraAsteroidClusters: 0,
             numExtraMineralResourcesPerPlanet: 0,
             chanceForExtraExoticMaterialsPerPlanet: false,
             bountifulAsteroids: false,
-
-            // Gravity Tides
             numExtraGravityRiptides: 0,
-
-            // Haven
             numExtraPlanetsInEachSolarZone: 0,
             havenThickerAtmospheresInPrimaryBiosphere: false,
             havenBetterHabitability: false,
-
-            // Ruined Empire
             ruinedEmpireExtraXenosRuinsOnDifferentPlanets: 0,
             ruinedEmpireIncreasedAbundanceXenosRuins: false,
             ruinedEmpireExtraArcheotechCachesOnDifferentPlanets: 0,
             ruinedEmpireIncreasedAbundanceArcheotechCaches: false,
-            dominantRuinedSpecies: 'Undefined', // Tracks dominant ruined species (Egarian, Eldar, Ork, Undiscovered, etc.)
-
-            // Starfarers
+            dominantRuinedSpecies: 'Undefined',
             starfarersNumSystemFeaturesInhabited: 0,
             minimumNumPlanetsAfterModifiers: 0,
-
-            // Stellar Anomaly / general planet modifiers
             numPlanetsModifier: 0,
-
-            // Warp Turbulence / Stasis
-            numPlanetsInWarpStorms: 0,
-            starfarersNumSystemFeaturesInhabited: 0
+            numPlanetsInWarpStorms: 0
         };
     }
 
     generate() {
+        this.reset();
         super.generate();
         this.pageReference = createPageReference(12);
-        this.children = [];
-
-        // System Name (retain new naming style)
         this.nodeName = this.generateSystemName();
-
-        // Create zones early so star effects can alter sizes
         this.generateZones();
-
-        // Star (with effects adjusting zone dominance/weakness)
         this.generateStar();
-
-        // System Features (loop + sub-effects)
         this.generateSystemFeatures();
 
         // Populate orbital elements (simplified parity)
@@ -121,146 +120,15 @@ class SystemNode extends NodeBase {
 
     applyStarfarersHomeWorld() {
         if (!this.systemCreationRules.starfarersNumSystemFeaturesInhabited) return;
-        // If generateStarfarers already assigned a homeworld (any planet with isInhabitantHomeWorld) skip.
-        const existingHome = [];
-        this.getAllDescendantNodesOfType && this.getAllDescendantNodesOfType('Planet').forEach(p=> { if (p.isInhabitantHomeWorld) existingHome.push(p); });
-        if (existingHome.length > 0) return; // no-op; distribution already occurred.
-        // TODO Starfarers Parity:
-        // 1. Implement full multi-settlement distribution across Tier 1 (planets, lesser moons) and Tier 2 (asteroids, stations, gas giants, graveyards)
-        // 2. Apply correct per-node development level probabilities (Voidfarers vs Colony vs Orbital Habitation) based on habitability checks
-        // 3. Clear primitive xenos node when assigning inhabited status as in C#
-        // 4. Respect minimumNumPlanetsAfterModifiers by inserting additional planets if needed before distribution
-        // 5. Add support functions on NodeBase for SetInhabitantDevelopmentLevelForStarfarers parity
-        // Current simplified implementation: pick/insert single home world only.
-        // Mirror C#: pick random inhabitable planet; if none, insert one in primary biosphere. Here we just flag first inhabitable.
+        // Fallback: if no planet ended up flagged as homeworld (should be rare after generateStarfarers), pick first inhabitable.
         const planets = [];
         this.getAllDescendantNodesOfType && this.getAllDescendantNodesOfType('Planet').forEach(p=> planets.push(p));
-        let inhabitable = planets.filter(p=> p.isPlanetInhabitable && p.isPlanetInhabitable());
-        if (inhabitable.length===0 && this.primaryBiosphereZone) {
-            // create an emergency habitable planet (added after initial naming pass)
-            const planet = createNode(NodeTypes.Planet); planet.generate?.(); planet.habitability = 'LimitedEcosystem';
-            this.primaryBiosphereZone.addChild(planet);
-            // Re-run naming to give this planet a proper system-based name
-            this.assignSequentialBodyNames();
-            inhabitable = [planet];
-        }
-        if (inhabitable.length===0) return;
-        const home = inhabitable[RandBetween(0, inhabitable.length-1)];
-        home.isInhabitantHomeWorld = true;
-        // Safety: if its name is still generic 'Planet', re-run naming
-        if (/^Planet$/.test(home.nodeName)) this.assignSequentialBodyNames();
-    }
-
-    generateSystemName() {
-        const greekLetters = [
-            'Alpha', 'Beta', 'Gamma', 'Delta', 'Epsilon', 'Zeta', 'Eta', 'Theta',
-            'Iota', 'Kappa', 'Lambda', 'Mu', 'Nu', 'Xi', 'Omicron', 'Pi',
-            'Rho', 'Sigma', 'Tau', 'Upsilon', 'Phi', 'Chi', 'Psi', 'Omega'
-        ];
-        
-        const suffixes = [
-            'Maximus', 'Prime', 'Secundus', 'Tertius', 'Majoris', 'Minoris',
-            'Extremis', 'Ultima', 'Proxima', 'Medius', 'Centralis'
-        ];
-        
-        const numerals = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'];
-        
-        let name = ChooseFrom(greekLetters);
-        
-        if (Chance(0.7)) {
-            name += ' ' + ChooseFrom(suffixes);
-        }
-        
-        if (Chance(0.3)) {
-            name += ' ' + ChooseFrom(numerals);
-        }
-        
-        return name;
-    }
-
-    generateStar() {
-        const roll = RollD10();
-        const getStarText = (value) => {
-            switch (value) {
-                case 1: return 'Mighty';
-                case 2: case 3: case 4: return 'Vigorous';
-                case 5: case 6: case 7: return 'Luminous';
-                case 8: return 'Dull';
-                case 9: return 'Anomalous';
-                case 10: return 'Binary';
-            }
-            return 'Unknown';
-        };
-
-        const setStarEffects = (value) => {
-            // Apply star influence flags (mirrors C# SetStarEffects)
-            switch (value) {
-                case 1:
-                    this.systemCreationRules.innerCauldronDominant = true;
-                    this.systemCreationRules.outerReachesWeak = true;
-                    break;
-                case 5: case 6: case 7:
-                    this.systemCreationRules.innerCauldronWeak = true;
-                    break;
-                case 8:
-                    this.systemCreationRules.outerReachesDominant = true;
-                    break;
-                case 9: {
-                    // Random alteration (1-7 mapping)
-                    const v = RandBetween(1,7);
-                    switch (v) {
-                        case 1: this.systemCreationRules.innerCauldronDominant = true; break;
-                        case 2: this.systemCreationRules.innerCauldronWeak = true; break;
-                        case 3: this.systemCreationRules.primaryBiosphereDominant = true; break;
-                        case 4: this.systemCreationRules.primaryBiosphereWeak = true; break;
-                        case 5: this.systemCreationRules.outerReachesWeak = true; break;
-                        case 6: this.systemCreationRules.outerReachesDominant = true; break;
-                        case 7: default: break; // nothing
-                    }
-                    break; }
-            }
-
-            // Directly override zone sizes if flags set
-            this.applyZoneSizeFlags();
-        };
-
-        switch (roll) {
-            case 1:
-                this.star = getStarText(1);
-                setStarEffects(1);
-                break;
-            case 2: case 3: case 4:
-                this.star = getStarText(4);
-                setStarEffects(4);
-                break;
-            case 5: case 6: case 7:
-                this.star = getStarText(7);
-                setStarEffects(7);
-                break;
-            case 8:
-                this.star = getStarText(8);
-                setStarEffects(8);
-                break;
-            case 9:
-                this.star = getStarText(9);
-                setStarEffects(9);
-                break;
-            case 10:
-                this.star = getStarText(10);
-                // Binary logic
-                if (RollD10() <= 7) {
-                    const starLevels = RandBetween(1,8); // both same
-                    this.star += ' - Both stars are ' + getStarText(starLevels);
-                } else {
-                    const star1 = RandBetween(1,8);
-                    const star2 = RandBetween(1,8);
-                    const lowest = Math.min(star1, star2);
-                    setStarEffects(lowest);
-                    const s1 = getStarText(star1); const s2 = getStarText(star2);
-                    if (s1 === s2) this.star += ' - Both stars are ' + s1; else this.star += ' - ' + s1 + ' and ' + s2;
-                }
-                break;
-        }
+        if (planets.length === 0) return;
+        if (planets.some(p=>p.isInhabitantHomeWorld)) return; // already set
+        const target = planets.find(p=> typeof p.isPlanetInhabitable === 'function' && p.isPlanetInhabitable()) || planets[0];
+        target.inhabitants = target.inhabitants || 'Human';
+        target.setInhabitantDevelopmentLevelForStarfarers?.('Voidfarers');
+        target.isInhabitantHomeWorld = true;
     }
 
     generateSystemFeatures() {
@@ -397,6 +265,67 @@ class SystemNode extends NodeBase {
 
     // (Legacy helper retained but now unused; logic embedded in feature generator)
     generateIllOmenedEffects() { /* deprecated */ return []; }
+
+    generateStar() {
+        // Reconstructed star generation (simplified parity). Determines star description; placeholder for zone size effects.
+        const getStarText = (value) => {
+            switch (value) {
+                case 1: return 'Mighty';
+                case 2: case 3: case 4: return 'Vigorous';
+                case 5: case 6: case 7: return 'Luminous';
+                case 8: return 'Dull';
+                case 9: return 'Anomalous';
+                case 10: return 'Binary';
+            }
+            return 'Unknown';
+        };
+        const setStarEffects = (value) => {
+            // TODO: Implement zone size flag adjustments & special effects parity from C# (inner/primary/outer weak/dominant)
+            // For now no additional effects beyond text.
+        };
+        const roll = RollD10();
+        switch (roll) {
+            case 1:
+                this.star = getStarText(1); setStarEffects(1); break;
+            case 2: case 3: case 4:
+                this.star = getStarText(2); setStarEffects(2); break;
+            case 5: case 6: case 7:
+                this.star = getStarText(7); setStarEffects(7); break;
+            case 8:
+                this.star = getStarText(8); setStarEffects(8); break;
+            case 9:
+                this.star = getStarText(9); setStarEffects(9); break;
+            case 10:
+                this.star = getStarText(10);
+                // Binary logic: generate composition text
+                if (RollD10() <= 7) {
+                    const starLevels = RandBetween(1,8); // both same
+                    this.star += ' - Both stars are ' + getStarText(starLevels);
+                } else {
+                    const star1 = RandBetween(1,8);
+                    const star2 = RandBetween(1,8);
+                    const lowest = Math.min(star1, star2);
+                    setStarEffects(lowest);
+                    const s1 = getStarText(star1); const s2 = getStarText(star2);
+                    this.star += (s1 === s2) ? ' - Both stars are ' + s1 : ' - ' + s1 + ' and ' + s2;
+                }
+                break;
+        }
+        this.applyZoneSizeFlags();
+    }
+
+    // Basic system naming helper (placeholder parity with WPF which starts as "Unnamed System")
+    // If user later renames the node (UI), we should preserve that name across regenerations.
+    generateSystemName() {
+        if (this._userRenamed && this.nodeName) return this.nodeName; // preserve manual rename
+        // If already has a non-default name keep it
+        if (this.nodeName && this.nodeName !== 'New System' && this.nodeName !== 'Unnamed System') return this.nodeName;
+        // Simple generated name pattern: <Greek>-<3digit>
+        const greek = ['Alpha','Beta','Gamma','Delta','Epsilon','Zeta','Eta','Theta','Iota','Kappa','Lambda','Sigma','Omega'];
+        const part1 = greek[RandBetween(0, greek.length-1)];
+        const part2 = RandBetween(100, 999);
+        return `${part1}-${part2}`;
+    }
 
     generateZones() {
         this.innerCauldronZone = createNode(NodeTypes.Zone); this.innerCauldronZone.nodeName = 'Inner Cauldron'; this.innerCauldronZone.zone = 'InnerCauldron';

@@ -18,6 +18,16 @@ class NodeBase {
         this.inhabitantDevelopment = this.inhabitantDevelopment || '';
     }
 
+    // Base reset hook: subclasses override to clear generation-specific state before regenerate
+    reset() {
+        // Default: clear children only (subclasses may extend)
+        this.removeAllChildren();
+        this.description = '';
+        this.pageReference = '';
+        this.inhabitants = 'None';
+        this.inhabitantDevelopment = '';
+    }
+
     addChild(child) {
         if (child.parent) {
             child.parent.removeChild(child);
