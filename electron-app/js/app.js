@@ -232,7 +232,21 @@ class App {
     }
 
     generateNewXenos(worldType) {
-        const actualWorldType = worldType || this.getRandomWorldType();
+        // Map short menu tokens to canonical world type names expected by data layer
+        let actualWorldType = worldType || this.getRandomWorldType();
+        if (worldType) {
+            switch (worldType.toLowerCase()) {
+                case 'temperate': actualWorldType = 'Temperate World'; break;
+                case 'death': actualWorldType = 'Death World'; break;
+                case 'desert': actualWorldType = 'Desert World'; break;
+                case 'ice': actualWorldType = 'Ice World'; break;
+                case 'jungle': actualWorldType = 'Jungle World'; break;
+                case 'ocean': actualWorldType = 'Ocean World'; break;
+                case 'volcanic': actualWorldType = 'Volcanic World'; break;
+                case 'random': actualWorldType = this.getRandomWorldType(); break;
+                default: /* assume already canonical if user saved workspace */ break;
+            }
+        }
         const xenos = createNode(NodeTypes.Xenos, null, actualWorldType, false);
         xenos.generate();
         window.treeView.addRootNode(xenos);
