@@ -120,23 +120,54 @@ class NodeBase {
     // level: 'Voidfarers' | 'Colony' | 'Orbital Habitation'
     setInhabitantDevelopmentLevelForStarfarers(level) {
         if (!level) return;
+        const isPlanetLike = this.type === NodeTypes.Planet || this.type === NodeTypes.LesserMoon;
+        const reduceAll = (amount) => {
+            if (!isPlanetLike) return; // only planets/moons track resources in parity model
+            const p = this;
+            (p.mineralResources||[]).forEach(m=> { if (m.abundance!=null) m.abundance = Math.max(0,m.abundance-amount); });
+            (p.organicCompounds||[]).forEach(o=> { if (o && o.abundance!=null) o.abundance = Math.max(0,o.abundance-amount); });
+            (p.archeotechCaches||[]).forEach(a=> { if (a && a.abundance!=null) a.abundance = Math.max(0,a.abundance-amount); });
+            (p.xenosRuins||[]).forEach(x=> { if (x && x.abundance!=null) x.abundance = Math.max(0,x.abundance-amount); });
+        };
+        const reduceRandom = (amount) => {
+            if (!isPlanetLike) return;
+            const p = this;
+            const pool = [];
+            (p.mineralResources||[]).forEach(m=> { if (m.abundance>0) pool.push(m); });
+            (p.organicCompounds||[]).forEach(o=> { if (o && o.abundance>0) pool.push(o); });
+            (p.archeotechCaches||[]).forEach(a=> { if (a.abundance>0) pool.push(a); });
+            (p.xenosRuins||[]).forEach(x=> { if (x.abundance>0) pool.push(x); });
+            if (pool.length===0) return;
+            const target = pool[RandBetween(0,pool.length-1)];
+            target.abundance = Math.max(0, target.abundance - amount);
+        };
         switch (level) {
             case 'Colony':
                 this.inhabitantDevelopment = 'Colony';
-                // Resource reduction omitted: only Planets currently model discrete resources; if needed we can hook here.
+                // C#: ReduceAllResources(RollD5())
+                if (isPlanetLike) reduceAll(RollD5());
                 break;
             case 'Orbital Habitation':
                 this.inhabitantDevelopment = 'Orbital Habitation';
                 break;
             case 'Voidfarers':
                 this.inhabitantDevelopment = 'Voidfarers';
-                // Parity note: WPF reduces random resources 5 times – not replicated (planet resource system differs)
+                // C#: 5 * ReduceRandomResource(D10(4)+5). We approximate D10(4) as RollD10()+RollD10()+RollD10()+RollD10().
+                if (isPlanetLike) {
+                    for (let i=0;i<5;i++) {
+                        const amount = RollD10()+RollD10()+RollD10()+RollD10()+5; // RollD10(4)+5
+                        reduceRandom(amount);
+                    }
+                }
                 break;
             default:
-                // Invalid level ignored silently (C# throws). We log for debugging.
                 if (window && window.console) console.warn('Invalid Starfarer development level:', level);
         }
     }
 }
 
 window.NodeBase = NodeBase;
+// Ensure NodeTypes is exposed if defined elsewhere before tests run
+if (typeof NodeTypes !== 'undefined') {
+    window.NodeTypes = NodeTypes;
+}

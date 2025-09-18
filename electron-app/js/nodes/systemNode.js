@@ -370,21 +370,28 @@ class SystemNode extends NodeBase {
     }
 
     chooseMultipleEffects(max, callback) {
-        // Simulate the C# 'one or more' chooser. We'll pick at least one, and keep adding with 50% until stop or all chosen.
-        // TODO Parity: C# uses iterative d10 comparisons with decreasing continuation chance (verify exact distribution and adjust if necessary).
-        const available = Array.from({length:max}, (_,i)=>i+1);
-        let pickedAny = false;
-        while (available.length > 0) {
-            const idx = RandBetween(0, available.length-1);
-            const val = available.splice(idx,1)[0];
-            callback(val);
-            pickedAny = true;
-            if (available.length === 0) break;
-            if (RollD10() <= 5) continue; // ~50% to continue
+        // Parity implementation of C# Globals.SetupOneOrMoreSituation/GetNextOneOrMoreChoiceResult
+        // Behavior: roll 1..max; if result not yet taken -> apply & mark; if already taken -> terminate (return 0 sentinel)
+        // Guarantees at least one effect, up to max unique effects. Probability distribution matches C#.
+        if (max <= 0) return;
+        const taken = new Set();
+        let first = true;
+        while (true) {
+            const roll = RandBetween(1, max); // uniform 1..max
+            if (!taken.has(roll)) {
+                taken.add(roll);
+                callback(roll);
+                first = false;
+                if (taken.size === max) break; // all chosen
+                // continue loop to attempt another (next attempt may stop if duplicate rolled)
+                continue;
+            }
+            // Duplicate rolled => stop (mirrors C# returning 0 which terminates do/while)
+            if (first) {
+                // Safety: if somehow first roll duplicate (impossible with empty set) fallback pick
+                callback(roll);
+            }
             break;
-        }
-        if (!pickedAny) { // safety
-            callback(available.pop());
         }
     }
 
@@ -689,34 +696,31 @@ class SystemNode extends NodeBase {
     }
 
     _addXenosRuinsToTarget(target, abundanceBonus) {
-        // Planet nodes already have structured ruins via _addXenosRuins; others (graveyard/station) need ad-hoc arrays
         if (!target) return;
+        const base = RollD100(); // C# parity base
+        const abundance = base + (abundanceBonus||0);
         if (target.type === NodeTypes.Planet) {
-            // Planet method: push structured object (handled similarly to generation code)
-            const type = target.generateXenosRuins ? target.generateXenosRuins() : 'Ancient Ruins';
-            const abundance = (abundanceBonus||0) + 10; // base 10 abundance for added ruins (mirrors existing object patterns)
+            const type = target.generateXenosRuins ? target.generateXenosRuins() : 'Xenos Ruins';
             target.xenosRuins.push({ type, abundance });
             target.updateDescription?.();
         } else {
-            // For stations / graveyards we store custom arrays if not present
             if (!target.xenosRuins) target.xenosRuins = [];
             const type = 'Xenos Ruins';
-            const abundance = (abundanceBonus||0) + 10;
             target.xenosRuins.push({ type, abundance });
             target.updateDescription?.();
         }
     }
     _addArcheotechCacheToTarget(target, abundanceBonus) {
         if (!target) return;
+        const base = RollD100();
+        const abundance = base + (abundanceBonus||0);
         if (target.type === NodeTypes.Planet) {
             const type = target.generateArcheotechCache ? target.generateArcheotechCache() : 'Archeotech Cache';
-            const abundance = (abundanceBonus||0) + 10;
             target.archeotechCaches.push({ type, abundance });
             target.updateDescription?.();
         } else {
             if (!target.archeotechCaches) target.archeotechCaches = [];
             const type = 'Archeotech Cache';
-            const abundance = (abundanceBonus||0) + 10;
             target.archeotechCaches.push({ type, abundance });
             target.updateDescription?.();
         }

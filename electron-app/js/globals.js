@@ -48,6 +48,13 @@ const NodeTypes = {
     PirateShips: 'pirate-ships'
 };
 
+// Expose enums globally (Node already relies on this in renderer, but tests need explicit window assignments when run under Node)
+if (typeof window !== 'undefined') {
+    window.NodeTypes = NodeTypes;
+    window.Species = Species;
+    window.RuleBook = RuleBook;
+}
+
 // Global variables
 window.APP_STATE = {
     currentFilePath: null,
