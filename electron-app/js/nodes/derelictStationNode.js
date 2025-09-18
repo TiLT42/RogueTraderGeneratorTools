@@ -1,79 +1,187 @@
-// DerelictStationNode.js
+// DerelictStationNode.js - Parity rewrite with C# DerelictStationNode
+// Implements Table 1-4: Derelict Station Origins, hull integrity, and Ruined Empire resource logic.
 class DerelictStationNode extends NodeBase {
     constructor(id = null) {
         super(NodeTypes.DerelictStation, id);
         this.nodeName = 'Derelict Station';
-        this.stationType = '';
-        this.condition = '';
-        this.dangers = [];
-        this.treasures = [];
+        this.stationOrigin = '';
+        this.hullIntegrity = 0; // 4d10 total (parity)
+        this.armor = 10; // Fixed armour value
+        this.systemCreationRules = null; // injected from parent SystemNode via ZoneNode helper
+        // Resource modeling (arrays of { type, abundance }) to align with planet parity & Ruined Empire injections
+        this.xenosRuins = [];
+        this.archeotechCaches = [];
+        // Inhabitants fields inherited (inhabitants / inhabitantDevelopment) used by Starfarers distribution
     }
 
     generate() {
         super.generate();
-        
-        // Set page reference for derelict station generation
         this.pageReference = createPageReference(15, 'Table 1-4: Derelict Station Origins');
-        
-        this.generateStationType();
-        this.generateCondition();
-        this.generateDangers();
-        this.generateTreasures();
+        // Reset per-regeneration state
+        this.xenosRuins = [];
+        this.archeotechCaches = [];
+        this.hullIntegrity = 0;
+        this._generateOriginAndResources();
+        this._generateHullIntegrity();
         this.updateDescription();
     }
 
-    generateStationType() {
+    _generateOriginAndResources() {
+        // Bias towards existing dominant ruined species (if already chosen) 50% chance (RollD10 <=5)
+        let roll = RollD100();
+        const rules = this.systemCreationRules;
+        const dom = rules?.dominantRuinedSpecies;
+        if (dom && RollD10() <= 5) {
+            switch (dom) {
+                case 'Undiscovered': // Map to Undiscovered Species (generic xenos) -> pick range 77-98 (covers defence/monitor majority)
+                    roll = 77 + RandBetween(0, 21); // 77-98 inclusive
+                    break;
+                case 'Eldar':
+                    roll = 11 + RandBetween(0, 13); // 11-24
+                    break;
+                case 'Egarian':
+                    roll = 5; // within <=10 bracket
+                    break;
+                case 'Ork':
+                    roll = 39; // within 26-40 bracket
+                    break;
+                case 'Yu' + "'Vath": // not chosen here normally, leave default
+                case 'Kroot':
+                default:
+                    break; // no special override
+            }
+        }
+
+        let isXenos = false; // Determines whether resource packets are Xenos Ruins vs Archeotech Caches
+        // Origin table (roll ranges) parity with C#
+        if (roll <= 10) {
+            this.stationOrigin = 'Egarian Void-maze'; isXenos = true; this._maybeSetDominant('Egarian');
+        } else if (roll <= 20) {
+            this.stationOrigin = 'Eldar Orrery'; isXenos = true; this._maybeSetDominant('Eldar');
+        } else if (roll <= 25) {
+            this.stationOrigin = 'Eldar Gate'; isXenos = true; this._maybeSetDominant('Eldar');
+        } else if (roll <= 40) {
+            this.stationOrigin = 'Ork Rok'; isXenos = true; this._maybeSetDominant('Ork');
+        } else if (roll <= 50) {
+            this.stationOrigin = 'STC Defence Station';
+        } else if (roll <= 65) {
+            this.stationOrigin = 'STC Monitor Station';
+        } else if (roll <= 76) {
+            this.stationOrigin = 'Stryxis Collection'; isXenos = true; // Does not set dominant species in C#
+        } else if (roll <= 85) {
+            this.stationOrigin = 'Xenos Defence Station'; isXenos = true; this._maybeSetDominant('Undiscovered');
+        } else {
+            this.stationOrigin = 'Xenos Monitor Station'; isXenos = true; this._maybeSetDominant('Undiscovered');
+        }
+
+        // Resource packets: (RollD5 -1) iterations, each adds a d100 abundance (+ optional Ruined Empire bonus d10+5)
+        const num = RollD5() - 1;
+        for (let i = 0; i < num; i++) {
+            const abundanceBase = RollD100();
+            let abundance = abundanceBase;
+            if (isXenos && rules?.ruinedEmpireIncreasedAbundanceXenosRuins) abundance += RollD10() + 5;
+            if (!isXenos && rules?.ruinedEmpireIncreasedAbundanceArcheotechCaches) abundance += RollD10() + 5;
+            if (isXenos) {
+                if (!this.xenosRuins) this.xenosRuins = [];
+                const type = this.generateXenosRuins();
+                this.xenosRuins.push({ type, abundance });
+            } else {
+                if (!this.archeotechCaches) this.archeotechCaches = [];
+                const type = this.generateArcheotechCache();
+                this.archeotechCaches.push({ type, abundance });
+            }
+        }
+    }
+
+    _maybeSetDominant(species) {
+        const rules = this.systemCreationRules;
+        if (!rules) return;
+        if (!rules.dominantRuinedSpecies || rules.dominantRuinedSpecies === 'Undefined') {
+            if (RollD10() <= 6) rules.dominantRuinedSpecies = species; // 60% chance parity (RollD10 <=6)
+        }
+    }
+
+    _generateHullIntegrity() {
+        this.hullIntegrity = RollD10(4); // 4d10
+    }
+
+    generateArcheotechCache() {
         const types = [
-            'Mining Platform',
-            'Research Station',
-            'Military Outpost',
-            'Trading Post',
-            'Refinery',
-            'Communications Array'
+            'Ancient Data Repository',
+            'Technological Ruins',
+            'Archeotech Device Cache',
+            'Pre-Age of Strife Facility',
+            'Dark Age Technology'
         ];
-        this.stationType = ChooseFrom(types);
+        return ChooseFrom(types);
     }
 
-    generateCondition() {
-        const conditions = ['Heavily Damaged', 'Partially Intact', 'Mostly Intact', 'Nearly Destroyed'];
-        this.condition = ChooseFrom(conditions);
-    }
-
-    generateDangers() {
-        this.dangers = [];
-        if (RollD100() <= 60) {
-            const dangerTypes = ['Structural Collapse', 'Radiation Leak', 'Hostile Servitors', 'Vacuum Breach'];
-            this.dangers.push(ChooseFrom(dangerTypes));
-        }
-    }
-
-    generateTreasures() {
-        this.treasures = [];
-        if (RollD100() <= 40) {
-            const treasureTypes = ['Archeotech', 'Data Banks', 'Rare Materials', 'Functioning Equipment'];
-            this.treasures.push(ChooseFrom(treasureTypes));
-        }
+    generateXenosRuins() {
+        const types = [
+            'Undiscovered Species',
+            'Eldar Ruins',
+            'Egarian Remains',
+            "Yu'Vath Structures",
+            'Ork Settlements',
+            'Kroot Encampments'
+        ];
+        return ChooseFrom(types);
     }
 
     updateDescription() {
         let desc = `<h3>Derelict Station</h3>`;
-        desc += `<p><strong>Type:</strong> ${this.stationType}</p>`;
-        desc += `<p><strong>Condition:</strong> ${this.condition}</p>`;
-        
-        if (this.dangers.length > 0) {
-            desc += `<p><strong>Dangers:</strong> ${this.dangers.join(', ')}</p>`;
+        const showPages = window.APP_STATE?.settings?.showPageNumbers;
+        const originRef = showPages ? ` <span class="page-reference">${createPageReference(15, 'Table 1-4: Derelict Station Origins')}</span>` : '';
+        const statRef = showPages ? ` <span class="page-reference">${createPageReference(15, 'Derelict Station')}</span>` : '';
+        desc += `<p><strong>Station Type:</strong> ${this.stationOrigin}${originRef}</p>`;
+        desc += `<p><strong>Armour:</strong> ${this.armor}${statRef}</p>`;
+        desc += `<p><strong>Hull Integrity:</strong> ${this.hullIntegrity}${statRef}</p>`;
+
+        // Resources
+        const archeo = (this.archeotechCaches || []).filter(a=>a.abundance>0);
+        const xenos = (this.xenosRuins || []).filter(r=>r.abundance>0);
+        if (archeo.length>0) {
+            desc += '<h4>Archeotech Resources</h4><ul>' + archeo.map(a=>`<li>${a.type} (Abundance ${a.abundance})</li>`).join('') + '</ul>';
         }
-        
-        if (this.treasures.length > 0) {
-            desc += `<p><strong>Potential Treasures:</strong> ${this.treasures.join(', ')}</p>`;
+        if (xenos.length>0) {
+            desc += '<h4>Xenotech Resources</h4><ul>' + xenos.map(r=>`<li>${r.type} (Abundance ${r.abundance})</li>`).join('') + '</ul>';
         }
-        
+        if (archeo.length===0 && xenos.length===0) {
+            desc += '<p><strong>Resources:</strong> None</p>';
+        }
+
+        if (this.inhabitants && this.inhabitants !== 'None') {
+            desc += `<p><strong>Inhabitants:</strong> ${this.inhabitants}</p>`;
+            if (this.inhabitantDevelopment) desc += `<p><strong>Inhabitant Development:</strong> ${this.inhabitantDevelopment}</p>`;
+        }
+
         this.description = desc;
+    }
+
+    toJSON() {
+        const json = super.toJSON();
+        Object.assign(json, {
+            stationOrigin: this.stationOrigin,
+            hullIntegrity: this.hullIntegrity,
+            armor: this.armor,
+            xenosRuins: this.xenosRuins,
+            archeotechCaches: this.archeotechCaches,
+            inhabitants: this.inhabitants,
+            inhabitantDevelopment: this.inhabitantDevelopment
+        });
+        return json;
     }
 
     static fromJSON(data) {
         const node = new DerelictStationNode(data.id);
         Object.assign(node, data);
+        node.stationOrigin = data.stationOrigin || '';
+        node.hullIntegrity = data.hullIntegrity || 0;
+        node.armor = data.armor || 10;
+        node.xenosRuins = data.xenosRuins || [];
+        node.archeotechCaches = data.archeotechCaches || [];
+        node.inhabitants = data.inhabitants || 'None';
+        node.inhabitantDevelopment = data.inhabitantDevelopment || '';
         return node;
     }
 }

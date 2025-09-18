@@ -57,6 +57,7 @@ class SystemNode extends NodeBase {
             ruinedEmpireIncreasedAbundanceXenosRuins: false,
             ruinedEmpireExtraArcheotechCachesOnDifferentPlanets: 0,
             ruinedEmpireIncreasedAbundanceArcheotechCaches: false,
+            dominantRuinedSpecies: 'Undefined', // Tracks dominant ruined species (Egarian, Eldar, Ork, Undiscovered, etc.)
 
             // Starfarers
             starfarersNumSystemFeaturesInhabited: 0,
@@ -619,10 +620,105 @@ class SystemNode extends NodeBase {
     }
 
     generateAdditionalXenosRuins() {
-        if (this.systemCreationRules.ruinedEmpireExtraXenosRuinsOnDifferentPlanets <= 0) return; // TODO: implement when planet/station/graveyard nodes expose APIs.
+        const count = this.systemCreationRules.ruinedEmpireExtraXenosRuinsOnDifferentPlanets || 0;
+        if (count <= 0) return;
+        // Collect candidates
+        const all = [];
+        const collect = (n)=>{ all.push(n); if (n.children) n.children.forEach(collect); };
+        collect(this);
+        const planets = all.filter(n=> n.type===NodeTypes.Planet);
+        const stations = all.filter(n=> n.type===NodeTypes.DerelictStation);
+        const graveyards = all.filter(n=> n.type===NodeTypes.StarshipGraveyard);
+        for (let i=0;i<count;i++) {
+            if (planets.length>0) {
+                const idx = RandBetween(0, planets.length-1);
+                const target = planets.splice(idx,1)[0];
+                let abundanceBonus = 0;
+                if (this.systemCreationRules.ruinedEmpireIncreasedAbundanceXenosRuins) abundanceBonus += RollD10() + 5;
+                this._addXenosRuinsToTarget(target, abundanceBonus);
+            } else {
+                if (RollD10() <= 5 && stations.length>0) {
+                    const idx = RandBetween(0, stations.length-1);
+                    const target = stations.splice(idx,1)[0];
+                    let abundanceBonus = 0;
+                    if (this.systemCreationRules.ruinedEmpireIncreasedAbundanceXenosRuins) abundanceBonus += RollD10() + 5;
+                    this._addXenosRuinsToTarget(target, abundanceBonus);
+                } else if (graveyards.length>0) {
+                    const idx = RandBetween(0, graveyards.length-1);
+                    const target = graveyards.splice(idx,1)[0];
+                    let abundanceBonus = 0;
+                    if (this.systemCreationRules.ruinedEmpireIncreasedAbundanceXenosRuins) abundanceBonus += RollD10() + 5;
+                    this._addXenosRuinsToTarget(target, abundanceBonus);
+                }
+            }
+        }
     }
     generateAdditionalArcheotechCaches() {
-        if (this.systemCreationRules.ruinedEmpireExtraArcheotechCachesOnDifferentPlanets <= 0) return; // TODO
+        const count = this.systemCreationRules.ruinedEmpireExtraArcheotechCachesOnDifferentPlanets || 0;
+        if (count <= 0) return;
+        const all = [];
+        const collect = (n)=>{ all.push(n); if (n.children) n.children.forEach(collect); };
+        collect(this);
+        const planets = all.filter(n=> n.type===NodeTypes.Planet);
+        const stations = all.filter(n=> n.type===NodeTypes.DerelictStation);
+        const graveyards = all.filter(n=> n.type===NodeTypes.StarshipGraveyard);
+        for (let i=0;i<count;i++) {
+            if (planets.length>0) {
+                const idx = RandBetween(0, planets.length-1);
+                const target = planets.splice(idx,1)[0];
+                let abundanceBonus = 0;
+                if (this.systemCreationRules.ruinedEmpireIncreasedAbundanceArcheotechCaches) abundanceBonus += RollD10() + 5;
+                this._addArcheotechCacheToTarget(target, abundanceBonus);
+            } else {
+                if (RollD10() <= 5 && stations.length>0) {
+                    const idx = RandBetween(0, stations.length-1);
+                    const target = stations.splice(idx,1)[0];
+                    let abundanceBonus = 0;
+                    if (this.systemCreationRules.ruinedEmpireIncreasedAbundanceArcheotechCaches) abundanceBonus += RollD10() + 5;
+                    this._addArcheotechCacheToTarget(target, abundanceBonus);
+                } else if (graveyards.length>0) {
+                    const idx = RandBetween(0, graveyards.length-1);
+                    const target = graveyards.splice(idx,1)[0];
+                    let abundanceBonus = 0;
+                    if (this.systemCreationRules.ruinedEmpireIncreasedAbundanceArcheotechCaches) abundanceBonus += RollD10() + 5;
+                    this._addArcheotechCacheToTarget(target, abundanceBonus);
+                }
+            }
+        }
+    }
+
+    _addXenosRuinsToTarget(target, abundanceBonus) {
+        // Planet nodes already have structured ruins via _addXenosRuins; others (graveyard/station) need ad-hoc arrays
+        if (!target) return;
+        if (target.type === NodeTypes.Planet) {
+            // Planet method: push structured object (handled similarly to generation code)
+            const type = target.generateXenosRuins ? target.generateXenosRuins() : 'Ancient Ruins';
+            const abundance = (abundanceBonus||0) + 10; // base 10 abundance for added ruins (mirrors existing object patterns)
+            target.xenosRuins.push({ type, abundance });
+            target.updateDescription?.();
+        } else {
+            // For stations / graveyards we store custom arrays if not present
+            if (!target.xenosRuins) target.xenosRuins = [];
+            const type = 'Xenos Ruins';
+            const abundance = (abundanceBonus||0) + 10;
+            target.xenosRuins.push({ type, abundance });
+            target.updateDescription?.();
+        }
+    }
+    _addArcheotechCacheToTarget(target, abundanceBonus) {
+        if (!target) return;
+        if (target.type === NodeTypes.Planet) {
+            const type = target.generateArcheotechCache ? target.generateArcheotechCache() : 'Archeotech Cache';
+            const abundance = (abundanceBonus||0) + 10;
+            target.archeotechCaches.push({ type, abundance });
+            target.updateDescription?.();
+        } else {
+            if (!target.archeotechCaches) target.archeotechCaches = [];
+            const type = 'Archeotech Cache';
+            const abundance = (abundanceBonus||0) + 10;
+            target.archeotechCaches.push({ type, abundance });
+            target.updateDescription?.();
+        }
     }
     generateWarpStorms() {
         const num = this.systemCreationRules.numPlanetsInWarpStorms || 0; if (num <= 0) return; // TODO
