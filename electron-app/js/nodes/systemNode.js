@@ -92,6 +92,13 @@ class SystemNode extends NodeBase {
         // Populate orbital elements (simplified parity)
         this.generateSystemElements();
 
+        // After elements are generated, propagate hazard counts (Solar Flares & Radiation Bursts) per zone
+        [this.innerCauldronZone, this.primaryBiosphereZone, this.outerReachesZone].forEach(z => {
+            if (!z) return;
+            if (typeof z.updateSolarFlareCounts === 'function') z.updateSolarFlareCounts();
+            if (typeof z.updateRadiationBurstCounts === 'function') z.updateRadiationBurstCounts();
+        });
+
         // Starfarers (if feature chosen)
         this.generateStarfarers();
 
@@ -909,6 +916,12 @@ class SystemNode extends NodeBase {
                     node.outerReachesZone = restoredChild;
                 }
             }
+            // After restoring zones & children, recompute hazard counts for parity (Solar Flares & Radiation Bursts)
+            [node.innerCauldronZone, node.primaryBiosphereZone, node.outerReachesZone].forEach(z => {
+                if (!z) return;
+                if (typeof z.updateSolarFlareCounts === 'function') z.updateSolarFlareCounts();
+                if (typeof z.updateRadiationBurstCounts === 'function') z.updateRadiationBurstCounts();
+            });
         }
         
         return node;

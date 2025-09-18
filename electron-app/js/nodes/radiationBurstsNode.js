@@ -3,52 +3,47 @@ class RadiationBurstsNode extends NodeBase {
     constructor(id = null) {
         super(NodeTypes.RadiationBursts, id);
         this.nodeName = 'Radiation Bursts';
-        this.intensity = '';
-        this.type = '';
-        this.effects = [];
+        // Parity field with C#: NumRadiationBurstsInThisZone
+        this.numRadiationBurstsInThisZone = 0;
+        this.pageReference = createPageReference(16, 'Radiation Bursts');
     }
 
     generate() {
+        // Intentionally minimal per C# (no random attributes)
         super.generate();
-        
-        // Set page reference for radiation bursts generation
-        this.pageReference = createPageReference(16, 'Radiation Bursts');
-        
-        this.generateIntensity();
-        this.generateType();
-        this.generateEffects();
         this.updateDescription();
     }
 
-    generateIntensity() {
-        const intensities = ['Low', 'Moderate', 'High', 'Lethal'];
-        this.intensity = ChooseFrom(intensities);
-    }
-
-    generateType() {
-        const types = ['Gamma Radiation', 'X-Ray Bursts', 'Particle Radiation', 'Exotic Radiation'];
-        this.type = ChooseFrom(types);
-    }
-
-    generateEffects() {
-        this.effects = ['Biological Hazard'];
-        if (this.intensity === 'High' || this.intensity === 'Lethal') {
-            this.effects.push('Equipment Damage', 'Shielding Required');
-        }
+    setNumRadiationBurstsInZone(count) {
+        this.numRadiationBurstsInThisZone = count;
+        this.updateDescription();
     }
 
     updateDescription() {
-        let desc = `<h3>Radiation Bursts</h3>`;
-        desc += `<p>Periodic bursts of dangerous radiation from the system's star or other cosmic sources.</p>`;
-        desc += `<p><strong>Intensity:</strong> ${this.intensity}</p>`;
-        desc += `<p><strong>Type:</strong> ${this.type}</p>`;
-        desc += `<p><strong>Effects:</strong> ${this.effects.join(', ')}</p>`;
-        this.description = desc;
+        // Mirror C# text exactly (aside from HTML formatting differences)
+        if (this.numRadiationBurstsInThisZone > 1) {
+            const penalty = (this.numRadiationBurstsInThisZone - 1) * 5; // "-X penalty to Detection after halving"
+            this.description = `<h3>Radiation Bursts</h3>` +
+                `<p>There are Radiation Bursts that are unusually strong in this zone. There are a total of ${this.numRadiationBurstsInThisZone} instances of Radiation Bursts present, giving a -${penalty} penalty to Detection after halving.</p>`;
+        } else {
+            this.description = `<h3>Radiation Bursts</h3>` +
+                `<p>There are Radiation Burst of regular strength in this zone. There are no additional instances of Radiation Bursts present to add any further penalties.</p>`;
+        }
+    }
+
+    toJSON() {
+        return {
+            ...super.toJSON(),
+            numRadiationBurstsInThisZone: this.numRadiationBurstsInThisZone
+        };
     }
 
     static fromJSON(data) {
         const node = new RadiationBurstsNode(data.id);
         Object.assign(node, data);
+        // Ensure description reflects stored count
+        if (typeof node.numRadiationBurstsInThisZone !== 'number') node.numRadiationBurstsInThisZone = 0;
+        node.updateDescription();
         return node;
     }
 }

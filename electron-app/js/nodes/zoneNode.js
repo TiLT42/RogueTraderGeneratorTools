@@ -94,8 +94,9 @@ class ZoneNode extends NodeBase {
     addStarshipGraveyard() { this._addSimpleChild(NodeTypes.StarshipGraveyard); }
     _addSimpleChild(nodeType) {
         const node = createNode(nodeType); if (!node) return; if ('systemCreationRules' in node && this.parent?.systemCreationRules) node.systemCreationRules = this.parent.systemCreationRules; node.parent = this; node.generate?.(); this.addChild(node);
-        // After adding a Solar Flares node, recompute counts for parity with WPF (which tallies instances in SystemNode logic)
+        // After adding hazard phenomena, recompute counts for parity with WPF (which tallies instances in SystemNode logic)
         if (nodeType === NodeTypes.SolarFlares) this.updateSolarFlareCounts();
+        if (nodeType === NodeTypes.RadiationBursts) this.updateRadiationBurstCounts();
         this.updateDescription(); }
 
     // Parity: count how many Solar Flares nodes exist in this zone and propagate that count to each instance.
@@ -104,6 +105,15 @@ class ZoneNode extends NodeBase {
         if (flares.length === 0) return;
         flares.forEach(f => {
             if (typeof f.setNumSolarFlaresInZone === 'function') f.setNumSolarFlaresInZone(flares.length);
+        });
+    }
+
+    // Parity: count Radiation Bursts nodes in this zone and propagate total to each instance (mirrors C# SystemNode tally logic)
+    updateRadiationBurstCounts() {
+        const bursts = this.children.filter(c => c.type === NodeTypes.RadiationBursts);
+        if (bursts.length === 0) return;
+        bursts.forEach(b => {
+            if (typeof b.setNumRadiationBurstsInZone === 'function') b.setNumRadiationBurstsInZone(bursts.length);
         });
     }
 
@@ -164,8 +174,9 @@ class ZoneNode extends NodeBase {
                     NodeBase.fromJSON(childData);
                 node.addChild(restoredChild);
             }
-            // After restoring children, recompute solar flare counts for parity
+            // After restoring children, recompute hazard counts for parity
             node.updateSolarFlareCounts();
+            node.updateRadiationBurstCounts();
         }
         
         return node;

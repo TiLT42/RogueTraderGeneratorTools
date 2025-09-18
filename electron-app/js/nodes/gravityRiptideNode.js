@@ -5,39 +5,24 @@ class GravityRiptideNode extends NodeBase {
     constructor(id = null) {
         super(NodeTypes.GravityRiptide, id);
         this.nodeName = 'Gravity Riptide';
-        this.intensity = '';
-        this.effects = [];
+        this.pageReference = createPageReference(15, 'Gravity Riptide');
     }
 
     generate() {
+        // No random attributes in C# version; keep minimal
         super.generate();
-        
-        // Set page reference for gravity riptide generation
-        this.pageReference = createPageReference(15, 'Gravity Riptide');
-        
-        this.generateIntensity();
-        this.generateEffects();
         this.updateDescription();
     }
 
-    generateIntensity() {
-        this.intensity = ChooseFrom(['Minor', 'Moderate', 'Severe', 'Catastrophic']);
-    }
-
-    generateEffects() {
-        this.effects = ['Navigation Hazard'];
-        if (this.intensity === 'Severe' || this.intensity === 'Catastrophic') {
-            this.effects.push('Ship Damage Risk', 'Time Distortion');
-        }
-    }
-
     updateDescription() {
-        this.description = `<h3>Gravity Riptide</h3><p>Dangerous gravitational anomalies that can tear apart unwary ships.</p><p><strong>Intensity:</strong> ${this.intensity}</p><p><strong>Effects:</strong> ${this.effects.join(', ')}</p>`;
+        // Parity with C# (static rules reference line)
+        this.description = `<h3>Gravity Riptide</h3><p>Gravity Riptides follow the rules for Gravity Tides on page 227 of the Rogue Trader Core Rulebook.</p>`;
     }
 
     static fromJSON(data) {
         const node = new GravityRiptideNode(data.id);
         Object.assign(node, data);
+        node.updateDescription();
         return node;
     }
 }
