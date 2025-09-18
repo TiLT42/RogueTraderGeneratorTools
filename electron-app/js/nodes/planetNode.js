@@ -476,30 +476,18 @@ class PlanetNode extends NodeBase {
             const r = RollD10();
             if (r <= 2) { // Archeotech
                 this._addArcheotechCache();
-            } else if (r <= 6) {
+            } else if (r <= 6) { // Mineral or Organic (conditional)
                 this._addRandomMineral();
-            } else if (r <= 8) {
-                if (['Verdant','LimitedEcosystem'].includes(this.habitability)) this._addOrganic(); else i--; // reroll
+                if (['Verdant','LimitedEcosystem'].includes(this.habitability)) this._addOrganic(); else i--; // reroll attempt if not allowed
             } else { // Xenos ruins
                 this._addXenosRuins();
             }
         }
-
-        // Extra Exotic Materials (parity): C# effect grants a guaranteed additional Exotic Materials deposit (not probabilistic)
-        if (this.systemCreationRules?.chanceForExtraExoticMaterialsPerPlanet) {
-            if (!this.mineralResources.find(m=>m.type==='Exotic Materials')) {
-                this._addSpecificMineral('Exotic Materials');
-            } else {
-                // If already present, increase its abundance slightly to reflect "extra" benefit
-                const existing = this.mineralResources.find(m=>m.type==='Exotic Materials');
-                existing.abundance += RollD5();
-            }
-        }
     }
-
     _addRandomMineral() {
-        const type = this.generateMineralResource();
-        this._addSpecificMineral(type);
+        // Ensure array exists (defensive for regeneration edge cases)
+        if (!this.mineralResources) this.mineralResources = [];
+        this._addSpecificMineral(CommonData.generateMineralResource());
     }
     _addSpecificMineral(type) {
         if (!type) return;
@@ -527,6 +515,13 @@ class PlanetNode extends NodeBase {
         let abundance = RollD100();
         if (this.systemCreationRules && this.systemCreationRules.ruinedEmpireIncreasedAbundanceXenosRuins) abundance += (RollD10() + 5);
         this.xenosRuins.push({ type: this.generateXenosRuins(), abundance });
+    }
+
+    // Generic push helper (not used in parity-specific specialized adders above but available for future consolidation)
+    _addResource(key, item) {
+        if (!item) return;
+        if (!this[key]) this[key] = [];
+        this[key].push(item);
     }
 
     /* ===================== INHABITANT PARITY ===================== */

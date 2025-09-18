@@ -32,6 +32,23 @@ class SystemNode extends NodeBase {
         this.systemCreationRules = {};
     }
 
+    static get FEATURE_PAGE_MAP() {
+        // Centralized mapping of feature label -> { page, tableName }
+        // Pages approximate C# DocBuilder usage in SystemNode; adjust when exact parity table ported.
+        return Object.freeze({
+            'Bountiful': { page: 8 },
+            'Gravity Tides': { page: 9 },
+            'Haven': { page: 9 },
+            'Ill-Omened': { page: 10 },
+            'Pirate Den': { page: 10 },
+            'Ruined Empire': { page: 10 },
+            'Starfarers': { page: 11 },
+            'Stellar Anomaly': { page: 11 },
+            'Warp Stasis': { page: 12 },
+            'Warp Turbulence': { page: 12 }
+        });
+    }
+
     reset() {
         super.reset();
         // Clear children + core references
@@ -280,8 +297,42 @@ class SystemNode extends NodeBase {
             return 'Unknown';
         };
         const setStarEffects = (value) => {
-            // TODO: Implement zone size flag adjustments & special effects parity from C# (inner/primary/outer weak/dominant)
-            // For now no additional effects beyond text.
+            // Star influence to zone dominance/weakness (simplified parity model):
+            // These mappings approximate the C# star effect patterns (placeholder until exact table port):
+            // Mighty: Inner Dominant, Outer Weak
+            // Vigorous: Inner Dominant
+            // Luminous: Balanced (no changes)
+            // Dull: Primary Weak, Outer Dominant
+            // Anomalous: Random one Dominant & another Weak
+            // Binary: Primary Dominant, Outer Dominant (hot/cold variance)
+            // First clear existing flags so we don't accumulate across regenerations.
+            const r = this.systemCreationRules;
+            r.innerCauldronWeak = r.innerCauldronDominant = false;
+            r.primaryBiosphereWeak = r.primaryBiosphereDominant = false;
+            r.outerReachesWeak = r.outerReachesDominant = false;
+            const pickZonePair = () => ['inner','primary','outer'][RandBetween(0,2)];
+            switch (value) {
+                case 1: // Mighty
+                    r.innerCauldronDominant = true; r.outerReachesWeak = true; break;
+                case 2: // Vigorous (covers 2-4)
+                    r.innerCauldronDominant = true; break;
+                case 7: // Luminous (5-7) - no change
+                    break;
+                case 8: // Dull
+                    r.primaryBiosphereWeak = true; r.outerReachesDominant = true; break;
+                case 9: // Anomalous
+                    // Random dominant/weak distinct zones
+                    const zones = ['inner','primary','outer'];
+                    const domIndex = RandBetween(0,2);
+                    let weakIndex = RandBetween(0,2); while (weakIndex === domIndex) weakIndex = RandBetween(0,2);
+                    const dom = zones[domIndex]; const weak = zones[weakIndex];
+                    if (dom==='inner') r.innerCauldronDominant = true; else if (dom==='primary') r.primaryBiosphereDominant = true; else r.outerReachesDominant = true;
+                    if (weak==='inner') r.innerCauldronWeak = true; else if (weak==='primary') r.primaryBiosphereWeak = true; else r.outerReachesWeak = true;
+                    break;
+                case 10: // Binary
+                    r.primaryBiosphereDominant = true; r.outerReachesDominant = true; break;
+                default: break; // safety
+            }
         };
         const roll = RollD10();
         switch (roll) {
@@ -443,6 +494,16 @@ class SystemNode extends NodeBase {
         while (this.systemCreationRules.minimumNumPlanetsAfterModifiers && totalPlanets < this.systemCreationRules.minimumNumPlanetsAfterModifiers) {
             const zone = ['InnerCauldron','PrimaryBiosphere','OuterReaches'][RandBetween(0,2)]; this.addPlanet(zone); totalPlanets++;
         }
+
+        // Normalize emergency inhabitable planet insertion (for Starfarers fallback) here once only.
+        if (this.systemCreationRules.starfarersNumSystemFeaturesInhabited > 0) {
+            const allPlanets = [this.innerCauldronZone,this.primaryBiosphereZone,this.outerReachesZone]
+                .flatMap(z=> z? z.children:[]) .filter(c=>c.type===NodeTypes.Planet);
+            const inhabitable = allPlanets.filter(p=> typeof p.isPlanetInhabitable === 'function' && p.isPlanetInhabitable());
+            if (inhabitable.length === 0 && this.primaryBiosphereZone) {
+                this.addPlanet('PrimaryBiosphere', true);
+            }
+        }
     }
 
     generateStarfarers() {
@@ -459,14 +520,7 @@ class SystemNode extends NodeBase {
         // Ensure minimum planets (C# enforces earlier; already handled in generation)
         // If no inhabitable planets create one in Primary Biosphere (will name later)
         const inhabitablePlanets = planets.filter(p=> typeof p.isPlanetInhabitable === 'function' && p.isPlanetInhabitable());
-        let createdEmergencyPlanet = false;
         let candidatePlanets = [...inhabitablePlanets];
-        if (candidatePlanets.length === 0 && this.primaryBiosphereZone) {
-            const newPlanet = this.addPlanet('PrimaryBiosphere', true); // force inhabitable
-            planets.push(newPlanet);
-            candidatePlanets.push(newPlanet);
-            createdEmergencyPlanet = true;
-        }
         if (candidatePlanets.length === 0) return; // safety
 
         // 3. Select homeworld & race
@@ -481,10 +535,7 @@ class SystemNode extends NodeBase {
 
         // 4. Remaining settlements
         let remaining = totalToInhabit - 1; // one used by homeworld
-        if (remaining <= 0) {
-            if (createdEmergencyPlanet) this.assignSequentialBodyNames();
-            return; // done
-        }
+        if (remaining <= 0) return; // done
 
         // Build tier lists (parity ordering)
         const tier1 = []; // Planets + LesserMoons (excluding homeworld already assigned)
@@ -547,12 +598,8 @@ class SystemNode extends NodeBase {
             remaining--;
         }
 
-        // If we inserted an emergency planet or altered counts we need to re-run naming
-        if (createdEmergencyPlanet) this.assignSequentialBodyNames();
-        else {
-            // Safety: ensure any new planet inserted earlier or naming changes propagate
-            this.assignSequentialBodyNames();
-        }
+        // Ensure naming is updated after distribution
+        this.assignSequentialBodyNames();
     }
 
     generateAdditionalXenosRuins() {
@@ -722,11 +769,11 @@ class SystemNode extends NodeBase {
         
         if (this.systemFeatures.length > 0) {
             desc += `<h3>System Features</h3><ul>`;
+            const map = SystemNode.FEATURE_PAGE_MAP;
             for (const feature of this.systemFeatures) {
-                // Map feature to page number roughly (C# uses various pages 8-12, simplified here)
-                let page = 8;
-                if (feature === 'Gravity Tides') page = 9; else if (feature === 'Haven') page = 9; else if (feature === 'Ill-Omened') page = 10; else if (feature === 'Pirate Den') page = 10; else if (feature === 'Ruined Empire') page = 10; else if (feature === 'Starfarers') page = 11; else if (feature === 'Stellar Anomaly') page = 11; else if (feature === 'Warp Stasis') page = 12; else if (feature === 'Warp Turbulence') page = 12;
-                desc += `<li>${feature}${addPageRef(page)}</li>`;
+                const meta = map[feature];
+                const page = meta?.page || 0;
+                desc += `<li>${feature}${page?addPageRef(page):''}</li>`;
             }
             desc += `</ul>`;
         }
