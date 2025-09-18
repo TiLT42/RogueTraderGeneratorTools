@@ -7,7 +7,7 @@
     "start": "electron . --no-sandbox",
     "dev": "electron . --dev --no-sandbox",
     "build": "electron-builder",
-    "test": "echo \"Error: no test specified\" && exit 1",
+  "test": "node tests/runParity.js",
     "parity-test": "node tests/runParity.js"
   },
   "keywords": ["rogue-trader", "rpg", "generator", "warhammer-40k"],

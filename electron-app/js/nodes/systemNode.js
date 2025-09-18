@@ -284,9 +284,9 @@ class SystemNode extends NodeBase {
     generateIllOmenedEffects() { /* deprecated */ return []; }
 
     generateStar() {
-        // Reconstructed star generation (simplified parity). Determines star description; placeholder for zone size effects.
-        const getStarText = (value) => {
-            switch (value) {
+        // Exact parity implementation of C# GenerateStar + SetStarEffects.
+        const getStarText = (v) => {
+            switch (v) {
                 case 1: return 'Mighty';
                 case 2: case 3: case 4: return 'Vigorous';
                 case 5: case 6: case 7: return 'Luminous';
@@ -296,69 +296,77 @@ class SystemNode extends NodeBase {
             }
             return 'Unknown';
         };
-        const setStarEffects = (value) => {
-            // Star influence to zone dominance/weakness (simplified parity model):
-            // These mappings approximate the C# star effect patterns (placeholder until exact table port):
-            // Mighty: Inner Dominant, Outer Weak
-            // Vigorous: Inner Dominant
-            // Luminous: Balanced (no changes)
-            // Dull: Primary Weak, Outer Dominant
-            // Anomalous: Random one Dominant & another Weak
-            // Binary: Primary Dominant, Outer Dominant (hot/cold variance)
-            // First clear existing flags so we don't accumulate across regenerations.
+        const clearStarFlags = () => {
             const r = this.systemCreationRules;
             r.innerCauldronWeak = r.innerCauldronDominant = false;
             r.primaryBiosphereWeak = r.primaryBiosphereDominant = false;
             r.outerReachesWeak = r.outerReachesDominant = false;
-            const pickZonePair = () => ['inner','primary','outer'][RandBetween(0,2)];
-            switch (value) {
+        };
+        const setStarEffects = (starValue) => {
+            clearStarFlags();
+            const r = this.systemCreationRules;
+            switch (starValue) {
                 case 1: // Mighty
-                    r.innerCauldronDominant = true; r.outerReachesWeak = true; break;
-                case 2: // Vigorous (covers 2-4)
-                    r.innerCauldronDominant = true; break;
-                case 7: // Luminous (5-7) - no change
+                    r.innerCauldronDominant = true;
+                    r.outerReachesWeak = true;
+                    break;
+                case 2: case 3: case 4: // Vigorous -> no changes
+                    break;
+                case 5: case 6: case 7: // Luminous -> inner cauldron weak
+                    r.innerCauldronWeak = true;
                     break;
                 case 8: // Dull
-                    r.primaryBiosphereWeak = true; r.outerReachesDominant = true; break;
-                case 9: // Anomalous
-                    // Random dominant/weak distinct zones
-                    const zones = ['inner','primary','outer'];
-                    const domIndex = RandBetween(0,2);
-                    let weakIndex = RandBetween(0,2); while (weakIndex === domIndex) weakIndex = RandBetween(0,2);
-                    const dom = zones[domIndex]; const weak = zones[weakIndex];
-                    if (dom==='inner') r.innerCauldronDominant = true; else if (dom==='primary') r.primaryBiosphereDominant = true; else r.outerReachesDominant = true;
-                    if (weak==='inner') r.innerCauldronWeak = true; else if (weak==='primary') r.primaryBiosphereWeak = true; else r.outerReachesWeak = true;
+                    r.outerReachesDominant = true;
                     break;
-                case 10: // Binary
-                    r.primaryBiosphereDominant = true; r.outerReachesDominant = true; break;
-                default: break; // safety
+                case 9: { // Anomalous random one of 7 outcomes
+                    const outcome = RandBetween(1,7); // 1..7
+                    switch (outcome) {
+                        case 1: r.innerCauldronDominant = true; break;
+                        case 2: r.innerCauldronWeak = true; break;
+                        case 3: r.primaryBiosphereDominant = true; break;
+                        case 4: r.primaryBiosphereWeak = true; break;
+                        case 5: r.outerReachesWeak = true; break;
+                        case 6: r.outerReachesDominant = true; break;
+                        case 7: /* nothing */ break;
+                    }
+                    break; }
             }
         };
         const roll = RollD10();
         switch (roll) {
             case 1:
-                this.star = getStarText(1); setStarEffects(1); break;
+                this.star = getStarText(1);
+                setStarEffects(1);
+                break;
             case 2: case 3: case 4:
-                this.star = getStarText(2); setStarEffects(2); break;
+                this.star = getStarText(4); // pass aggregate value like C#
+                setStarEffects(4);
+                break;
             case 5: case 6: case 7:
-                this.star = getStarText(7); setStarEffects(7); break;
+                this.star = getStarText(7);
+                setStarEffects(7);
+                break;
             case 8:
-                this.star = getStarText(8); setStarEffects(8); break;
+                this.star = getStarText(8);
+                setStarEffects(8);
+                break;
             case 9:
-                this.star = getStarText(9); setStarEffects(9); break;
+                this.star = getStarText(9);
+                setStarEffects(9);
+                break;
             case 10:
-                this.star = getStarText(10);
-                // Binary logic: generate composition text
+                this.star = getStarText(10); // Binary
+                // Parity: Only apply star effects if stars are different (lowest value). Twins case applies none.
                 if (RollD10() <= 7) {
-                    const starLevels = RandBetween(1,8); // both same
+                    const starLevels = RandBetween(1,8); // 1..8 inclusive
                     this.star += ' - Both stars are ' + getStarText(starLevels);
                 } else {
                     const star1 = RandBetween(1,8);
                     const star2 = RandBetween(1,8);
-                    const lowest = Math.min(star1, star2);
-                    setStarEffects(lowest);
+                    const lowestValue = Math.min(star1, star2);
+                    setStarEffects(lowestValue);
                     const s1 = getStarText(star1); const s2 = getStarText(star2);
-                    this.star += (s1 === s2) ? ' - Both stars are ' + s1 : ' - ' + s1 + ' and ' + s2;
+                    if (s1 === s2) this.star += ' - Both stars are ' + s1; else this.star += ' - ' + s1 + ' and ' + s2;
                 }
                 break;
         }
@@ -510,95 +518,88 @@ class SystemNode extends NodeBase {
         const totalToInhabit = this.systemCreationRules.starfarersNumSystemFeaturesInhabited || 0;
         if (totalToInhabit <= 0) return;
 
-        // We'll implement after elements generated but BEFORE post-processing homeworld wrapper.
-        // 1. Collect all nodes in hierarchy (including this)
+        // Collect hierarchy
         const all = [];
-        const collect = (n) => { all.push(n); if (n.children) n.children.forEach(collect); };
+        const collect = (n)=>{ all.push(n); if (n.children) n.children.forEach(collect); };
         collect(this);
-        // 2. Filter potential planets for homeworld (inhabitable)
-        let planets = all.filter(n=> n.type === NodeTypes.Planet);
-        // Ensure minimum planets (C# enforces earlier; already handled in generation)
-        // If no inhabitable planets create one in Primary Biosphere (will name later)
-        const inhabitablePlanets = planets.filter(p=> typeof p.isPlanetInhabitable === 'function' && p.isPlanetInhabitable());
-        let candidatePlanets = [...inhabitablePlanets];
-        if (candidatePlanets.length === 0) return; // safety
+        if (all.length < 4) return; // safety (C# throws)
 
-        // 3. Select homeworld & race
-        const homeWorld = candidatePlanets[RandBetween(0, candidatePlanets.length-1)];
-        const race = (RollD10() <= 5) ? 'Human' : 'Other'; // Species.Human vs Species.Other parity
-        // Clear primitive xenos if present
+        // Build inhabitable planet list; if none, insert a forced inhabitable one into Primary Biosphere (handled earlier, but double-safe here)
+        let planets = all.filter(n=> n.type === NodeTypes.Planet);
+        let inhabitablePlanets = planets.filter(p=> p.isPlanetInhabitable && p.isPlanetInhabitable());
+        if (inhabitablePlanets.length === 0 && this.primaryBiosphereZone) {
+            // Insert at random index similar to C# (_primaryBiosphereZone.InsertPlanet)
+            const randIndex = RandBetween(0, this.primaryBiosphereZone.children.length);
+            const newPlanet = this.addPlanet('PrimaryBiosphere', true, randIndex);
+            if (newPlanet) { planets.push(newPlanet); if (newPlanet.isPlanetInhabitable && newPlanet.isPlanetInhabitable()) inhabitablePlanets.push(newPlanet); }
+        }
+        if (inhabitablePlanets.length === 0) return; // still none, abort
+
+        // Pick homeworld & race
+        const homeWorld = inhabitablePlanets[RandBetween(0, inhabitablePlanets.length-1)];
+        const race = (RollD10() <= 5) ? 'Human' : 'Other';
+        // Clear primitive xenos
         if (homeWorld.primitiveXenosNode) { homeWorld.primitiveXenosNode.children = []; homeWorld.primitiveXenosNode = null; }
         homeWorld.inhabitants = race;
-        // Development level for homeworld always Voidfarers in WPF initial set
         homeWorld.setInhabitantDevelopmentLevelForStarfarers('Voidfarers');
         homeWorld.isInhabitantHomeWorld = true;
 
-        // 4. Remaining settlements
-        let remaining = totalToInhabit - 1; // one used by homeworld
-        if (remaining <= 0) return; // done
+        let remaining = totalToInhabit - 1;
+        if (remaining <= 0) return;
 
-        // Build tier lists (parity ordering)
-        const tier1 = []; // Planets + LesserMoons (excluding homeworld already assigned)
-        const tier2 = []; // AsteroidBelt, AsteroidCluster, Asteroid, DerelictStation, GasGiant, StarshipGraveyard
-        for (const n of all) {
-            if (n === homeWorld) continue;
-            switch (n.type) {
+        // Build tier lists
+        const tier1 = [];
+        const tier2 = [];
+        for (const node of all) {
+            if (node === homeWorld) continue;
+            switch (node.type) {
                 case NodeTypes.Planet:
-                case NodeTypes.LesserMoon:
-                    tier1.push(n); break;
+                case NodeTypes.LesserMoon: tier1.push(node); break;
                 case NodeTypes.AsteroidBelt:
                 case NodeTypes.AsteroidCluster:
                 case NodeTypes.Asteroid:
                 case NodeTypes.DerelictStation:
                 case NodeTypes.GasGiant:
-                case NodeTypes.StarshipGraveyard:
-                    tier2.push(n); break;
+                case NodeTypes.StarshipGraveyard: tier2.push(node); break;
                 default: break;
             }
         }
 
-        const randFrom = (arr) => arr.splice(RandBetween(0, arr.length-1),1)[0];
+        const pullRandom = (arr) => arr.splice(RandBetween(0, arr.length-1),1)[0];
         while (remaining > 0 && (tier1.length + tier2.length) > 0) {
-            let targetNode = null;
-            let tier = null;
-            if (RollD10() <= 8 && tier1.length > 0) { // 80% preference tier1
-                targetNode = randFrom(tier1); tier = 1; }
-            else if (tier2.length > 0) { targetNode = randFrom(tier2); tier = 2; }
-            else { break; }
-            if (!targetNode) break;
+            let node = null; let chosenTier = null;
+            if (RollD10() <= 8 && tier1.length > 0) { node = pullRandom(tier1); chosenTier = 1; }
+            else if (tier2.length > 0) { node = pullRandom(tier2); chosenTier = 2; }
+            else break;
+            if (!node) break;
 
-            // Assign inhabitants & development level probabilities
-            targetNode.inhabitants = race;
-            if (targetNode.type === NodeTypes.Planet) {
-                // Clear primitive xenos
-                if (targetNode.primitiveXenosNode) { targetNode.primitiveXenosNode.children = []; targetNode.primitiveXenosNode = null; }
+            node.inhabitants = race;
+            // Assign development level per parity rules
+            if (node.type === NodeTypes.Planet) {
+                if (node.primitiveXenosNode) { node.primitiveXenosNode.children = []; node.primitiveXenosNode = null; }
                 let level;
-                if (typeof targetNode.isPlanetInhabitable === 'function' && targetNode.isPlanetInhabitable()) {
-                    // Inhabitable planet: 70% Voidfarers else Colony
+                if (node.isPlanetInhabitable && node.isPlanetInhabitable()) {
                     level = (RollD10() <= 7) ? 'Voidfarers' : 'Colony';
                 } else {
                     const r = RollD10();
                     if (r <= 3) level = 'Voidfarers'; else if (r <= 8) level = 'Colony'; else level = 'Orbital Habitation';
                 }
-                targetNode.setInhabitantDevelopmentLevelForStarfarers(level);
-            } else if (tier === 1) { // Lesser Moon in tier1
+                node.setInhabitantDevelopmentLevelForStarfarers(level);
+            } else if (chosenTier === 1) { // Lesser Moon
                 const level = (RollD10() <= 7) ? 'Colony' : 'Orbital Habitation';
-                targetNode.setInhabitantDevelopmentLevelForStarfarers(level);
-            } else { // tier2 node types
+                node.setInhabitantDevelopmentLevelForStarfarers(level);
+            } else { // tier2 nodes
                 let level;
-                if (targetNode.type === NodeTypes.GasGiant) {
-                    level = 'Orbital Habitation';
-                } else if (targetNode.type === NodeTypes.AsteroidBelt || targetNode.type === NodeTypes.AsteroidCluster || targetNode.type === NodeTypes.Asteroid || targetNode.type === NodeTypes.DerelictStation || targetNode.type === NodeTypes.StarshipGraveyard) {
+                if (node.type === NodeTypes.GasGiant) level = 'Orbital Habitation';
+                else if (node.type === NodeTypes.AsteroidBelt || node.type === NodeTypes.AsteroidCluster || node.type === NodeTypes.Asteroid || node.type === NodeTypes.DerelictStation || node.type === NodeTypes.StarshipGraveyard) {
                     level = (RollD10() <= 3) ? 'Colony' : 'Orbital Habitation';
-                } else {
-                    level = 'Orbital Habitation';
-                }
-                targetNode.setInhabitantDevelopmentLevelForStarfarers(level);
+                } else level = 'Orbital Habitation';
+                node.setInhabitantDevelopmentLevelForStarfarers(level);
             }
             remaining--;
         }
 
-        // Ensure naming is updated after distribution
+        // Names updated after distribution
         this.assignSequentialBodyNames();
     }
 

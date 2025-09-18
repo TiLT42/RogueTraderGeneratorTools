@@ -127,4 +127,38 @@
       console.log('Regeneration reset test executed: true');
     }
   } catch(e){ console.warn('Regeneration reset test failed:', e.message); }
+
+  // 5. Planet-specific regeneration test
+  try {
+    if (typeof PlanetNode !== 'undefined') {
+      window.__setSeed(13579);
+      const planet = new PlanetNode();
+      planet.generate();
+      // Capture some pre-regeneration state
+      const pre = {
+        minerals: planet.mineralResources.length,
+        organics: planet.organicCompounds.length,
+        ruins: planet.xenosRuins.length,
+        env: planet.environment ? planet.environment.name : null,
+        body: planet.body,
+        climate: planet.climate,
+        habitability: planet.habitability
+      };
+      // Mutate state manually to ensure reset clears it
+      planet.mineralResources.push({ type: 'Testium', abundance: 999 });
+      planet.isInhabitantHomeWorld = true;
+      planet.environment = { name: 'InjectedEnv' };
+      // Regenerate
+      planet.generate();
+      // Assertions
+      assert(!planet.mineralResources.some(m => m.type === 'Testium'), 'Custom injected mineral removed on regeneration');
+      assert(planet.isInhabitantHomeWorld === false, 'Homeworld flag cleared unless re-assigned during generation');
+      assert(planet.environment === null || planet.environment.name !== 'InjectedEnv', 'Environment re-generated');
+      assert(typeof planet.body === 'string' && planet.body.length > 0, 'Body re-generated');
+      // Either resources reset to new set (length can differ) but arrays must exist
+      assert(Array.isArray(planet.mineralResources), 'Mineral resources array exists after regeneration');
+      assert(Array.isArray(planet.organicCompounds), 'Organic compounds array exists after regeneration');
+      console.log('Planet regeneration test executed: true');
+    }
+  } catch(e){ console.warn('Planet regeneration test failed:', e.message); }
 })();
