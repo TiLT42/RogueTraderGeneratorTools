@@ -1046,7 +1046,7 @@ class PlanetNode extends NodeBase {
     generateMultipleSpecies() {
         this.generateNativeSpecies();
         if (RollD100() <= 50) {
-            this.generatePrimitiveXenos();
+            this._maybeGeneratePrimitiveXenosDirect(true);
         }
     }
 
