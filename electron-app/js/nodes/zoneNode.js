@@ -93,7 +93,19 @@ class ZoneNode extends NodeBase {
     addGasGiant() { this._addSimpleChild(NodeTypes.GasGiant); }
     addStarshipGraveyard() { this._addSimpleChild(NodeTypes.StarshipGraveyard); }
     _addSimpleChild(nodeType) {
-        const node = createNode(nodeType); if (!node) return; if ('systemCreationRules' in node && this.parent?.systemCreationRules) node.systemCreationRules = this.parent.systemCreationRules; node.parent = this; node.generate?.(); this.addChild(node); this.updateDescription(); }
+        const node = createNode(nodeType); if (!node) return; if ('systemCreationRules' in node && this.parent?.systemCreationRules) node.systemCreationRules = this.parent.systemCreationRules; node.parent = this; node.generate?.(); this.addChild(node);
+        // After adding a Solar Flares node, recompute counts for parity with WPF (which tallies instances in SystemNode logic)
+        if (nodeType === NodeTypes.SolarFlares) this.updateSolarFlareCounts();
+        this.updateDescription(); }
+
+    // Parity: count how many Solar Flares nodes exist in this zone and propagate that count to each instance.
+    updateSolarFlareCounts() {
+        const flares = this.children.filter(c => c.type === NodeTypes.SolarFlares);
+        if (flares.length === 0) return;
+        flares.forEach(f => {
+            if (typeof f.setNumSolarFlaresInZone === 'function') f.setNumSolarFlaresInZone(flares.length);
+        });
+    }
 
     getContextMenuItems() {
         const items = [
@@ -152,6 +164,8 @@ class ZoneNode extends NodeBase {
                     NodeBase.fromJSON(childData);
                 node.addChild(restoredChild);
             }
+            // After restoring children, recompute solar flare counts for parity
+            node.updateSolarFlareCounts();
         }
         
         return node;
