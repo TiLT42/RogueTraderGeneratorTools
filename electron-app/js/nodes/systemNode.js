@@ -6,6 +6,9 @@ class SystemNode extends NodeBase {
         // Name will be generated (retain newer naming style)
         this.nodeName = 'New System';
         this.fontWeight = 'bold';
+        // Indicates whether planets in this system should receive individually evocative names
+        // (set during generateSystemName based on naming pattern chosen)
+        this.generateUniquePlanetNames = false;
 
         // Zone references
         this.innerCauldronZone = null;
@@ -58,6 +61,7 @@ class SystemNode extends NodeBase {
         this.outerReachesZone = null;
         this.star = '';
         this.systemFeatures = [];
+        this.generateUniquePlanetNames = false; // will be set again on next name generation
         this.gravityTidesGravityWellsAroundPlanets = false;
         this.gravityTidesTravelTimeBetweenPlanetsHalves = false;
         this.illOmenedFickleFatePoints = false;
@@ -374,19 +378,45 @@ class SystemNode extends NodeBase {
         this.applyZoneSizeFlags();
     }
 
-    // Basic system naming helper (placeholder parity with WPF which starts as "Unnamed System")
-    // If user later renames the node (UI), we should preserve that name across regenerations.
+    // ===== Star/System Names =====
     generateSystemName() {
-        if (this._userRenamed && this.nodeName) return this.nodeName; // preserve manual rename
-        // If already has a non-default name keep it
-        if (this.nodeName && this.nodeName !== 'New System' && this.nodeName !== 'Unnamed System') return this.nodeName;
-        // Simple generated name pattern: <Greek>-<3digit>
-        const greek = ['Alpha','Beta','Gamma','Delta','Epsilon','Zeta','Eta','Theta','Iota','Kappa','Lambda','Sigma','Omega'];
-        const part1 = greek[RandBetween(0, greek.length-1)];
-        const part2 = RandBetween(100, 999);
-        return `${part1}-${part2}`;
-    }
+        if (this && this._userRenamed && this.nodeName) return this.nodeName; // preserve manual rename ONLY
+        // Always re-roll on generation so that generateUniquePlanetNames flag is recalculated each time.
+        // Previous implementation returned early and prevented the flag from updating, locking naming into numeric mode.
 
+        // Mapping of categories to generateUniquePlanetNames:
+        //   Evocative deliberate names -> true
+        //   Procedural / cartographic codes -> false
+        return window.CommonData.rollTable([
+            // 1) High-Gothic root + numeric grid -> procedural (false)
+            { w: 14, fn: () => { this.generateUniquePlanetNames = false; return `${window.CommonData.buildRootWord(2,3)}-${RandBetween(101,999)}`; } },
+
+            // 2) Greek + Root -> evocative (true)
+            { w: 12, fn: () => { this.generateUniquePlanetNames = true; const greek = ['Alpha','Beta','Gamma','Delta','Epsilon','Zeta','Eta','Theta','Iota','Kappa','Lambda','Sigma','Omega']; return `${ChooseFrom(greek)} ${window.CommonData.buildRootWord(2,3)}`; } },
+
+            // 3) "<Root> Reach/Drift/Marches/Deeps" -> evocative (true)
+            { w: 12, fn: () => { this.generateUniquePlanetNames = true; return `${window.CommonData.buildRootWord(2,3)} ${ChooseFrom(['Reach','Drift','Marches','Deeps','Expanse','Tide'])}`; } },
+
+            // 4) "<Saint Name>'s Light/Haven/Beacon" -> evocative (true)
+            { w: 10, fn: () => { this.generateUniquePlanetNames = true; return `${window.CommonData.saintName()}'s ${ChooseFrom(['Light','Haven','Beacon','Crown','Gate'])}`; } },
+
+            // 5) Cartographic code: <Letter>-<Digits> <Root> -> procedural (false)
+            { w: 10, fn: () => { this.generateUniquePlanetNames = false; const letter = ChooseFrom('ABCDEFGHJKLMNPQRSTVWXYZ'.split('')); const digits = `${RandBetween(1,9)}${RandBetween(0,9)}.${RandBetween(0,9)}`; return `${letter}-${digits} ${window.CommonData.buildRootWord(2,3)}`; } },
+
+            // 6) "<Dynasty> Claim" / "<Dynasty> Charter" etc. -> evocative (true)
+            { w: 8, fn: () => { this.generateUniquePlanetNames = true; const tag = ChooseFrom([' Claim',' Charter',' Anchorage',' Lease',' Purview']); return window.CommonData.dynastyName().split(' ')[0] + tag; } },
+
+            // 7) "<Root>-<Roman>" dual star designation -> procedural (false)
+            { w: 7, fn: () => { this.generateUniquePlanetNames = false; return `${window.CommonData.buildRootWord(2,3)}-${window.CommonData.roman(RandBetween(1,6))}`; } },
+
+            // 8) "<Root> Subsector <Roman>" -> procedural (false)
+            { w: 6, fn: () => { this.generateUniquePlanetNames = false; return `${window.CommonData.buildRootWord(2,3)} Subsector ${window.CommonData.roman(RandBetween(1,12))}`; } },
+
+            // 9) Alphanumeric with Greek suffix: "K-417 Omega" -> procedural (false)
+            { w: 6, fn: () => { this.generateUniquePlanetNames = false; const greek = ['Alpha','Beta','Gamma','Delta','Epsilon','Zeta','Sigma','Omega']; const prefix = ChooseFrom(['K','V','C','R','X','T','M']); return `${prefix}-${RandBetween(201,989)} ${ChooseFrom(greek)}`; } }
+        ]);
+    }
+    
     generateZones() {
         this.innerCauldronZone = createNode(NodeTypes.Zone); this.innerCauldronZone.nodeName = 'Inner Cauldron'; this.innerCauldronZone.zone = 'InnerCauldron';
         this.primaryBiosphereZone = createNode(NodeTypes.Zone); this.primaryBiosphereZone.nodeName = 'Primary Biosphere'; this.primaryBiosphereZone.zone = 'PrimaryBiosphere';
@@ -760,40 +790,71 @@ class SystemNode extends NodeBase {
 
     assignSequentialBodyNames() {
         // Centralized hierarchical naming for planets, gas giants, and their satellites.
-        // 1. Collect primaries (Planets + GasGiants) in zone order.
-        let primaryIndex = 1;
+        // Two modes:
+        //   - Sequential (legacy): SystemName N and SystemName N-M for satellites.
+        //   - Evocative: generator-produced primary names; satellites get their own generated names or derived names.
+
+        const evocativeMode = !!this.generateUniquePlanetNames;
+
+        // Collect primaries in zone order
         const primaries = [];
         const zonesInOrder = [this.innerCauldronZone, this.primaryBiosphereZone, this.outerReachesZone];
+        let seqIndex = 1;
+
+        // Helper to obtain a generated name with duplicate avoidance
+        const usedNames = new Set();
+        const getGeneratedName = (zone, type) => {
+            const maxAttempts = 6;
+            for (let attempt=0; attempt<maxAttempts; attempt++) {
+                let candidate;
+                try {
+                    if (type === NodeTypes.GasGiant && typeof zone?.generateGasGiantName === 'function') candidate = zone.generateGasGiantName();
+                    else if (typeof zone?.generatePlanetName === 'function') candidate = zone.generatePlanetName();
+                } catch (e) { /* ignore */ }
+                if (!candidate) candidate = `${this.nodeName} ${seqIndex}`; // fallback
+                if (!usedNames.has(candidate)) { usedNames.add(candidate); return candidate; }
+            }
+            // Final fallback ensures a unique string
+            let fallback = `${this.nodeName} ${seqIndex}`;
+            let counter = 1;
+            while (usedNames.has(fallback)) { fallback = `${this.nodeName} ${seqIndex}-${counter++}`; }
+            usedNames.add(fallback);
+            return fallback;
+        };
+
         for (const zone of zonesInOrder) {
             if (!zone) continue;
             for (const child of zone.children) {
                 if (child.type === NodeTypes.Planet || child.type === NodeTypes.GasGiant) {
-                    child._primarySequenceNumber = primaryIndex;
-                    child.nodeName = `${this.nodeName} ${primaryIndex}`;
+                    child._primarySequenceNumber = seqIndex;
+                    if (evocativeMode) {
+                        child.nodeName = getGeneratedName(zone, child.type);
+                    } else {
+                        child.nodeName = `${this.nodeName} ${seqIndex}`;
+                    }
                     primaries.push(child);
-                    primaryIndex++;
+                    seqIndex++;
                 }
             }
         }
 
-        // 2. Name satellites (Planet, LesserMoon, Asteroid) for each primary.
+        // Satellite naming
         const nameSatellites = (primary) => {
             if (!primary.orbitalFeaturesNode) return;
             let subIndex = 1;
             for (const sat of primary.orbitalFeaturesNode.children) {
-                if (sat.type === NodeTypes.Planet || sat.type === NodeTypes.LesserMoon || sat.type === NodeTypes.Asteroid) {
+                const isSatelliteBody = (sat.type === NodeTypes.Planet || sat.type === NodeTypes.LesserMoon || sat.type === NodeTypes.Asteroid);
+                if (isSatelliteBody) {
+                    // Always use sequential scheme for satellites, even in evocative mode, to retain structural clarity.
                     sat.nodeName = `${this.nodeName} ${primary._primarySequenceNumber}-${subIndex}`;
                     subIndex++;
                 }
-                // Recurse for nested moons of satellite planets (rare but supported)
-                if (sat.orbitalFeaturesNode && sat.type === NodeTypes.Planet) {
-                    nameSatellites(sat);
-                }
+                if (sat.orbitalFeaturesNode && sat.type === NodeTypes.Planet) nameSatellites(sat);
             }
         };
         for (const p of primaries) nameSatellites(p);
 
-        // 3. Cleanup temp markers
+        // Cleanup temporary markers
         for (const p of primaries) delete p._primarySequenceNumber;
     }
 
@@ -903,6 +964,7 @@ class SystemNode extends NodeBase {
         json.warpStasisNoPush = this.warpStasisNoPush;
         json.warpStasisReducedPsychicPhenomena = this.warpStasisReducedPsychicPhenomena;
         json.numPlanetsInWarpStorms = this.numPlanetsInWarpStorms;
+        json.generateUniquePlanetNames = this.generateUniquePlanetNames;
         return json;
     }
 
@@ -935,7 +997,8 @@ class SystemNode extends NodeBase {
             warpStasisFocusPowerPenalties: data.warpStasisFocusPowerPenalties || false,
             warpStasisNoPush: data.warpStasisNoPush || false,
             warpStasisReducedPsychicPhenomena: data.warpStasisReducedPsychicPhenomena || false,
-            numPlanetsInWarpStorms: data.numPlanetsInWarpStorms || 0
+            numPlanetsInWarpStorms: data.numPlanetsInWarpStorms || 0,
+            generateUniquePlanetNames: data.generateUniquePlanetNames || false
         });
         
         // Restore children

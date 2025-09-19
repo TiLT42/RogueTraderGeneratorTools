@@ -19,22 +19,88 @@ class ZoneNode extends NodeBase {
     // Deprecated legacy content randomization removed. SystemNode controls element creation.
     generateZoneContent() { /* deprecated: intentionally left blank */ }
 
-    // Flavor name generators retained for potential manual use (context menu additions, etc.)
+    // Flavor name generators deliberately created as additions beyond WPF parity. No parity requirement.
     generatePlanetName() {
-        const prefixes = ['Alpha','Beta','Gamma','Delta','Epsilon','Zeta','Eta','Theta','Iota','Kappa','Lambda','Mu','Nu','Xi','Omicron','Pi'];
-        const suffixes = ['Prime','Secundus','Tertius','Quartus','Quintus','Majoris','Minoris','Extremis','Ultima','Proxima'];
-        const descriptors = ['Aurum','Ferrum','Argentum','Plumbum','Stannum','Crystalline','Volcanic','Glacial','Barren','Verdant'];
-        if (Chance(0.4)) return ChooseFrom(prefixes)+' '+ChooseFrom(suffixes);
-        if (Chance(0.3)) return ChooseFrom(descriptors)+' '+ChooseFrom(suffixes);
-        const consonants='bcdfghjklmnpqrstvwxyz'; const vowels='aeiou';
-        let name=''; const length=Random.nextInt(4,8);
-        for(let i=0;i<length;i++) name += (i%2===0?ChooseFrom(consonants.split('')):ChooseFrom(vowels.split('')));
-        return name.charAt(0).toUpperCase()+name.slice(1);
+        // Weighted patterns (edit weights to bias)
+        return window.CommonData.rollTable([
+            // 1) High-Gothic fabricated root
+            { w: 22, fn: () => window.CommonData.buildRootWord(2,4) },
+
+            // 2) Root + Roman numeral (binomial Imperial designation)
+            { w: 14, fn: () => `${window.CommonData.buildRootWord(2,3)} ${window.CommonData.roman(RandBetween(1,12))}` },
+
+            // 3) "<Root> <Latin ordinal>"
+            { w: 10, fn: () => `${window.CommonData.buildRootWord(2,3)} ${window.CommonData.makeOrdinalLatin(RandBetween(1,12))}` },
+
+            // 4) "<Saint/Sanctus> <Name>"
+            { w: 10, fn: () => (Chance(0.5) ? `Saint ${window.CommonData.saintName()}` : `Sanctus ${window.CommonData.saintName()}`) },
+
+            // 5) "<Root> Majoris/Minoris/Magna/Minor"
+            { w: 8, fn: () => {
+            const ep = ChooseFrom(['Majoris','Minoris','Magna','Minor']);
+            return `${window.CommonData.buildRootWord(2,3)} ${ep}`;
+            }},
+
+            // 6) "<Descriptor> <Ordinal>" — resource/biome flavored
+            { w: 8, fn: () => {
+            const desc = ChooseFrom(['Ferrum','Aurum','Plumbea','Vitrea','Silicea','Basaltic','Glacial','Volcanic','Barren','Verdant','Ashen','Rustic','Obsidian','Sable']);
+            return `${desc} ${window.CommonData.makeOrdinalLatin(RandBetween(1,10))}`;
+            }},
+
+            // 7) "<Root> of <Motif>" — epic epithet style
+            { w: 7, fn: () => {
+            const motif = ChooseFrom(['Ashes','Thorns','Echoes','Storms','Lament','Shadows','Chains','Dawn','Sorrow','Iron']);
+            return `${window.CommonData.buildRootWord(2,3)} of ${motif}`;
+            }},
+
+            // 8) Greek-style + Ordinal (keeps your old flavor but rarer)
+            { w: 6, fn: () => {
+            const greek = ['Alpha','Beta','Gamma','Delta','Epsilon','Zeta','Eta','Theta','Iota','Kappa','Lambda','Sigma','Omega'];
+            return `${ChooseFrom(greek)} ${window.CommonData.makeOrdinalLatin(RandBetween(1,12))}`;
+            }},
+
+            // 9) Low-Gothic harsh monos + suffix (feels meaner/feral)
+            { w: 6, fn: () => {
+            const cons = ['br','cr','dr','gr','kr','sk','str','thr','vr','zn','xv'];
+            const vow = ['a','e','i','o','u','y'];
+            let s = ChooseFrom(cons) + ChooseFrom(vow) + ChooseFrom(window.CommonData.ROOT_C);
+            return window.CommonData.titleCase(s);
+            }},
+
+            // 10) Shrine/Forge/Agri-world pattern (no canon lifts)
+            { w: 5, fn: () => {
+            const classN = ChooseFrom(['Shrine','Forge','Agri','Fortress','Mine','Penal','Research','Reliquary']);
+            return `${window.CommonData.buildRootWord(2,3)} ${classN} World`;
+            }}
+        ]);
     }
+
+    // ===== Gas Giant Names =====
     generateGasGiantName() {
-        const names=['Jovian','Saturnine','Neptunian','Uranian','Titanic','Colossal','Massive','Stormy','Tempest','Cyclonic','Atmospheric','Clouded','Shrouded','Wreathed','Veiled'];
-        const suffixes=['Giant','Colossus','Behemoth','Titan','Leviathan','Mass','Body','Sphere','Orb','Formation'];
-        return ChooseFrom(names)+' '+ChooseFrom(suffixes);
+        return window.CommonData.rollTable([
+            // 1) Tempest themes
+            { w: 16, fn: () => {
+            const a = ChooseFrom(['Tempestus','Maelstrom','Coriolis','Vorticis','Borealis','Sirocco','Zephyra','Anabasis','Cyclonis','Typhonic','Nimbatus','Aetheris']);
+            const b = ChooseFrom(['Giant','Titan','Leviathan','Colossus','Behemoth','Orb','Mass']);
+            return `${a} ${b}`;
+            }},
+            // 2) Root + "Major"/"Maximus"/"Superb"
+            { w: 10, fn: () => `${window.CommonData.buildRootWord(2,3)} ${ChooseFrom(['Major','Maximus','Magnus','Grandis'])}` },
+            // 3) Color + phenomenon
+            { w: 9, fn: () => {
+            const color = ChooseFrom(['Ochre','Saffron','Cobalt','Viridian','Umber','Amaranth','Ivory','Onyx']);
+            const phen = ChooseFrom(['Wreath','Shroud','Pall','Mantle','Crown']);
+            return `${color} ${phen}`;
+            }},
+            // 4) Mythic-scientific mash
+            { w: 9, fn: () => {
+            const myth = ChooseFrom(['Charybis','Hyberon','Vortigon','Orphion','Nerith','Tantalor','Aegiron']);
+            const tag  = ChooseFrom(['Atmosphere','Cyclone','Gyre','Shear','Anvil','Vortex']);
+            return `${myth} ${tag}`;
+            }},
+            // 5) Root + Roman numeral (for multi-giant systems)
+            { w: 6, fn: () => `${window.CommonData.buildRootWord(2,3)} ${window.CommonData.roman(RandBetween(2,8))}` }
+        ]);
     }
 
     getZoneSizeString() {
