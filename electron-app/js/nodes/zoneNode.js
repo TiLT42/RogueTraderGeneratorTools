@@ -24,10 +24,11 @@ class ZoneNode extends NodeBase {
         // Weighted patterns (edit weights to bias)
         return window.CommonData.rollTable([
             // 1) High-Gothic fabricated root
-            { w: 22, fn: () => window.CommonData.buildRootWord(2,4) },
+            { w: 16, fn: () => window.CommonData.buildRootWord(2,4) },
 
             // 2) Root + Roman numeral (binomial Imperial designation)
-            { w: 14, fn: () => `${window.CommonData.buildRootWord(2,3)} ${window.CommonData.roman(RandBetween(1,12))}` },
+            //{ w: 14, fn: () => `${window.CommonData.buildRootWord(2,3)} ${window.CommonData.roman(RandBetween(1,12))}` },
+            { w: 14, fn: () => `${window.CommonData.buildRootWord(2,3)}` },
 
             // 3) "<Root> <Latin ordinal>"
             { w: 10, fn: () => `${window.CommonData.buildRootWord(2,3)} ${window.CommonData.makeOrdinalLatin(RandBetween(1,12))}` },
@@ -53,7 +54,7 @@ class ZoneNode extends NodeBase {
             return `${window.CommonData.buildRootWord(2,3)} of ${motif}`;
             }},
 
-            // 8) Greek-style + Ordinal (keeps your old flavor but rarer)
+            // 8) Greek-style + Ordinal (keeps old flavor but rarer)
             { w: 6, fn: () => {
             const greek = ['Alpha','Beta','Gamma','Delta','Epsilon','Zeta','Eta','Theta','Iota','Kappa','Lambda','Sigma','Omega'];
             return `${ChooseFrom(greek)} ${window.CommonData.makeOrdinalLatin(RandBetween(1,12))}`;
@@ -68,10 +69,37 @@ class ZoneNode extends NodeBase {
             }},
 
             // 10) Shrine/Forge/Agri-world pattern (no canon lifts)
-            { w: 5, fn: () => {
+            /*{ w: 5, fn: () => {
             const classN = ChooseFrom(['Shrine','Forge','Agri','Fortress','Mine','Penal','Research','Reliquary']);
             return `${window.CommonData.buildRootWord(2,3)} ${classN} World`;
-            }}
+            }}*/
+
+            // 11) High-Gothic binomial — "<Latin noun> <Latinate epithet>" (very thematic)
+            { w: 10, fn: () => {
+              const nouns = [
+                'Aquila','Bellum','Fides','Gloria','Ignis','Lumen','Umbra','Saxum','Corona','Spina','Ferrum','Vox','Pax','Flagrum','Arcus','Domus','Nex','Vespera','Silex','Praetor',
+                'Custos','Arx','Fulgur','Tempestas','Aether','Ordo','Crux','Victoria','Concordia','Carcer','Portus','Monstrum','Oculus','Venia','Poena','Venator','Ferraria',
+                'Spatha','Gladius','Scutum','Clypeus','Limes','Vallum','Turris','Radius','Sidus','Stella','Orbis','Mundus','Nox','Aurora','Mare','Silva','Rupes','Vallis',
+                'Campus','Flumen','Porta','Janua','Nodus','Clavis','Sepulcrum','Basilica','Sanctum','Altare','Lacrima','Cinis','Fornax','Officina','Machina','Bestia',
+                'Bellator','Praesidium','Praetorium','Castra','Sigillum','Oraculum','Vigil','Specula','Anima','Arcana','Legatum','Monumentum','Memoria','Crypta','Thesaurus',
+                'Foedus','Edictum','Cohors','Curia'
+            ];
+
+            const epithets = [
+                // Adjectival epithets
+                'Aeterna','Perpetua','Infernalis','Sancta','Sacrata','Ultima','Malefica','Maligna','Invicta','Indomita','Obscura','Nivosa','Arida','Viridis','Squalida','Pulchra',
+                'Aurea','Argentea','Nigra','Alba','Caerulea','Purpurea','Rubra','Rubicunda','Severa','Mortalis','Immortalis','Perdita','Desolata','Devota','Damnata','Profana',
+                'Fidelis','Crudelis','Cruenta','Sanguinea','Ruinosa','Exanimis','Exsanguis','Gelida','Frigida','Ardens','Fumosa','Umbrosa','Horrida','Terribilis','Regia',
+                'Imperialis','Exemplaris','Pia','Beata','Anomala','Insana','Silens','Tacita','Clausa','Infesta','Corrupta','Toxica','Pestilens','Putrida','Plumbea','Ferrata',
+                'Lapidea','Vitrea','Obsidiana','Ignea','Tenebrosa','Nocturna','Borealis','Australis','Orientalis','Occidentalis','Caelestis','Stellaris','Astralis','Praetoria',
+                'Militaris','Mechanica','Indurata','Vigilans','Aurifera','Argentifera','Ferrifera','Salinosa','Deserta','Remota','Extrema','Interior','Exterior','Nobilis',
+                'Austera','Dira','Saevissima','Gravis','Caliginosa','Nebulosa','Maritima','Montana','Fluvialis','Sylvestris','Custodialis','Dominica','Sepulcralis','Gloriosa',
+                'Iusta','Illustra','Lucens','Fulgens','Profunda',
+                // Genitive-style / noun-of-X epithets
+                'Noctis','Mortis','Sanguinis','Umbrae','Ignis','Aetheris','Fidei','Gloriae','Irae','Legionis','Domini','Reginae','Regis','Ruinorum','Stellarum'
+            ];
+            return `${ChooseFrom(nouns)} ${ChooseFrom(epithets)}`;
+            }},
         ]);
     }
 
@@ -99,7 +127,7 @@ class ZoneNode extends NodeBase {
             return `${myth} ${tag}`;
             }},
             // 5) Root + Roman numeral (for multi-giant systems)
-            { w: 6, fn: () => `${window.CommonData.buildRootWord(2,3)} ${window.CommonData.roman(RandBetween(2,8))}` }
+            //{ w: 6, fn: () => `${window.CommonData.buildRootWord(2,3)} ${window.CommonData.roman(RandBetween(2,8))}` }
         ]);
     }
 

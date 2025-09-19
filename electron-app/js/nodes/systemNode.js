@@ -398,13 +398,13 @@ class SystemNode extends NodeBase {
             { w: 12, fn: () => { this.generateUniquePlanetNames = true; return `${window.CommonData.buildRootWord(2,3)} ${ChooseFrom(['Reach','Drift','Marches','Deeps','Expanse','Tide'])}`; } },
 
             // 4) "<Saint Name>'s Light/Haven/Beacon" -> evocative (true)
-            { w: 10, fn: () => { this.generateUniquePlanetNames = true; return `${window.CommonData.saintName()}'s ${ChooseFrom(['Light','Haven','Beacon','Crown','Gate'])}`; } },
+            { w: 10, fn: () => { this.generateUniquePlanetNames = true; return `${window.CommonData.saintName()}'s ${ChooseFrom(['Light','Haven','Beacon','Crown','Gate', 'Paradise', 'Destiny', 'Hope', 'Fate'])}`; } },
 
             // 5) Cartographic code: <Letter>-<Digits> <Root> -> procedural (false)
             { w: 10, fn: () => { this.generateUniquePlanetNames = false; const letter = ChooseFrom('ABCDEFGHJKLMNPQRSTVWXYZ'.split('')); const digits = `${RandBetween(1,9)}${RandBetween(0,9)}.${RandBetween(0,9)}`; return `${letter}-${digits} ${window.CommonData.buildRootWord(2,3)}`; } },
 
             // 6) "<Dynasty> Claim" / "<Dynasty> Charter" etc. -> evocative (true)
-            { w: 8, fn: () => { this.generateUniquePlanetNames = true; const tag = ChooseFrom([' Claim',' Charter',' Anchorage',' Lease',' Purview']); return window.CommonData.dynastyName().split(' ')[0] + tag; } },
+            { w: 8, fn: () => { this.generateUniquePlanetNames = true; const tag = ChooseFrom([' Claim',' Charter',' Anchorage',' Lease',' Purview',' Demesne']); return window.CommonData.dynastyName().split(' ')[0] + tag; } },
 
             // 7) "<Root>-<Roman>" dual star designation -> procedural (false)
             { w: 7, fn: () => { this.generateUniquePlanetNames = false; return `${window.CommonData.buildRootWord(2,3)}-${window.CommonData.roman(RandBetween(1,6))}`; } },
