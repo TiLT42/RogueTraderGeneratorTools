@@ -1051,10 +1051,9 @@ class PlanetNode extends NodeBase {
         //   - Habitability modifiers: LimitedEcosystem (+d5+1), Verdant (+d5+5)
         //   - If neither Stars of Inequity nor Koronus Bestiary enabled => 0 species (do not generate)
         //   - Ordered world types derived from territories; consumed in order when creating Xenos
-    // NOTE (Parity Heuristic): EnvironmentData.getOrderedWorldTypesForNotableSpecies() currently implements a
-    // lightweight approximation of C# Environment.GetWorldTypesForNotableSpecies. It maps Wasteland + extreme temps
-    // to Ice/Desert and Forest + (Hot/Burning/Temp+Extreme) to Jungle. This is sufficient for native species parity
-    // weighting. A full verbatim port can be added if future discrepancies surface.
+    // NOTE (Parity): EnvironmentData.getOrderedWorldTypesForNotableSpecies() now mirrors C# logic exactly.
+    // Territory -> base Temperate; Wasteland+ExtremeTemp -> Ice (Cold planet) / Desert (Hot planet);
+    // Forest + (Hot | Burning | (Temperate & ExtremeTemp)) -> Jungle. One entry per Notable Species count.
         const enabled = window.APP_STATE.settings.enabledBooks || {};
         const hasXenosBooks = (enabled.StarsOfInequity || enabled.TheKoronusBestiary);
         if (!hasXenosBooks) return; // No valid rulebooks enabled -> skip entirely

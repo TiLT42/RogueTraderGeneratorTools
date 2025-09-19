@@ -317,27 +317,30 @@
             return env.territories.reduce((sum,t)=> sum + (t.notableSpecies||0), 0);
         },
         getOrderedWorldTypesForNotableSpecies(env, planet){
-            // C# logic: for each territory, default worldType = TemperateWorld.
-            // Adjustments: Wasteland + ExtremeTemperature -> IceWorld (if planet Cold) or DesertWorld (if Hot).
-            // Forest with (Hot/Burning) or (Temperate + ExtremeTemperature) => JungleWorld.
+            // FULL PARITY: Port of Environment.GetWorldTypesForNotableSpecies (C#) logic.
+            // For each territory: start at TemperateWorld. Adjust:
+            //  Wasteland + ExtremeTemperature>0 -> IceWorld if planet ColdWorld, DesertWorld if HotWorld.
+            //  Forest + (planet HotWorld or BurningWorld) OR (TemperateWorld + ExtremeTemperature>0) -> JungleWorld.
+            // Each territory contributes one world type entry per Notable Species count in that territory.
             if(!env || !env.territories) return [];
-            const results = [];
-            for(const t of env.territories){
+            const worldTypes = [];
+            for(const terr of env.territories){
                 let territoryType = 'TemperateWorld';
-                if(t.baseTerrain === TerritoryBaseTerrain.Wasteland){
-                    if(t.extremeTemperature > 0 && planet){
+                if(terr.baseTerrain === TerritoryBaseTerrain.Wasteland){
+                    if(terr.extremeTemperature > 0 && planet){
                         if(planet.climateType === 'ColdWorld') territoryType = 'IceWorld';
                         else if(planet.climateType === 'HotWorld') territoryType = 'DesertWorld';
                     }
                 }
-                if(t.baseTerrain === TerritoryBaseTerrain.Forest){
-                    if(planet && (planet.climateType === 'HotWorld' || planet.climateType === 'BurningWorld' || (planet.climateType === 'TemperateWorld' && t.extremeTemperature > 0))){
+                if(terr.baseTerrain === TerritoryBaseTerrain.Forest){
+                    if(planet && (planet.climateType === 'HotWorld' || planet.climateType === 'BurningWorld' || (planet.climateType === 'TemperateWorld' && terr.extremeTemperature > 0))){
                         territoryType = 'JungleWorld';
                     }
                 }
-                for(let i=0;i<(t.notableSpecies||0);i++) results.push(territoryType);
+                const n = terr.notableSpecies || 0;
+                for(let i=0;i<n;i++) worldTypes.push(territoryType);
             }
-            return results;
+            return worldTypes;
         }
     };
 })();
