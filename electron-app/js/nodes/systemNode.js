@@ -103,7 +103,7 @@ class SystemNode extends NodeBase {
         this.nodeName = this.generateSystemName();
         this.generateZones();
         this.generateStar();
-        // TODO(Parity): Original WPF generates System Features BEFORE zones & star. Order difference accepted per user (not required for RNG parity), kept for readability.
+        // NOTE(Parity Accepted): Original WPF generated System Features before zones & star; order retained here for readability since seed parity not required.
         this.generateSystemFeatures();
 
         // Populate orbital elements (simplified parity)
@@ -207,7 +207,7 @@ class SystemNode extends NodeBase {
                     try {
                         const pirateNode = createNode(NodeTypes.PirateShips);
                         if (pirateNode) { pirateNode.generate?.(); this.addChild(pirateNode); }
-                    } catch (e) { /* TODO: handle absence gracefully */ }
+                    } catch (e) { /* NOTE (Robustness): PirateShips node unavailable; skip to preserve generation flow */ }
                     break;
                 case 6: // Ruined Empire
                     if (hasFeature('Ruined Empire')) continue;
@@ -538,10 +538,23 @@ class SystemNode extends NodeBase {
             const zone = ['InnerCauldron','PrimaryBiosphere','OuterReaches'][RandBetween(0,2)]; this.addPlanet(zone); totalPlanets++;
         }
 
-        // NOTE (Parity): Removed early forced inhabitable planet insertion. This is now handled ONLY inside generateStarfarers()
+        // NOTE (Parity): Any required inhabitable planet for Starfarers is inserted later inside generateStarfarers() (mirrors WPF timing).
     }
 
     generateStarfarers() {
+        // Starfarers Feature Parity (WPF SystemNode.GenerateStarfarers):
+        // 1. Race: 50% Human (d10<=5) else Other.
+        // 2. Guarantee: At least one inhabitable planet becomes homeworld; if none exist, insert one in Primary Biosphere at random index.
+        // 3. Homeworld dev: Always Voidfarers; primitive xenos cleared.
+        // 4. Remaining settlement selection: Tier1 (Planets, Lesser Moons) with 80% chance (d10<=8) else Tier2 (Asteroids, Station, Gas Giant, Graveyard) while nodes remain.
+        // 5. Development thresholds:
+        //    - Inhabitable Planet: d10<=7 Voidfarers else Colony
+        //    - Non-inhabitable Planet: d10<=3 Voidfarers; d10<=8 Colony; else Orbital Habitation
+        //    - Lesser Moon (tier1 non-planet): d10<=7 Colony else Orbital Habitation
+        //    - Asteroid/Station/Graveyard (tier2 group): d10<=3 Colony else Orbital Habitation
+        //    - Gas Giant (tier2 other): always Orbital Habitation
+        // 6. Primitive xenos cleared whenever a planet gains Starfarer inhabitants (parity with C# PrimitiveXenosNode reset).
+        // 7. Safety: C# throws when total nodes <4; JS returns early (non-fatal) for UI robustness.
         const totalToInhabit = this.systemCreationRules.starfarersNumSystemFeaturesInhabited || 0;
         if (totalToInhabit <= 0) return;
 
@@ -563,8 +576,8 @@ class SystemNode extends NodeBase {
         if (inhabitablePlanets.length === 0) return; // still none, abort
 
         // Pick homeworld & race
-        const homeWorld = inhabitablePlanets[RandBetween(0, inhabitablePlanets.length-1)];
-        const race = (RollD10() <= 5) ? 'Human' : 'Other';
+    const homeWorld = inhabitablePlanets[RandBetween(0, inhabitablePlanets.length-1)];
+    const race = (RollD10() <= 5) ? 'Human' : 'Other'; // 50/50 parity
         // Clear primitive xenos
         if (homeWorld.primitiveXenosNode) { homeWorld.primitiveXenosNode.children = []; homeWorld.primitiveXenosNode = null; }
         homeWorld.inhabitants = race;
@@ -617,9 +630,9 @@ class SystemNode extends NodeBase {
                 node.setInhabitantDevelopmentLevelForStarfarers(level);
             } else { // tier2 nodes
                 let level;
-                if (node.type === NodeTypes.GasGiant) level = 'Orbital Habitation';
+                if (node.type === NodeTypes.GasGiant) level = 'Orbital Habitation'; // always orbital
                 else if (node.type === NodeTypes.AsteroidBelt || node.type === NodeTypes.AsteroidCluster || node.type === NodeTypes.Asteroid || node.type === NodeTypes.DerelictStation || node.type === NodeTypes.StarshipGraveyard) {
-                    level = (RollD10() <= 3) ? 'Colony' : 'Orbital Habitation';
+                    level = (RollD10() <= 3) ? 'Colony' : 'Orbital Habitation'; // 30% colony
                 } else level = 'Orbital Habitation';
                 node.setInhabitantDevelopmentLevelForStarfarers(level);
             }
@@ -836,8 +849,7 @@ class SystemNode extends NodeBase {
         // Star Type
         desc += `<h3>Star Type</h3><p>${this.star}${addPageRef(13,'Table 1-2: Star Generation')}</p>`;
 
-        // Zones summary (retained – enhancement vs C# FlowDocument; keep with TODO marker if removal desired)
-        desc += `<!-- TODO(Parity): Confirm whether zone influence summary should remain (not present verbatim in FlowDocument). -->`;
+        // Zones summary (planned enhancement vs WPF FlowDocument; retained intentionally)
         desc += `<h3>System Zones</h3><ul>`;
         desc += `<li>Inner Cauldron: ${this.innerCauldronZone?.zoneSize || 'Normal'}</li>`;
         desc += `<li>Primary Biosphere: ${this.primaryBiosphereZone?.zoneSize || 'Normal'}</li>`;

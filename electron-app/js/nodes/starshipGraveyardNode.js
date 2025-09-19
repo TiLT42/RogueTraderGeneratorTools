@@ -260,15 +260,33 @@ class StarshipGraveyardNode extends NodeBase {
         return ChooseFrom(types);
     }
     generateXenosRuins() {
-        const types = [
-            'Undiscovered Species',
-            'Eldar Ruins',
-            'Egarian Remains',
-            "Yu'Vath Structures",
-            'Ork Settlements',
-            'Kroot Encampments'
-        ];
-        return ChooseFrom(types);
+        // Parity: Weighted species & dominant adoption (60% reuse, 40/20/10/10/10/10 distribution otherwise; 70% chance to set dominant if undefined).
+        const rules = this.systemCreationRules;
+        const adoptDominant = rules && rules.dominantRuinedSpecies && rules.dominantRuinedSpecies !== 'Undefined' && RollD10() <= 6;
+        let speciesKey;
+        if (adoptDominant) {
+            speciesKey = rules.dominantRuinedSpecies;
+        } else {
+            const r = RollD10();
+            if (r <= 4) speciesKey = 'Undiscovered';
+            else if (r <= 6) speciesKey = 'Eldar';
+            else if (r === 7) speciesKey = 'Egarian';
+            else if (r === 8) speciesKey = "Yu'Vath";
+            else if (r === 9) speciesKey = 'Ork';
+            else speciesKey = 'Kroot';
+            if (rules && (!rules.dominantRuinedSpecies || rules.dominantRuinedSpecies === 'Undefined')) {
+                if (RollD10() <= 7) rules.dominantRuinedSpecies = speciesKey;
+            }
+        }
+        switch (speciesKey) {
+            case 'Eldar': return 'Eldar Ruins';
+            case 'Egarian': return 'Egarian Remains';
+            case "Yu'Vath": return "Yu'Vath Structures";
+            case 'Ork': return 'Ork Settlements';
+            case 'Kroot': return 'Kroot Encampments';
+            case 'Undiscovered':
+            default: return 'Undiscovered Species';
+        }
     }
 
     // ----- Description / Serialization -----

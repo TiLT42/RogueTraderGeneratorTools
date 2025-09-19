@@ -94,6 +94,30 @@ You can open the Chromium Developer Tools to inspect the UI, view console logs, 
 
 Additional helpful view actions are available under the View menu: Reload, Force Reload, Zoom controls, and Toggle Full Screen. In dev mode, you can also right-click anywhere in the app and choose Inspect Element.
 
+## Validation & Syntax Checking
+
+JavaScript syntax validation is provided by a cross-platform Node script and a Windows PowerShell wrapper:
+
+### Cross-Platform (any shell)
+```
+npm run validate
+```
+
+### Windows PowerShell (adds StopOnFirst option)
+```
+npm run validate:ps
+# or stop after the first failure
+powershell -NoLogo -NoProfile -File scripts/validate.ps1 -StopOnFirst
+```
+
+### What It Does
+Both commands run `node --check` against every `.js` file under `js/`, `tests/`, and `scripts/` (excluding `node_modules`). The process exits non‑zero if any syntax errors are detected.
+
+### Common PowerShell Pitfall
+Earlier ad-hoc one-liners failed due to misuse of property expansion (e.g., treating `.FullName` as a literal path). The wrapper script safely enumerates files with `Get-ChildItem` and passes the resolved path to Node.
+
+If you add new folders containing JS, update `scripts/validate.js` and `scripts/validate.ps1` path lists accordingly.
+
 ## Key Differences from Original WPF Version
 
 ### Advantages

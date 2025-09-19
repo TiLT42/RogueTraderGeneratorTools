@@ -10,6 +10,7 @@
   "test": "node tests/runParity.js",
     "parity-test": "node tests/runParity.js",
     "validate": "node scripts/validate.js",
+    "validate:ps": "powershell -NoLogo -NoProfile -ExecutionPolicy Bypass -File scripts/validate.ps1",
     "test:xenos": "node tests/runXenosTests.js"
   },
   "keywords": ["rogue-trader", "rpg", "generator", "warhammer-40k"],

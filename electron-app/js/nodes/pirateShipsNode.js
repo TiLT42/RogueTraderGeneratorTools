@@ -33,7 +33,7 @@ class PirateShipsNode extends NodeBase {
         const temp1 = RollD5() + 4;
         const temp2 = RollD5() + 4;
         this.numShips = Math.min(temp1, temp2);
-    // TODO(Parity): Confirm no upper/lower bound adjustments in WPF (e.g., min 5 already inherent) & whether special features (Warp Turbulence) ever modify count.
+        // NOTE(Parity Confirmed): WPF also uses two (RollD5()+4) rolls and takes the minimum; no other feature modifies ship count.
 
         // Create ships as children
         this.children = [];
