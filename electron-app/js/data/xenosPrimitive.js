@@ -50,42 +50,56 @@
                 case 8: case 9: case 10: break; // Average humanoid
             }
 
-            // 25% chance of additional trait
+            // 25% chance of additional trait (C# parity: mapping 9 Projectile Attack, 10 Deterrent)
             if (RollD100() <= 25) {
                 switch (RollD10()) {
                     case 1: this.traits.push('Armoured'); break;
                     case 2: this.traits.push('Disturbing'); break;
                     case 3: this.traits.push('Deathdweller'); break;
                     case 4: this.traits.push('Lethal Defences'); break;
-                    case 5: this.traits.push('Disturbing'); break;
+                    case 5: this.traits.push('Disturbing'); break; // duplicate intentional per source table
                     case 6: this.traits.push('Warped'); break;
                     case 7: this.traits.push('Darkling'); break;
                     case 8: this.traits.push('Unkillable'); break;
-                    case 9: this.traits.push('Venomous'); break;
-                    case 10: this.traits.push('Toxic (1)'); break;
+                    case 9: this.traits.push('Projectile Attack'); break;
+                    case 10: this.traits.push('Deterrent'); break;
                 }
             }
 
-            // Generate communication method (10% chance)
-            if (RollD100() <= 10) {
-                const communications = [
-                    'Pheromones','Telepathy','Bio-electric pulses','Color changes','Subsonic vocalizations','Electromagnetic fields'
-                ];
-                this.unusualCommunication = ChooseFrom(communications);
+            // Generate communication method (25% chance in C#; table of 5 results)
+            if (RollD100() <= 25) {
+                switch (RollD5()) {
+                    case 1: this.unusualCommunication = 'Intuitive Communicators'; break;
+                    case 2: this.unusualCommunication = 'Previous Contact'; break;
+                    case 3: this.unusualCommunication = 'Relic Civilisation'; break;
+                    case 4: this.unusualCommunication = 'Simplistic'; break;
+                    case 5: this.unusualCommunication = 'Exotic'; break;
+                }
             }
 
-            // Generate social structure (30% chance)
-            if (RollD100() <= 30) {
-                const structures = [
-                    'Tribal hierarchy','Caste system','Hive mind','Pack structure','Matriarchal society','Elder council'
-                ];
-                this.socialStructure = ChooseFrom(structures);
+            // Always assign social structure (d10 table) for parity with C#
+            switch (RollD10()) {
+                case 1: case 2: this.socialStructure = 'Agriculturalist'; break;
+                case 3: this.socialStructure = 'Hunter'; break;
+                case 4: this.socialStructure = 'Feudal'; break;
+                case 5: this.socialStructure = 'Raiders'; break;
+                case 6: this.socialStructure = 'Nomadic'; break;
+                case 7: this.socialStructure = 'Hivemind'; break;
+                case 8: this.socialStructure = 'Scavengers'; break;
+                case 9: this.socialStructure = 'Xenophobic'; break;
+                case 10: this.socialStructure = 'Tradition-bound'; break;
             }
 
             this._calculateMovement();
 
             // Build reference data (Primitive Xenos uses Stars of Inequity tables)
             this.referenceData = this._buildReferences();
+
+            // Apply mechanical effects (minimal parity subset with C#)
+            this._applyMechanicalEffects();
+
+            // Recalculate movement after stat & trait modifications
+            this._calculateMovement();
         }
 
         _buildReferences(){
@@ -146,33 +160,22 @@
         }
 
         _generatePrimitiveXenos() {
-            this.stats.weaponSkill = 25 + RollD10() * 2;
-            this.stats.ballisticSkill = 10 + RollD10();
-            this.stats.strength = 25 + RollD10() * 2;
-            this.stats.toughness = 30 + RollD10() * 2;
-            this.stats.agility = 25 + RollD10() * 2;
-            this.stats.intelligence = 20 + RollD10() * 2;
-            this.stats.perception = 30 + RollD10() * 2;
-            this.stats.willPower = 25 + RollD10() * 2;
-            this.stats.fellowship = 15 + RollD10() * 2;
+            // Fixed baseline stats (C# parity)
+            this.stats.weaponSkill = 35;
+            this.stats.ballisticSkill = 25;
+            this.stats.strength = 30;
+            this.stats.toughness = 35;
+            this.stats.agility = 30;
+            this.stats.intelligence = 30;
+            this.stats.perception = 35;
+            this.stats.willPower = 30;
+            this.stats.fellowship = 25;
 
-            // Clamp stats
-            Object.keys(this.stats).forEach(k => {
-                if (this.stats[k] < 10) this.stats[k] = 10;
-                if (this.stats[k] > 50) this.stats[k] = 50;
-            });
+            // Fixed wounds baseline
+            this.wounds = 10;
 
-            this.wounds = 8 + RollD5();
-
-            // Base skills
+            // Fixed skills list (Awareness, Survival +10, Wrangling)
             this.skills = ['Awareness (Per)','Survival +10 (Int)','Wrangling (Int)'];
-
-            const additionalSkills = ['Climb (St)','Swim (St)','Tracking (Int)','Silent Move (Ag)','Concealment (Ag)'];
-            if (RollD100() <= 60) this.skills.push(ChooseFrom(additionalSkills));
-            if (RollD100() <= 30) {
-                const remaining = additionalSkills.filter(s => !this.skills.includes(s));
-                if (remaining.length > 0) this.skills.push(ChooseFrom(remaining));
-            }
 
             // Traits
             this.traits = ['Natural Weapons', 'Primitive'];
@@ -192,17 +195,67 @@
             if (RollD100() <= 40) this.weapons.push(ChooseFrom(additionalWeapons));
 
             this.armour = 'Hides (Body 2, Arms 1, Legs 1)';
+            // Note: movement is recalculated after trait/size adjustments; base is derived from agility in _calculateMovement
         }
 
         _calculateMovement() {
-            let agilityBonus = Math.floor(this.stats.agility / 10);
-            if (this.traits.includes('Quadruped')) agilityBonus *= 2;
-            if (this.traits.includes('Size (Hulking)')) agilityBonus += 1;
-            else if (this.traits.includes('Size (Scrawny)')) agilityBonus -= 1;
-            if (this.traits.includes('Swift')) agilityBonus += 1;
-            if (this.traits.includes('Crawler')) agilityBonus = Math.floor(agilityBonus / 2);
-            if (agilityBonus < 1) agilityBonus = 1;
-            this.movement = `${agilityBonus}/${agilityBonus*2}/${agilityBonus*3}/${agilityBonus*6}`;
+            const helper = window.XenosBaseData && window.XenosBaseData.computeMovementForProfile;
+            if (helper) {
+                this.movement = helper({ agility: this.stats.agility, traits: this.traits, earthScorning: false });
+            } else {
+                // Fallback to previous logic if helper missing
+                let ab = Math.floor(this.stats.agility / 10);
+                if (this.traits.includes('Crawler') && ab >=2) ab = Math.floor(ab/2 + (ab % 2));
+                if (this.traits.includes('Quadruped')) ab *= 2;
+                if (this.traits.includes('Size (Hulking)')) ab += 1; else if (this.traits.includes('Size (Scrawny)')) ab -= 1;
+                if (this.traits.includes('Swift')) ab += 1;
+                const uns = this.traits.find(t=>t.startsWith('Unnatural Speed'));
+                if (uns){ const m=uns.match(/x(\d+)/i); if(m){ ab *= parseInt(m[1],10); }}
+                if (ab < 1) ab = 1;
+                this.movement = `${ab}/${ab*2}/${ab*3}/${ab*6}`;
+            }
+        }
+
+        // --- Minimal mechanical parity layer ---
+        _applyMechanicalEffects(){
+            const has = (prefix)=> this.traits.some(t=> t.toLowerCase().startsWith(prefix.toLowerCase()));
+
+            // Size stat adjustments (only Hulking / Scrawny are possible in primitive tables)
+            if (has('size (hulking)')){
+                this.stats.strength += 5; this.stats.toughness +=5; this.stats.agility -=5;
+            } else if (has('size (scrawny)')){
+                this.stats.strength -=10; this.stats.toughness -=10;
+            }
+
+            // Single-stack trait effects present in primitive tables
+            if (has('mighty')) this.stats.strength +=10;
+            if (has('resilient')) this.stats.toughness +=10;
+            if (has('swift')) this.stats.agility +=10; // movement recalculated later
+            if (has('multiple arms')) this.stats.toughness +=10;
+
+            // Deadly: +10 WS and remove Primitive from natural weapon strings (approximation)
+            if (has('deadly')){
+                this.stats.weaponSkill +=10;
+                // In C#, Deadly improves Natural Weapons (removing Primitive & possibly adding Razor Sharp at higher tiers).
+                // Primitive Xenos listed weapons are manufactured tools (spear/club), not Natural Weapons, so we deliberately 
+                // do NOT strip 'Primitive' here to avoid incorrectly upgrading gear. If later a natural weapon entry is added
+                // (e.g., 'Claws (Melee; 1d10+SB R; Pen 0; Primitive)'), we could detect by naming and selectively remove.
+            }
+
+            // Armoured: initial natural armour D5
+            if (has('armoured')){
+                const armourVal = RollD5();
+                this.armour = `All ${armourVal}`;
+            }
+
+            // Deathdweller & Unkillable wound mods
+            if (has('unkillable')) this.wounds +=5;
+            if (has('deathdweller')){ this.wounds +=3; this.stats.toughness +=5; }
+
+            // Projectile Attack weapon
+            if (has('projectile attack')){
+                this.weapons.push('Projectile attack (Ranged; 15m; 1d10+3 I, R, or E; Pen 0; Primitive)');
+            }
         }
 
         getName(){ return 'Primitive Xenos'; }

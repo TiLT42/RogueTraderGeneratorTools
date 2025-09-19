@@ -33,6 +33,7 @@ class PirateShipsNode extends NodeBase {
         const temp1 = RollD5() + 4;
         const temp2 = RollD5() + 4;
         this.numShips = Math.min(temp1, temp2);
+    // TODO(Parity): Confirm no upper/lower bound adjustments in WPF (e.g., min 5 already inherent) & whether special features (Warp Turbulence) ever modify count.
 
         // Create ships as children
         this.children = [];
@@ -55,16 +56,15 @@ class PirateShipsNode extends NodeBase {
     }
 
     updateDescription() {
+        // NOTE (Parity): Wayfarer Station line should include page 210 (Core Rulebook) when page refs enabled.
+        const showPages = window.APP_STATE?.settings?.showPageNumbers;
+        const wayfarerRef = showPages ? ` <span class="page-reference">${createPageReference(210,'Wayfarer Station')}</span>` : '';
         let desc = `<h3>Pirate Den</h3>`;
         if (this.containsWayfarerStation) {
-            desc += `<p>The pirates in this system are based around a space station (such as a Wayfarer Station).</p>`;
+            desc += `<p>The pirates in this system are based around a space station (such as a Wayfarer Station).${wayfarerRef}</p>`;
         }
-        if (this.numShips > 0) {
-            desc += `<p><strong>Number of Pirate Ships Present:</strong> ${this.numShips}</p>`;
-        } else {
-            desc += `<p><strong>Number of Pirate Ships Present:</strong> 0</p>`; // defensive
-        }
-        
+        // Match C# wording: label style "Number of Pirate Ships Present"
+        desc += `<p><strong>Number of Pirate Ships Present:</strong> ${this.numShips}</p>`;
         this.description = desc;
     }
 

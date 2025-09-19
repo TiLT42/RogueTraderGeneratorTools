@@ -109,6 +109,24 @@
 
   console.log('Parity tests completed.');
 
+  // 4a. Hazard aggregation parity: ensure at most one Solar Flares / Radiation Bursts node per zone
+  try {
+    if (typeof SystemNode !== 'undefined') {
+      window.__clearSeed(); window.__setSeed(3141592);
+      const sys = new SystemNode();
+      sys.generate();
+      const zones = [sys.innerCauldronZone, sys.primaryBiosphereZone, sys.outerReachesZone];
+      zones.forEach((z, idx) => {
+        if (!z) return;
+        const flares = z.children.filter(c => c.type === NodeTypes.SolarFlares);
+        const bursts = z.children.filter(c => c.type === NodeTypes.RadiationBursts);
+        assert(flares.length <= 1, 'Zone '+idx+' should have at most one Solar Flares node (found '+flares.length+')');
+        assert(bursts.length <= 1, 'Zone '+idx+' should have at most one Radiation Bursts node (found '+bursts.length+')');
+      });
+      console.log('Hazard aggregation test executed: true');
+    }
+  } catch(e){ console.warn('Hazard aggregation test failed:', e.message); }
+
   // 4. Regeneration reset test
   try {
     if (typeof SystemNode !== 'undefined') {

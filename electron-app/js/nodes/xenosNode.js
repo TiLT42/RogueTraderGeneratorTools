@@ -248,10 +248,37 @@ class XenosNode extends NodeBase {
         statBlock += `<th>WS</th><th>BS</th><th>S</th><th>T</th><th>Ag</th><th>Int</th><th>Per</th><th>WP</th><th>Fel</th>`;
         statBlock += `</tr>`;
         statBlock += `<tr>`;
+        // Derived SB/TB parentheses if Unnatural traits present (display only; no mechanics changed)
+        const baseSB = Math.floor((this.stats.strength || 0) / 10);
+        const baseTB = Math.floor((this.stats.toughness || 0) / 10);
+        const unnaturalStrengthTrait = (this.traits || []).find(t => t.toLowerCase().startsWith('unnatural strength'));
+        const unnaturalToughnessTrait = (this.traits || []).find(t => t.toLowerCase().startsWith('unnatural toughness'));
+        const parseUnnaturalMult = (trait) => {
+            if (!trait) return 1;
+            const m = trait.match(/x(\d+)/i) || trait.match(/\((\d+)\)/); // support (x2) or (2) forms
+            if (!m) return 1;
+            const val = parseInt(m[1], 10);
+            if (!isFinite(val) || val < 2) return 1;
+            return val;
+        };
+        const strengthMult = parseUnnaturalMult(unnaturalStrengthTrait);
+        const toughnessMult = parseUnnaturalMult(unnaturalToughnessTrait);
+        const derivedSB = strengthMult > 1 ? baseSB * strengthMult : null;
+        const derivedTB = toughnessMult > 1 ? baseTB * toughnessMult : null;
+        // Koronus Bestiary data layer already knows how to format Unnatural parentheses; prefer that if available
+        let strengthSuffix = '';
+        let toughnessSuffix = '';
+        if (this.xenosType === 'KoronusBestiary' && this.xenosData) {
+            try { strengthSuffix = this.xenosData.getUnnaturalStrengthTextForTable?.() || ''; } catch (_) {}
+            try { toughnessSuffix = this.xenosData.getUnnaturalToughnessTextForTable?.() || ''; } catch (_) {}
+        } else {
+            if (derivedSB) strengthSuffix = ` (${derivedSB})`;
+            if (derivedTB) toughnessSuffix = ` (${derivedTB})`;
+        }
         statBlock += `<td>${this.formatStat(this.stats.weaponSkill)}</td>`;
         statBlock += `<td>${this.formatStat(this.stats.ballisticSkill)}</td>`;
-        statBlock += `<td>${this.formatStat(this.stats.strength)}</td>`;
-        statBlock += `<td>${this.formatStat(this.stats.toughness)}</td>`;
+        statBlock += `<td>${this.formatStat(this.stats.strength)}${strengthSuffix}</td>`;
+        statBlock += `<td>${this.formatStat(this.stats.toughness)}${toughnessSuffix}</td>`;
         statBlock += `<td>${this.formatStat(this.stats.agility)}</td>`;
         statBlock += `<td>${this.formatStat(this.stats.intelligence)}</td>`;
         statBlock += `<td>${this.formatStat(this.stats.perception)}</td>`;

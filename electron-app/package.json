@@ -8,7 +8,9 @@
     "dev": "electron . --dev --no-sandbox",
     "build": "electron-builder",
   "test": "node tests/runParity.js",
-    "parity-test": "node tests/runParity.js"
+    "parity-test": "node tests/runParity.js",
+    "validate": "node scripts/validate.js",
+    "test:xenos": "node tests/runXenosTests.js"
   },
   "keywords": ["rogue-trader", "rpg", "generator", "warhammer-40k"],
   "author": "Rogue Trader Generator Tools",

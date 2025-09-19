@@ -536,5 +536,33 @@ window.XenosBaseData = {
     XenosSizes,
     MovementScales,
     RuleBooks,
-    DocReference
+    DocReference,
+    computeMovementForProfile: function(options){
+        // options: { agility, traits: string[], earthScorning:boolean }
+        // This mirrors Primitive & Stars logic (no Koronus change since Koronus uses class method already)
+        if(!options) return '0/0/0/0';
+        const traits = options.traits || [];
+        let ab = Math.floor((options.agility || 0)/10);
+        // Crawler / Amorphous halve (round up) if AB >=2
+        if ((traits.some(t=>t.startsWith('Crawler')) || traits.some(t=>t.startsWith('Amorphous'))) && ab >= 2) {
+            ab = Math.floor(ab/2 + (ab % 2));
+        }
+        if (options.earthScorning) ab = 0;
+        if (traits.some(t=>t.startsWith('Quadruped'))) {
+            ab *= 2; // Stars logic does not add +1 for >1 instance; Primitive never has stacks
+        }
+        // Size modifiers (order identical to previous code)
+        if (traits.includes('Size (Miniscule)')) ab -= 3; else if (traits.includes('Size (Puny)')) ab -= 2; else if (traits.includes('Size (Scrawny)')) ab -= 1; else if (traits.includes('Size (Hulking)')) ab += 1; else if (traits.includes('Size (Enormous)')) ab += 2; else if (traits.includes('Size (Massive)')) ab += 3;
+        // Swift: in original C# for Stars is applied earlier as agility increase; Primitive implements as +1 after size.
+        if (traits.some(t=>t.startsWith('Swift')) && !traits.some(t=>t.startsWith('Flyer')) ) {
+            // Preserve Primitive behavior only: Stars already raised agility separately (we can't distinguish reliably, so we check for presence of base archetype patterns later if needed). For safety, only apply if 'Primitive Xenos' pattern is detected by presence of 'Primitive' trait AND Natural Weapons baseline.
+            if (traits.includes('Primitive') && traits.includes('Natural Weapons')) {
+                ab += 1;
+            }
+        }
+        const unSpeed = traits.find(t=>t.startsWith('Unnatural Speed'));
+        if (unSpeed){ const m = unSpeed.match(/x(\d+)/i); if (m) { ab *= parseInt(m[1],10); } }
+        if (ab < 1) ab = 1;
+        return `${ab}/${ab*2}/${ab*3}/${ab*6}`;
+    }
 };

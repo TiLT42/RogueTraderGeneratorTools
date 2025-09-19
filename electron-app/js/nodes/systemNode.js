@@ -103,6 +103,7 @@ class SystemNode extends NodeBase {
         this.nodeName = this.generateSystemName();
         this.generateZones();
         this.generateStar();
+        // TODO(Parity): Original WPF generates System Features BEFORE zones & star. Order difference accepted per user (not required for RNG parity), kept for readability.
         this.generateSystemFeatures();
 
         // Populate orbital elements (simplified parity)
@@ -424,6 +425,32 @@ class SystemNode extends NodeBase {
         primaryCount = applyMod(this.systemCreationRules.primaryBiosphereDominant, this.systemCreationRules.primaryBiosphereWeak, primaryCount);
         outerCount = applyMod(this.systemCreationRules.outerReachesDominant, this.systemCreationRules.outerReachesWeak, outerCount);
 
+        // Aggregation helpers (parity with C# approach of single node + counters)
+        const ensureHazardSingleton = (zoneNode, nodeType) => {
+            if (!zoneNode) return null;
+            let existing = zoneNode.children.find(c => c.type === nodeType);
+            if (existing) return existing;
+            const n = createNode(nodeType);
+            n.generate?.();
+            zoneNode.addChild(n);
+            return n;
+        };
+        const incrementHazardCount = (zoneNode, nodeType, countProp) => {
+            const node = ensureHazardSingleton(zoneNode, nodeType);
+            if (!node) return;
+            // Initialize property if missing
+            if (typeof node[countProp] !== 'number') node[countProp] = 0;
+            node[countProp] += 1;
+            // Push aggregate to description helpers on hazard nodes
+            if (nodeType === NodeTypes.SolarFlares && typeof node.setNumSolarFlaresInZone === 'function') {
+                node.setNumSolarFlaresInZone(node[countProp]);
+            } else if (nodeType === NodeTypes.RadiationBursts && typeof node.setNumRadiationBurstsInZone === 'function') {
+                node.setNumRadiationBurstsInZone(node[countProp]);
+            } else {
+                // Fallback: updateDescription if custom property names differ
+                node.updateDescription?.();
+            }
+        };
         const addElement = (zoneNode, zone, rand) => {
             // zone specific probabilistic mapping referencing C# distribution
             const r = rand();
@@ -458,9 +485,17 @@ class SystemNode extends NodeBase {
                 else nodeType = NodeTypes.StarshipGraveyard;
             }
             if (!nodeType) return;
+            // Hazard aggregation: if RadiationBursts / SolarFlares, increment counter instead of adding multiple nodes
+            if (nodeType === NodeTypes.SolarFlares) {
+                incrementHazardCount(zoneNode, NodeTypes.SolarFlares, 'numSolarFlaresInThisZone');
+                return;
+            }
+            if (nodeType === NodeTypes.RadiationBursts) {
+                incrementHazardCount(zoneNode, NodeTypes.RadiationBursts, 'numRadiationBurstsInThisZone');
+                return;
+            }
             const element = createNode(nodeType);
             if (!element) return;
-            // Provide systemCreationRules to planet/gas giant/asteroid belt/cluster as in C#
             if ('systemCreationRules' in element) element.systemCreationRules = this.systemCreationRules;
             element.parent = zoneNode;
             element.generate?.();
@@ -503,15 +538,7 @@ class SystemNode extends NodeBase {
             const zone = ['InnerCauldron','PrimaryBiosphere','OuterReaches'][RandBetween(0,2)]; this.addPlanet(zone); totalPlanets++;
         }
 
-        // Normalize emergency inhabitable planet insertion (for Starfarers fallback) here once only.
-        if (this.systemCreationRules.starfarersNumSystemFeaturesInhabited > 0) {
-            const allPlanets = [this.innerCauldronZone,this.primaryBiosphereZone,this.outerReachesZone]
-                .flatMap(z=> z? z.children:[]) .filter(c=>c.type===NodeTypes.Planet);
-            const inhabitable = allPlanets.filter(p=> typeof p.isPlanetInhabitable === 'function' && p.isPlanetInhabitable());
-            if (inhabitable.length === 0 && this.primaryBiosphereZone) {
-                this.addPlanet('PrimaryBiosphere', true);
-            }
-        }
+        // NOTE (Parity): Removed early forced inhabitable planet insertion. This is now handled ONLY inside generateStarfarers()
     }
 
     generateStarfarers() {
@@ -758,51 +785,65 @@ class SystemNode extends NodeBase {
     }
 
     updateDescription() {
-        // Helper function to conditionally add page references
-        const addPageRef = (pageNum, tableName = '') => {
-            if (window.APP_STATE.settings.showPageNumbers) {
-                return ` <span class="page-reference">${createPageReference(pageNum, tableName)}</span>`;
-            }
-            return '';
-        };
-        
-    let desc = `<h3>Star Type</h3><p>${this.star}${addPageRef(13, "Table 1-2: Star Generation")}</p>`;
-        
-        if (this.systemFeatures.length > 0) {
+        // Order & phrasing mimic C# FlowDocument (System Features, Additional Special Rules, Star Type).
+        const addPageRef = (page, tableName='') => window.APP_STATE.settings.showPageNumbers ? ` <span class="page-reference">${createPageReference(page, tableName)}</span>` : '';
+
+        let desc = '';
+
+        // System Features section (plural/singular logic simplified – always list).
+        if (this.systemFeatures.length === 1) {
+            const f = this.systemFeatures[0];
+            const meta = SystemNode.FEATURE_PAGE_MAP[f];
+            desc += `<h3>System Feature</h3><p>${f}${meta?addPageRef(meta.page):''}</p>`;
+        } else if (this.systemFeatures.length > 1) {
             desc += `<h3>System Features</h3><ul>`;
-            const map = SystemNode.FEATURE_PAGE_MAP;
-            for (const feature of this.systemFeatures) {
-                const meta = map[feature];
-                const page = meta?.page || 0;
-                desc += `<li>${feature}${page?addPageRef(page):''}</li>`;
+            for (const f of this.systemFeatures) {
+                const meta = SystemNode.FEATURE_PAGE_MAP[f];
+                desc += `<li>${f}${meta?addPageRef(meta.page):''}</li>`;
             }
             desc += `</ul>`;
         }
 
-        // Additional special rules (subset)
-        const specialRules = [];
-        if (this.gravityTidesGravityWellsAroundPlanets) specialRules.push('Gravity Tides: Difficult (-10) checks to enter/maintain planetary orbit.');
-        if (this.gravityTidesTravelTimeBetweenPlanetsHalves) specialRules.push('Gravity Tides: Travel between planets takes half time.');
-        if (this.illOmenedFickleFatePoints) specialRules.push('Ill-Omened: Fate Point spent on 1d10 roll of 9 has no effect.');
-        if (this.illOmenedWillPowerPenalty) specialRules.push('Ill-Omened: All Willpower tests -10.');
-        if (this.illOmenedDoubledInsanity) specialRules.push('Ill-Omened: Double gained Insanity Points.');
-        if (this.illOmenedFearFromPsychicExploration) specialRules.push('Ill-Omened: Divination psychic info attempts require Difficult (-10) Fear test.');
-        if (this.warpStasisFocusPowerPenalties) specialRules.push('Warp Stasis: Focus Power & Psyniscience tests -10.');
-        if (this.warpStasisNoPush) specialRules.push('Warp Stasis: Cannot use Push level for Psychic Techniques.');
-        if (this.warpStasisReducedPsychicPhenomena) specialRules.push('Warp Stasis: Roll twice on Psychic Phenomena, use lower.');
-        if (this.systemCreationRules.numPlanetsInWarpStorms > 0) specialRules.push('Warp Turbulence: One planet is engulfed in a permanent Warp storm.');
-        if (specialRules.length) {
-            desc += '<h3>Special Rules</h3><ul>' + specialRules.map(r=>`<li>${r}</li>`).join('') + '</ul>';
+        // Additional Special Rules (verbatim C# wording – minor punctuation preserved)
+        const addRule = (text, page, ruleName) => {
+            return `<li>${text}${addPageRef(page, ruleName)}</li>`;
+        };
+        const rulesList = [];
+        if (this.gravityTidesGravityWellsAroundPlanets)
+            rulesList.push(addRule('Safely entering the orbit of a Planet in this System with a voidship requires a Difficult (-10) Pilot (Space Craft) Test, causing the loss of 1 point of Hull Integrity for every two degrees of failure. Small craft can enter and exit the gravity well only after the pilot passes a Very Hard (-30) Pilot (Flyers) Test. Every full day in orbit requires another Pilot Test. ', 9, 'Gravity Tides'));
+        if (this.gravityTidesTravelTimeBetweenPlanetsHalves)
+            rulesList.push(addRule('Travel between Planets within this System takes half the usual time. ', 9, 'Gravity Tides'));
+        if (this.illOmenedFickleFatePoints)
+            rulesList.push(addRule('When spending a Fate Point within this System, roll 1d10. On a 9, it has no effect. ', 10, 'Ill-Omened'));
+        if (this.illOmenedWillPowerPenalty)
+            rulesList.push(addRule('All Willpower Tests made within this System are made at a -10 penalty. ', 10, 'Ill-Omened'));
+        if (this.illOmenedDoubledInsanity)
+            rulesList.push(addRule('Whenever an Explorer would gain Insanity Points while within this System, double the amount of Insanity Points he gains. ', 10, 'Ill-Omened'));
+        if (this.illOmenedFearFromPsychicExploration)
+            rulesList.push(addRule('Attempting to use Psychic Techniques from the Divination Discipline to gain information about the System or anything within it requires the user to pass a Difficult (-10) Fear Test before he can attempt the Focus Power Test. ', 10, 'Ill-Omened'));
+        if (this.warpStasisFocusPowerPenalties)
+            rulesList.push(addRule('Focus Power and Psyniscience Tests within the System are made at a -10 penalty. ', 12, 'Warp Stasis'));
+        if (this.warpStasisNoPush)
+            rulesList.push(addRule('Psychic Techniques cannot be used at the Push level within the System. ', 12, 'Warp Stasis'));
+        if (this.warpStasisReducedPsychicPhenomena)
+            rulesList.push(addRule('When rolling on Table 6-2: Psychic Phenomena (see page 160 of the Rogue Trader Core Rulebook) within this System, roll twice and use the lower result. ', 12, 'Warp Stasis'));
+        if (this.systemCreationRules.numPlanetsInWarpStorms > 0)
+            rulesList.push(addRule('One of the planets in this system is engulfed in a permanent Warp storm. ', 12, 'Warp Turbulence'));
+        if (rulesList.length > 0) {
+            desc += `<h3>Additional Special Rule${rulesList.length>1?'s':''}</h3><ul>${rulesList.join('')}</ul>`;
         }
-        
-        desc += `<h3>System Zones</h3>`;
-        desc += `<p>This system contains three main orbital zones:</p>`;
-        desc += `<ul>`;
-        desc += `<li><strong>Inner Cauldron</strong> (${this.innerCauldronZone?.zoneSize || 'Normal'} influence)</li>`;
-        desc += `<li><strong>Primary Biosphere</strong> (${this.primaryBiosphereZone?.zoneSize || 'Normal'} influence)</li>`;
-        desc += `<li><strong>Outer Reaches</strong> (${this.outerReachesZone?.zoneSize || 'Normal'} influence)</li>`;
+
+        // Star Type
+        desc += `<h3>Star Type</h3><p>${this.star}${addPageRef(13,'Table 1-2: Star Generation')}</p>`;
+
+        // Zones summary (retained – enhancement vs C# FlowDocument; keep with TODO marker if removal desired)
+        desc += `<!-- TODO(Parity): Confirm whether zone influence summary should remain (not present verbatim in FlowDocument). -->`;
+        desc += `<h3>System Zones</h3><ul>`;
+        desc += `<li>Inner Cauldron: ${this.innerCauldronZone?.zoneSize || 'Normal'}</li>`;
+        desc += `<li>Primary Biosphere: ${this.primaryBiosphereZone?.zoneSize || 'Normal'}</li>`;
+        desc += `<li>Outer Reaches: ${this.outerReachesZone?.zoneSize || 'Normal'}</li>`;
         desc += `</ul>`;
-        
+
         this.description = desc;
     }
 

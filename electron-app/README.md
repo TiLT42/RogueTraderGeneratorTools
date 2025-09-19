@@ -126,6 +126,33 @@ This Electron conversion provides a solid foundation with all core functionality
 - ⚠️ Detailed starship generation (framework ready)
 - ⚠️ Full rule book integration (framework ready)
 
+## Xenos Generation Parity Status
+
+The Xenos subsystem has undergone a multi-phase parity effort against the authoritative C# WPF implementation:
+
+### Completed Parity (Phase 1 & 2)
+- Primitive Xenos: Baseline stats, wounds, communication/social structure probabilities, extra trait table (including Projectile Attack / Deterrent), movement calculation (crawler halving, size offsets, swift bonus) all match C# logic.
+- Stars of Inequity Bestial Archetypes: Apex Predator, Behemoth, Ptera-Beast, Shadowed Stalker, Venomous Terror archetype stat blocks, wounds, talents, traits, and full Bestial Nature branching have been ported (including edge-case behaviors and original C# quirks such as Behemoth Brute size handling).
+- Koronus Bestiary Fauna: Previously implemented size/stat adjustments verified; no changes required for parity.
+- Movement: Unified rules applied (crawler/amorphous halving with round-up, quadruped doubling, size modifiers, Unnatural Speed multiplier, earth-scorning zeroing) consolidated in a shared helper without altering existing semantics.
+- Unnatural Trait Display: Derived Strength Bonus (SB) and Toughness Bonus (TB) are displayed in parentheses (e.g., S 70 (14)) mirroring effective values when Unnatural traits are present (display only; no mechanical change).
+- Trait Reference Mapping: Explicit references added for Unnatural Speed, Strength, and Toughness (Core Rulebook p. 368) instead of placeholder reuse.
+
+### Intentional Non-Mechanic Display Enhancements
+- Added derived SB/TB parentheses purely for clarity; underlying stat calculations remain unchanged from C# parity rules.
+- Central movement helper introduced for maintainability; logic reproduces prior per-file calculations exactly.
+
+### Deferred / Future Enhancements (Not Yet Implemented)
+- Additional mechanical effects for descriptive-only Bestial Nature labels (omitted intentionally—no rules text in C# to replicate).
+- Extended automated parity assertions (current tests cover movement and derived SB/TB; broader statistical parity tests could be added).
+- Optional UI enrichment (tooltips with rule excerpts) pending licensing review.
+
+### Testing Artifacts
+- `tests/xenosDerivedTests.js` provides deterministic validation of movement mathematics and derived SB/TB rendering.
+- Existing parity tests continue to exercise system/planet generation invariants.
+
+No new mechanics beyond those present (or implied) in the original C# code were introduced; all changes outside of raw parity are limited to presentation and reference data.
+
 ## Future Development
 
 To complete the conversion:

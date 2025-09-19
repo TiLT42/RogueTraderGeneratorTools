@@ -134,9 +134,15 @@ class PlanetNode extends NodeBase {
         this.generateResourcesParity();
         // 10. Landmarks / references (if environment present)
         this.buildEnvironmentReferences();
-        // 11. Inhabitants (retain simplified model for now; TODO full parity)
+        // 11. Native Species (was previously omitted from pipeline causing absence of native species nodes)
+        //     Parity: In WPF native species are generated alongside inhabitants for habitable worlds.
+        //     We invoke before inhabitants so development logic (future enhancement) could react to species count if needed.
+        if (!this.nativeSpeciesNode) {
+            try { this.generateNativeSpecies(); } catch(e){ /* non-fatal */ }
+        }
+        // 12. Inhabitants (retain simplified model for now; TODO full parity)
         this.generateInhabitants(); // (will be overridden to full parity below)
-        // 12. Description
+        // 13. Description
         this.updateDescription();
     }
 
@@ -440,6 +446,7 @@ class PlanetNode extends NodeBase {
 
     generateResourcesParity() {
         // Base mineral resources based on size
+        // TODO(Parity): Confirm size-based base mineral count matches exact WPF distribution (PlanetNode.cs Body->Mineral section). Currently using d5/d10 approximations.
         let numMinerals = 0;
         switch (this.effectivePlanetSize) {
             case 'Small':
@@ -481,6 +488,7 @@ class PlanetNode extends NodeBase {
                 this._addXenosRuins();
             }
         }
+        // TODO(Parity): Additional random post-generation events (Lost Data-Vault, Cyclopean Obelisk, etc.) moved elsewhere; ensure no duplicate probability stacking vs WPF.
     }
     _addRandomMineral() {
         // Ensure array exists (defensive for regeneration edge cases)
@@ -504,12 +512,14 @@ class PlanetNode extends NodeBase {
     }
     _addArcheotechCache() {
         // C# parity: base abundance RollD100() + optional (RollD10()+5) if increased abundance flag set
+        // TODO(Parity): Validate abundance tier scaling effect on later starfarer depletion (WPF may cap some values). No cap currently applied.
         let abundance = RollD100();
         if (this.systemCreationRules && this.systemCreationRules.ruinedEmpireIncreasedAbundanceArcheotechCaches) abundance += (RollD10() + 5);
         this.archeotechCaches.push({ type: this.generateArcheotechCache(), abundance });
     }
     _addXenosRuins() {
         // C# parity: base abundance RollD100() + optional (RollD10()+5)
+        // TODO(Parity): As above, verify any maximum abundance ceiling in WPF not enforced here.
         let abundance = RollD100();
         if (this.systemCreationRules && this.systemCreationRules.ruinedEmpireIncreasedAbundanceXenosRuins) abundance += (RollD10() + 5);
         this.xenosRuins.push({ type: this.generateXenosRuins(), abundance });
@@ -905,11 +915,16 @@ class PlanetNode extends NodeBase {
         
         // Chance for archeotech or xenos ruins
         if (RollD100() <= 10) {
-            this.archeotechCaches.push(this.generateArcheotechCache());
+            // Parity: always store as {type, abundance}
+            const type = this.generateArcheotechCache();
+            const abundance = RollD100();
+            this.archeotechCaches.push({ type, abundance });
         }
         
         if (RollD100() <= 15) {
-            this.xenosRuins.push(this.generateXenosRuins());
+            const type = this.generateXenosRuins();
+            const abundance = RollD100();
+            this.xenosRuins.push({ type, abundance });
         }
     }
 
@@ -965,7 +980,7 @@ class PlanetNode extends NodeBase {
             'Pre-Age of Strife Facility',
             'Dark Age Technology'
         ];
-        return ChooseFrom(types);
+        return ChooseFrom(types); // TODO(Parity): Verify weighting vs C# table if non-uniform originally.
     }
 
     generateXenosRuins() {
@@ -977,7 +992,7 @@ class PlanetNode extends NodeBase {
             'Ork Settlements',
             'Kroot Encampments'
         ];
-        return ChooseFrom(species);
+        return ChooseFrom(species); // TODO(Parity): Confirm species distribution vs WPF implementation.
     }
 
     // Legacy simple inhabitant generation removed for parity: C# does not perform this separate random table once
