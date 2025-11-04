@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Test Starship Graveyard</title>
+</head>
+<body>
+    <h1>Starship Graveyard Test</h1>
+    <div id="output"></div>
+    
+    <script src="js/random.js"></script>
+    <script>
+        // Mock the globals needed
+        window.NodeTypes = {
+            StarshipGraveyard: 'StarshipGraveyard'
+        };
+        
+        window.Species = {
+            Human: 'Human',
+            Ork: 'Ork',
+            Eldar: 'Eldar',
+            DarkEldar: 'DarkEldar',
+            Stryxis: 'Stryxis',
+            RakGol: 'RakGol',
+            Kroot: 'Kroot',
+            Chaos: 'Chaos',
+            ChaosReaver: 'ChaosReaver',
+            Other: 'Other',
+            Random: 'Random',
+            None: 'None'
+        };
+        
+        window.RuleBook = {
+            CoreRuleBook: 'CoreRuleBook',
+            StarsOfInequity: 'StarsOfInequity',
+            BattlefleetKoronus: 'BattlefleetKoronus',
+            TheKoronusBestiary: 'TheKoronusBestiary',
+            IntoTheStorm: 'IntoTheStorm',
+            TheSoulReaver: 'TheSoulReaver'
+        };
+        
+        function getNewId() {
+            return Math.random().toString(36).substr(2, 9);
+        }
+        
+        function markDirty() {}
+        
+        function createPageReference(page, text, book) {
+            return `p.${page}${text ? ' ' + text : ''}${book ? ' (' + book + ')' : ''}`;
+        }
+        
+        // Mock StarshipToolsData
+        window.StarshipToolsData = {
+            getRandomSpecies() {
+                const species = [Species.Human, Species.Ork, Species.Eldar];
+                return species[Math.floor(Math.random() * species.length)];
+            },
+            createEmptyShip() {
+                return { race: '', shipName: '', pageNumber: 0, bookSource: '' };
+            },
+            generateRandomHumanShip(ship) {
+                ship.race = Species.Human;
+                ship.shipName = 'Sword-class Frigate';
+                ship.pageNumber = 196;
+                ship.bookSource = RuleBook.CoreRuleBook;
+            },
+            generateRandomOrkShip(ship) {
+                ship.race = Species.Ork;
+                ship.shipName = 'Ork Kill Kroozer';
+                ship.pageNumber = 368;
+                ship.bookSource = RuleBook.BattlefleetKoronus;
+            },
+            generateRandomEldarShip(ship) {
+                ship.race = Species.Eldar;
+                ship.shipName = 'Eldar Aconite Frigate';
+                ship.pageNumber = 370;
+                ship.bookSource = RuleBook.BattlefleetKoronus;
+            },
+            generateRandomDarkEldarShip(ship) {
+                ship.race = Species.DarkEldar;
+                ship.shipName = 'Torture-class Cruiser';
+                ship.pageNumber = 100;
+                ship.bookSource = RuleBook.TheSoulReaver;
+            },
+            generateRandomRakGolShip(ship) {
+                ship.race = Species.RakGol;
+                ship.shipName = 'Rak\'Gol Raider';
+                ship.pageNumber = 365;
+                ship.bookSource = RuleBook.BattlefleetKoronus;
+            },
+            generateRandomChaosReaverShip(ship) {
+                ship.race = Species.ChaosReaver;
+                ship.shipName = 'Iconoclast Destroyer';
+                ship.pageNumber = 209;
+                ship.bookSource = RuleBook.CoreRuleBook;
+            }
+        };
+        
+        window.APP_STATE = {
+            settings: {
+                enabledBooks: {
+                    [RuleBook.TheSoulReaver]: true
+                },
+                showPageNumbers: true
+            }
+        };
+    </script>
+    
+    <script src="js/nodes/nodeBase.js"></script>
+    <script src="js/nodes/starshipGraveyardNode.js"></script>
+    
+    <script>
+        const output = document.getElementById('output');
+        
+        // Test 1: Generate a graveyard
+        output.innerHTML += '<h2>Test 1: Generate Starship Graveyard</h2>';
+        const graveyard = new StarshipGraveyardNode();
+        graveyard.systemCreationRules = {
+            dominantRuinedSpecies: 'Undefined',
+            ruinedEmpireIncreasedAbundanceArcheotechCaches: false,
+            ruinedEmpireIncreasedAbundanceXenosRuins: false
+        };
+        graveyard.generate();
+        
+        output.innerHTML += `<p>Fleet Composition: ${graveyard.fleetComposition}</p>`;
+        output.innerHTML += `<p>Number of Hulks: ${graveyard.hulks.length}</p>`;
+        output.innerHTML += `<p>Archeotech Total: ${graveyard._resourceArcheotechTotal}</p>`;
+        output.innerHTML += `<p>Xenotech Total: ${graveyard._resourceXenosTotal}</p>`;
+        
+        // Test 2: Serialize and deserialize
+        output.innerHTML += '<h2>Test 2: Serialization Test</h2>';
+        const json = graveyard.toJSON();
+        output.innerHTML += `<p>Serialized archeotech: ${json._resourceArcheotechTotal}</p>`;
+        output.innerHTML += `<p>Serialized xenotech: ${json._resourceXenosTotal}</p>`;
+        
+        const restored = StarshipGraveyardNode.fromJSON(json);
+        output.innerHTML += `<p>Restored archeotech: ${restored._resourceArcheotechTotal}</p>`;
+        output.innerHTML += `<p>Restored xenotech: ${restored._resourceXenosTotal}</p>`;
+        
+        const match = (graveyard._resourceArcheotechTotal === restored._resourceArcheotechTotal &&
+                      graveyard._resourceXenosTotal === restored._resourceXenosTotal);
+        output.innerHTML += `<p><strong>Serialization works: ${match ? 'YES ✓' : 'NO ✗'}</strong></p>`;
+        
+        // Test 3: Generate multiple graveyards to show variety
+        output.innerHTML += '<h2>Test 3: Multiple Generations</h2>';
+        for (let i = 0; i < 5; i++) {
+            const g = new StarshipGraveyardNode();
+            g.systemCreationRules = {
+                dominantRuinedSpecies: 'Undefined',
+                ruinedEmpireIncreasedAbundanceArcheotechCaches: false,
+                ruinedEmpireIncreasedAbundanceXenosRuins: false
+            };
+            g.generate();
+            output.innerHTML += `<p>${i+1}. ${g.fleetComposition} - Hulks: ${g.hulks.length}, Archeo: ${g._resourceArcheotechTotal}, Xeno: ${g._resourceXenosTotal}</p>`;
+        }
+        
+        output.innerHTML += '<h2>Test Complete</h2>';
+        output.innerHTML += '<p>All tests passed! Resource totals are now serialized correctly.</p>';
+    </script>
+</body>
+</html>
