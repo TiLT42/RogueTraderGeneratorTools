@@ -355,13 +355,13 @@ namespace RogueTraderSystemGenerator.Nodes
                 int numXenotech = numTotalResources - numArcheotech;
                 for (int i = 0; i < numArcheotech; i++)
                 {
-                    _resourceArcheotechCache += Globals.RollD100();
+                    _resourceArcheotechCache += 25 + Globals.RollD10(2);
                     if (_systemCreationRules.RuinedEmpireIncreasedAbundanceArcheotechCaches)
                         _resourceArcheotechCache += (Globals.RollD10() + 5);
                 }
                 for (int i = 0; i < numXenotech; i++)
                 {
-                    _resourceXenosRuins += Globals.RollD100();
+                    _resourceXenosRuins += 25 + Globals.RollD10(2);
                     if (_systemCreationRules.RuinedEmpireIncreasedAbundanceXenosRuins)
                         _resourceXenosRuins += (Globals.RollD10() + 5);
                 }
@@ -370,7 +370,7 @@ namespace RogueTraderSystemGenerator.Nodes
             {
                 for (int i = 0; i < numTotalResources; i++)
                 {
-                    _resourceXenosRuins += Globals.RollD100();
+                    _resourceXenosRuins += 25 + Globals.RollD10(2);
                     if (_systemCreationRules.RuinedEmpireIncreasedAbundanceXenosRuins)
                         _resourceXenosRuins += (Globals.RollD10() + 5);
                 }
@@ -379,7 +379,7 @@ namespace RogueTraderSystemGenerator.Nodes
             {
                 for (int i = 0; i < numTotalResources; i++)
                 {
-                    _resourceArcheotechCache += Globals.RollD100();
+                    _resourceArcheotechCache += 25 + Globals.RollD10(2);
                     if (_systemCreationRules.RuinedEmpireIncreasedAbundanceArcheotechCaches)
                         _resourceArcheotechCache += (Globals.RollD10() + 5);
                 }

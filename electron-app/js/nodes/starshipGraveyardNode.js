@@ -4,7 +4,7 @@
 // - Majority / minority species selection with Dominant Ruined Species bias & adoption (60% bias, 70% adoption)
 // - Kroot / Stryxis ship count limitation rules
 // - Salvage integrity algorithm (salvageChance thresholds + boarding bonus)
-// - Resource generation (d10+2 total packets, split into archeotech / xenotech by species groups, abundance d100 [+ optional d10+5 Ruined Empire bonus])
+// - Resource generation (d10+2 total packets, split into archeotech / xenotech by species groups, abundance 25+2d10 per rulebook [+ optional d10+5 Ruined Empire bonus])
 // - Structured resource modeling (arrays of { type, abundance }) for parity with planets & stations
 class StarshipGraveyardNode extends NodeBase {
     constructor(id = null) {
@@ -196,12 +196,12 @@ class StarshipGraveyardNode extends NodeBase {
     }
 
     _accumulateArcheotech() {
-        let val = RollD100();
+        let val = 25 + RollD10(2);
         if (this.systemCreationRules?.ruinedEmpireIncreasedAbundanceArcheotechCaches) val += (RollD10() + 5);
         this._resourceArcheotechTotal += val;
     }
     _accumulateXenotech() {
-        let val = RollD100();
+        let val = 25 + RollD10(2);
         if (this.systemCreationRules?.ruinedEmpireIncreasedAbundanceXenosRuins) val += (RollD10() + 5);
         this._resourceXenosTotal += val;
     }
