@@ -76,23 +76,53 @@ class PirateShipsNode extends NodeBase {
         ];
     }
 
+    toJSON() {
+        const json = super.toJSON();
+        json.containsWayfarerStation = this.containsWayfarerStation;
+        json.pirateSpecies = this.pirateSpecies;
+        json.numShips = this.numShips;
+        return json;
+    }
+
     static fromJSON(data) {
         const node = new PirateShipsNode(data.id);
+        
+        // Restore base properties
         Object.assign(node, {
             nodeName: data.nodeName || 'Pirate Den',
             description: data.description || '',
-            containsWayfarerStation: data.containsWayfarerStation || false,
-            pirateSpecies: data.pirateSpecies || Species.None,
-            numShips: data.numShips || 0
+            customDescription: data.customDescription || '',
+            pageReference: data.pageReference || '',
+            isGenerated: data.isGenerated || false,
+            fontWeight: data.fontWeight || 'normal',
+            fontStyle: data.fontStyle || 'normal',
+            fontForeground: data.fontForeground || '#e74c3c'
         });
+        
+        // Restore pirate ships-specific properties
+        node.containsWayfarerStation = data.containsWayfarerStation || false;
+        node.pirateSpecies = data.pirateSpecies || Species.None;
+        node.numShips = data.numShips || 0;
+        
+        // Restore children
         if (data.children) {
             for (const childData of data.children) {
                 const child = createNode(childData.type);
-                const restoredChild = child.constructor.fromJSON ? child.constructor.fromJSON(childData) : NodeBase.fromJSON(childData);
+                const restoredChild = child.constructor.fromJSON ? 
+                    child.constructor.fromJSON(childData) : 
+                    NodeBase.fromJSON(childData);
                 node.addChild(restoredChild);
             }
         }
-        if (!node.description) node.updateDescription();
+        
+        // Update numShips to match actual children count
+        node.numShips = node.children.length;
+        
+        // Regenerate description if not saved
+        if (!node.description) {
+            node.updateDescription();
+        }
+        
         return node;
     }
 }

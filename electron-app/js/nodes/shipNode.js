@@ -111,9 +111,41 @@ class ShipNode extends NodeBase {
         return content;
     }
 
+    toJSON() {
+        const json = super.toJSON();
+        json.ship = this.ship; // Save the ship data
+        return json;
+    }
+
     static fromJSON(data) {
         const node = new ShipNode(data.id);
-        Object.assign(node, data);
+        
+        // Restore base properties
+        Object.assign(node, {
+            nodeName: data.nodeName || 'Starship',
+            description: data.description || '',
+            customDescription: data.customDescription || '',
+            pageReference: data.pageReference || '',
+            isGenerated: data.isGenerated || false,
+            fontWeight: data.fontWeight || 'normal',
+            fontStyle: data.fontStyle || 'normal',
+            fontForeground: data.fontForeground || '#3498db'
+        });
+        
+        // Restore ship-specific properties
+        node.ship = data.ship || null;
+        
+        // Restore children (if any)
+        if (data.children) {
+            for (const childData of data.children) {
+                const child = createNode(childData.type);
+                const restoredChild = child.constructor.fromJSON ? 
+                    child.constructor.fromJSON(childData) : 
+                    NodeBase.fromJSON(childData);
+                node.addChild(restoredChild);
+            }
+        }
+        
         return node;
     }
 }

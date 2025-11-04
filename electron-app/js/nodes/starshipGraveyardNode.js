@@ -352,7 +352,20 @@ class StarshipGraveyardNode extends NodeBase {
     }
     static fromJSON(data) {
         const node = new StarshipGraveyardNode(data.id);
-        Object.assign(node, data);
+        
+        // Restore base properties
+        Object.assign(node, {
+            nodeName: data.nodeName || 'Starship Graveyard',
+            description: data.description || '',
+            customDescription: data.customDescription || '',
+            pageReference: data.pageReference || '',
+            isGenerated: data.isGenerated || false,
+            fontWeight: data.fontWeight || 'normal',
+            fontStyle: data.fontStyle || 'normal',
+            fontForeground: data.fontForeground || '#000000'
+        });
+        
+        // Restore starship graveyard-specific properties
         node.fleetComposition = data.fleetComposition || '';
         node.hulks = data.hulks || [];
         node.xenosRuins = data.xenosRuins || [];
@@ -362,6 +375,7 @@ class StarshipGraveyardNode extends NodeBase {
         node.inhabitants = data.inhabitants || 'None';
         node.inhabitantDevelopment = data.inhabitantDevelopment || '';
         node.systemCreationRules = data.systemCreationRules || null;
+        
         return node;
     }
 }
