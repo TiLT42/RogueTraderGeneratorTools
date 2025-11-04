@@ -42,20 +42,45 @@ class PrimitiveXenosNode extends NodeBase {
 
     static fromJSON(data) {
         const node = new PrimitiveXenosNode(data.id);
-        Object.assign(node, data);
-        // Ensure propagation after load
-        if (node.children && node.systemCreationRules) {
-            node.children.forEach(c => { c.systemCreationRules = node.systemCreationRules; });
+        
+        // Restore base properties
+        Object.assign(node, {
+            nodeName: data.nodeName || 'Primitive Xenos',
+            description: data.description || '',
+            customDescription: data.customDescription || '',
+            pageReference: data.pageReference || '',
+            isGenerated: data.isGenerated || false,
+            fontWeight: data.fontWeight || 'normal',
+            fontStyle: data.fontStyle || 'normal',
+            fontForeground: data.fontForeground || '#e74c3c'
+        });
+        
+        // Restore primitive xenos-specific properties
+        node.worldType = data.worldType || 'TemperateWorld';
+        if (data.systemCreationRules) {
+            node.systemCreationRules = data.systemCreationRules;
         }
         
-        // Restore children
+        // Restore children properly
         if (data.children && data.children.length > 0) {
-            node.children = data.children.map(childData => {
+            for (const childData of data.children) {
+                let child;
                 if (childData.type === NodeTypes.Xenos) {
-                    return XenosNode.fromJSON(childData);
+                    child = XenosNode.fromJSON(childData);
+                } else {
+                    const tempChild = createNode(childData.type);
+                    child = tempChild.constructor.fromJSON ? 
+                        tempChild.constructor.fromJSON(childData) : 
+                        tempChild;
                 }
-                return createNode(childData.type).fromJSON(childData);
-            });
+                
+                // Propagate system creation rules to children
+                if (node.systemCreationRules) {
+                    child.systemCreationRules = node.systemCreationRules;
+                }
+                
+                node.addChild(child);
+            }
         }
         
         return node;

@@ -192,7 +192,20 @@ class DerelictStationNode extends NodeBase {
 
     static fromJSON(data) {
         const node = new DerelictStationNode(data.id);
-        Object.assign(node, data);
+        
+        // Restore base properties
+        Object.assign(node, {
+            nodeName: data.nodeName || 'Derelict Station',
+            description: data.description || '',
+            customDescription: data.customDescription || '',
+            pageReference: data.pageReference || '',
+            isGenerated: data.isGenerated || false,
+            fontWeight: data.fontWeight || 'normal',
+            fontStyle: data.fontStyle || 'normal',
+            fontForeground: data.fontForeground || '#000000'
+        });
+        
+        // Restore derelict station-specific properties
         node.stationOrigin = data.stationOrigin || '';
         node.hullIntegrity = data.hullIntegrity || 0;
         node.armor = data.armor || 10;
@@ -200,6 +213,7 @@ class DerelictStationNode extends NodeBase {
         node.archeotechCaches = data.archeotechCaches || [];
         node.inhabitants = data.inhabitants || 'None';
         node.inhabitantDevelopment = data.inhabitantDevelopment || '';
+        
         return node;
     }
 }
