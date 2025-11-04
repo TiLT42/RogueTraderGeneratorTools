@@ -150,21 +150,24 @@ class DocumentViewer {
             jsonData = this.currentNode.toJSON();
         } else {
             // Export only current node without children
+            // Create a shallow copy to avoid mutating the original
             const nodeData = this.currentNode.toJSON();
-            // Remove children from the exported data
-            delete nodeData.children;
-            jsonData = nodeData;
+            jsonData = { ...nodeData };
+            delete jsonData.children;
         }
         
         // Create formatted JSON string
         const jsonContent = JSON.stringify(jsonData, null, 2);
+        
+        // Sanitize filename to remove invalid characters
+        const sanitizedName = this.currentNode.nodeName.replace(/[/\\:*?"<>|]/g, '_');
         
         // Create and download file
         const blob = new Blob([jsonContent], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `${this.currentNode.nodeName}.json`;
+        a.download = `${sanitizedName}.json`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
