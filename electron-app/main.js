@@ -246,14 +246,6 @@ function createMenu() {
                     click: () => {
                         mainWindow.webContents.send('menu-action', 'edit-settings');
                     }
-                },
-                {
-                    label: 'Allow free node movement',
-                    type: 'checkbox',
-                    checked: true,
-                    click: (menuItem) => {
-                        mainWindow.webContents.send('menu-action', 'toggle-free-movement', menuItem.checked);
-                    }
                 }
             ]
         },

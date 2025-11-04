@@ -70,12 +70,41 @@ window.APP_STATE = {
             TheKoronusBestiary: true,
             IntoTheStorm: true,
             TheSoulReaver: true
+        },
+        xenosGeneratorSources: {
+            StarsOfInequity: true,
+            TheKoronusBestiary: true
         }
     },
     rootNodes: [],
     selectedNode: null,
     nodeIdCounter: 1
 };
+
+// Settings persistence functions
+function loadSettings() {
+    try {
+        const savedSettings = localStorage.getItem('rogueTraderSettings');
+        if (savedSettings) {
+            const parsed = JSON.parse(savedSettings);
+            // Merge saved settings with defaults to handle new settings
+            Object.assign(window.APP_STATE.settings, parsed);
+            return true;
+        }
+        return false;
+    } catch (error) {
+        console.error('Error loading settings:', error);
+        return false;
+    }
+}
+
+function saveSettings() {
+    try {
+        localStorage.setItem('rogueTraderSettings', JSON.stringify(window.APP_STATE.settings));
+    } catch (error) {
+        console.error('Error saving settings:', error);
+    }
+}
 
 // Utility functions
 function getNewId() {

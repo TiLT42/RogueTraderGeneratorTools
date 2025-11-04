@@ -15,6 +15,9 @@ class App {
     }
 
     initializeComponents() {
+        // Load saved settings first
+        const hasSettings = loadSettings();
+
         // Initialize UI components
         window.treeView = new TreeView(document.getElementById('tree-container'));
         window.documentViewer = new DocumentViewer(document.getElementById('document-viewer'));
@@ -36,6 +39,13 @@ class App {
 
         // Create initial empty workspace
         this.createDefaultWorkspace();
+
+        // Show settings dialog on first launch if no saved settings found
+        if (!hasSettings) {
+            setTimeout(() => {
+                window.modals.showSettings();
+            }, 500);
+        }
 
         console.log('Rogue Trader Generator Tools initialized');
     }
@@ -203,10 +213,6 @@ class App {
 
             case 'edit-settings':
                 window.modals.showSettings();
-                break;
-
-            case 'toggle-free-movement':
-                window.APP_STATE.settings.allowFreeMovement = data;
                 break;
 
             case 'about':
