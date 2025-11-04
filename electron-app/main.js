@@ -155,6 +155,12 @@ function createMenu() {
                     click: () => {
                         mainWindow.webContents.send('menu-action', 'export-pdf');
                     }
+                },
+                {
+                    label: 'JSON',
+                    click: () => {
+                        mainWindow.webContents.send('menu-action', 'export-json');
+                    }
                 }
             ]
         },

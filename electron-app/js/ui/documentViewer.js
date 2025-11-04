@@ -118,7 +118,7 @@ class DocumentViewer {
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `${this.currentNode.nodeName}.rtf`;
+        a.download = `${this.sanitizeFilename(this.currentNode.nodeName)}.rtf`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
@@ -133,6 +133,48 @@ class DocumentViewer {
 
         // Use the browser's print to PDF functionality
         this.printContent();
+    }
+
+    exportToJSON() {
+        if (!this.currentNode) {
+            alert('No content to export');
+            return;
+        }
+
+        const includeChildren = window.APP_STATE.settings.mergeWithChildDocuments;
+        
+        // Get JSON data, preserving hierarchy
+        let jsonData;
+        if (includeChildren) {
+            // Export current node with all children (recursively)
+            jsonData = this.currentNode.toJSON();
+        } else {
+            // Export only current node without children
+            // Use destructuring to create a new object excluding the children property,
+            // avoiding mutation of the original toJSON() result
+            const { children, ...nodeWithoutChildren } = this.currentNode.toJSON();
+            jsonData = nodeWithoutChildren;
+        }
+        
+        // Create formatted JSON string
+        const jsonContent = JSON.stringify(jsonData, null, 2);
+        
+        // Create and download file
+        const blob = new Blob([jsonContent], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${this.sanitizeFilename(this.currentNode.nodeName)}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+
+    // Utility: Sanitize filename by replacing invalid filesystem characters
+    sanitizeFilename(filename) {
+        // Replace characters that are invalid in filenames: / \ : * ? " < > |
+        return filename.replace(/[/\\:*?"<>|]/g, '_');
     }
 
     htmlToRTF(html) {
