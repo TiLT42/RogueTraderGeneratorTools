@@ -91,11 +91,6 @@ class Modals {
     showSettings() {
         this.title.textContent = 'Settings';
         this.body.innerHTML = `
-            <div class="settings-intro">
-                For the generator to know what books to use, you must first let it know which ones you own. 
-                Be aware that you need to have these books available for the generated results to make sense, since their rules are not reproduced here.
-            </div>
-            
             <div class="settings-section">
                 <h3 class="settings-section-title">Appearance</h3>
                 
@@ -113,6 +108,10 @@ class Modals {
             
             <div class="settings-section">
                 <h3 class="settings-section-title">Enabled Books</h3>
+                <div class="settings-intro">
+                    For the generator to know what books to use, you must first let it know which ones you own. 
+                    Be aware that you need to have these books available for the generated results to make sense, since their rules are not reproduced here.
+                </div>
                 
                 <div class="settings-book-item">
                     <label class="settings-book-label">
