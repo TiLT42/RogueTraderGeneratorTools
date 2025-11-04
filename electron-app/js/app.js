@@ -49,8 +49,18 @@ class App {
                 window.modals.showSettings();
             }, 500);
         }
+        
+        // Notify main process about initial settings for menu item availability
+        this.updateMenuAvailability();
 
         console.log('Rogue Trader Generator Tools initialized');
+    }
+    
+    updateMenuAvailability() {
+        // Send settings to main process to update menu item availability
+        if (window.electronAPI && window.electronAPI.updateMenuSettings) {
+            window.electronAPI.updateMenuSettings(window.APP_STATE.settings);
+        }
     }
 
     setupElectronAPI() {
@@ -60,7 +70,8 @@ class App {
             saveFile: (filePath, content) => ipcRenderer.invoke('save-file', filePath, content),
             loadFile: (filePath) => ipcRenderer.invoke('load-file', filePath),
             showSaveDialog: (options) => ipcRenderer.invoke('show-save-dialog', options),
-            showOpenDialog: (options) => ipcRenderer.invoke('show-open-dialog', options)
+            showOpenDialog: (options) => ipcRenderer.invoke('show-open-dialog', options),
+            updateMenuSettings: (settings) => ipcRenderer.send('settings-updated', settings)
         };
 
         // Handle menu actions from main process
