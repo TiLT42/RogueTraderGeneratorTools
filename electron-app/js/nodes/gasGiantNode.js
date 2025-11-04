@@ -3,6 +3,7 @@ class GasGiantNode extends NodeBase {
     constructor(id = null) {
         super(NodeTypes.GasGiant, id);
         this.nodeName = 'Gas Giant';
+        this.fontWeight = 'bold';
         this.fontForeground = '#f39c12';
         // Core parity fields
         this.body = '';

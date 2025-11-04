@@ -4,6 +4,7 @@ class NativeSpeciesNode extends NodeBase {
     constructor(id=null) {
         super(NodeTypes.NativeSpecies, id);
         this.nodeName = 'Native Species';
+        this.fontStyle = 'italic';
         this.fontForeground = '#95a5a6';
         this.systemCreationRules = null; // optional reference when passed in
         this.pageReference = createPageReference(0); // C# just adds a header; page 0 placeholder (no explicit table)

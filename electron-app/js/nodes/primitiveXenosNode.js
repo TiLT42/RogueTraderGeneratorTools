@@ -3,6 +3,7 @@ class PrimitiveXenosNode extends NodeBase {
     constructor(id = null) {
         super(NodeTypes.PrimitiveXenos, id);
         this.nodeName = 'Primitive Xenos';
+        this.fontStyle = 'italic';
         this.fontForeground = '#e74c3c';
         this.worldType = 'TemperateWorld';
         this.systemCreationRules = null; // parity: allow propagation for future dominant species hooks

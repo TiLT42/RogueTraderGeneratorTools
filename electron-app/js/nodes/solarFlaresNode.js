@@ -7,6 +7,7 @@ class SolarFlaresNode extends NodeBase {
     constructor(id = null) {
         super(NodeTypes.SolarFlares, id);
         this.nodeName = 'Solar Flares';
+        this.fontWeight = 'bold';
         this.numSolarFlaresInThisZone = 0; // parity field
         this.pageReference = createPageReference(16, 'Solar Flares');
     }

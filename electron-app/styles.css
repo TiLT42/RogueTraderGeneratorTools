@@ -162,6 +162,39 @@ body {
     color: white;
 }
 
+/* Font weight and style for visual hierarchy */
+.tree-node-content.font-bold .tree-node-text {
+    font-weight: 600;
+}
+
+.tree-node-content.font-italic .tree-node-text {
+    font-style: italic;
+    color: #666;
+}
+
+.tree-node-content.selected.font-italic .tree-node-text {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+/* Subtle zone colors for quick identification */
+.tree-node-content.zone-inner-cauldron .tree-node-text {
+    color: #c0392b;
+}
+
+.tree-node-content.zone-primary-biosphere .tree-node-text {
+    color: #27ae60;
+}
+
+.tree-node-content.zone-outer-reaches .tree-node-text {
+    color: #2980b9;
+}
+
+.tree-node-content.selected.zone-inner-cauldron .tree-node-text,
+.tree-node-content.selected.zone-primary-biosphere .tree-node-text,
+.tree-node-content.selected.zone-outer-reaches .tree-node-text {
+    color: white;
+}
+
 .tree-node-children {
     margin-left: 20px;
     list-style: none;

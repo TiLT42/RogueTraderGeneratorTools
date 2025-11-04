@@ -81,6 +81,22 @@ class TreeView {
         content.className = `tree-node-content ${node.type}`;
         content.dataset.nodeId = node.id;
 
+        // Apply font weight class if node has bold styling
+        if (node.fontWeight === 'bold') {
+            content.classList.add('font-bold');
+        }
+
+        // Apply font style class if node has italic styling
+        if (node.fontStyle === 'italic') {
+            content.classList.add('font-italic');
+        }
+
+        // Apply zone-specific classes for color coding
+        if (node.type === NodeTypes.Zone && node.zone) {
+            const zoneClass = node.zone.toLowerCase().replace(/([A-Z])/g, '-$1').toLowerCase();
+            content.classList.add(`zone-${zoneClass}`);
+        }
+
         // Add expander if has children
         if (node.children.length > 0) {
             const expander = document.createElement('span');

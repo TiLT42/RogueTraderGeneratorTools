@@ -4,6 +4,7 @@ class PlanetNode extends NodeBase {
     constructor(id = null) {
         super(NodeTypes.Planet, id);
         this.nodeName = 'Planet';
+        this.fontWeight = 'bold';
         this.fontForeground = '#2ecc71';
         
         // Moon specific

@@ -10,6 +10,7 @@ class StarshipGraveyardNode extends NodeBase {
     constructor(id = null) {
         super(NodeTypes.StarshipGraveyard, id);
         this.nodeName = 'Starship Graveyard';
+        this.fontWeight = 'bold';
         this.fontForeground = '#e74c3c';
         this.fleetComposition = '';
         this.hulks = []; // { race, integrity, shipName, pageNumber, bookSource }
