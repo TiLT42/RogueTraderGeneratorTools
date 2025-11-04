@@ -150,6 +150,16 @@ class DocumentViewer {
                 .replace(/\n/g, '\\par\n');
         };
         
+        // Helper to decode HTML entities
+        const decodeHTMLEntities = (text) => {
+            return text
+                .replace(/&lt;/g, '<')
+                .replace(/&gt;/g, '>')
+                .replace(/&amp;/g, '&')
+                .replace(/&quot;/g, '"')
+                .replace(/&nbsp;/g, ' ');
+        };
+        
         // Helper to process inline formatting recursively
         // This function preserves RTF codes and only escapes plain text
         const processInlineFormatting = (content) => {
@@ -178,11 +188,10 @@ class DocumentViewer {
             if (!hasItalic && !hasBold) {
                 // Remove any other remaining tags
                 content = content.replace(/<[^>]*>/g, '');
-                // Only escape if there are no RTF codes already present
-                // RTF codes start with backslash, so check if content has them
-                if (!/\\[a-z]+[0-9]*\s/.test(content)) {
-                    return escapeRTF(content);
-                }
+                // Decode HTML entities first
+                content = decodeHTMLEntities(content);
+                // Always escape the content - we only get here if there are no HTML formatting tags
+                return escapeRTF(content);
             }
             
             return content;
@@ -193,17 +202,20 @@ class DocumentViewer {
         
         // Handle headings with proper escaping
         result = result.replace(/<h1[^>]*>(.*?)<\/h1>/gis, (match, content) => {
-            const text = content.replace(/<[^>]*>/g, ''); // Strip inner tags
+            let text = content.replace(/<[^>]*>/g, ''); // Strip inner tags
+            text = decodeHTMLEntities(text);
             return '\\fs32\\b ' + escapeRTF(text) + '\\b0\\fs24\\par\\par\n';
         });
         
         result = result.replace(/<h2[^>]*>(.*?)<\/h2>/gis, (match, content) => {
-            const text = content.replace(/<[^>]*>/g, '');
+            let text = content.replace(/<[^>]*>/g, '');
+            text = decodeHTMLEntities(text);
             return '\\fs28\\b ' + escapeRTF(text) + '\\b0\\fs24\\par\\par\n';
         });
         
         result = result.replace(/<h3[^>]*>(.*?)<\/h3>/gis, (match, content) => {
-            const text = content.replace(/<[^>]*>/g, '');
+            let text = content.replace(/<[^>]*>/g, '');
+            text = decodeHTMLEntities(text);
             return '\\fs24\\b ' + escapeRTF(text) + '\\b0\\fs24\\par\\par\n';
         });
         
@@ -221,7 +233,8 @@ class DocumentViewer {
         
         // Handle page references - special case for italic paragraphs
         result = result.replace(/<p[^>]*class="page-reference"[^>]*>(.*?)<\/p>/gis, (match, content) => {
-            const text = content.replace(/<[^>]*>/g, '');
+            let text = content.replace(/<[^>]*>/g, '');
+            text = decodeHTMLEntities(text);
             return '\\i ' + escapeRTF(text) + '\\i0\\par\n';
         });
         
@@ -248,13 +261,6 @@ class DocumentViewer {
         
         // Remove any remaining HTML tags
         result = result.replace(/<[^>]*>/g, '');
-        
-        // Decode HTML entities
-        result = result.replace(/&lt;/g, '<');
-        result = result.replace(/&gt;/g, '>');
-        result = result.replace(/&amp;/g, '&');
-        result = result.replace(/&quot;/g, '"');
-        result = result.replace(/&nbsp;/g, ' ');
         
         // Clean up excessive whitespace and paragraph breaks
         result = result.replace(/\\par\n\\par\n\\par\n+/g, '\\par\\par\n');
