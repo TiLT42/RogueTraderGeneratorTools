@@ -169,6 +169,18 @@ class App {
                 window.documentViewer.exportToJSON();
                 break;
 
+            case 'export-workspace-rtf':
+                window.documentViewer.exportWorkspaceToRTF();
+                break;
+
+            case 'export-workspace-pdf':
+                window.documentViewer.exportWorkspaceToPDF();
+                break;
+
+            case 'export-workspace-json':
+                window.documentViewer.exportWorkspaceToJSON();
+                break;
+
             case 'generate-system':
                 this.generateNewSystem();
                 break;

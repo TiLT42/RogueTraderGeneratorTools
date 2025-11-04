@@ -145,22 +145,50 @@ function createMenu() {
             label: 'Export',
             submenu: [
                 {
-                    label: 'Rich Text Format (RTF)',
-                    click: () => {
-                        mainWindow.webContents.send('menu-action', 'export-rtf');
-                    }
+                    label: 'Current node',
+                    submenu: [
+                        {
+                            label: 'Rich Text Format (RTF)',
+                            click: () => {
+                                mainWindow.webContents.send('menu-action', 'export-rtf');
+                            }
+                        },
+                        {
+                            label: 'Adobe Reader (PDF)',
+                            click: () => {
+                                mainWindow.webContents.send('menu-action', 'export-pdf');
+                            }
+                        },
+                        {
+                            label: 'JSON',
+                            click: () => {
+                                mainWindow.webContents.send('menu-action', 'export-json');
+                            }
+                        }
+                    ]
                 },
                 {
-                    label: 'Adobe Reader (PDF)',
-                    click: () => {
-                        mainWindow.webContents.send('menu-action', 'export-pdf');
-                    }
-                },
-                {
-                    label: 'JSON',
-                    click: () => {
-                        mainWindow.webContents.send('menu-action', 'export-json');
-                    }
+                    label: 'Workspace',
+                    submenu: [
+                        {
+                            label: 'Rich Text Format (RTF)',
+                            click: () => {
+                                mainWindow.webContents.send('menu-action', 'export-workspace-rtf');
+                            }
+                        },
+                        {
+                            label: 'Adobe Reader (PDF)',
+                            click: () => {
+                                mainWindow.webContents.send('menu-action', 'export-workspace-pdf');
+                            }
+                        },
+                        {
+                            label: 'JSON',
+                            click: () => {
+                                mainWindow.webContents.send('menu-action', 'export-workspace-json');
+                            }
+                        }
+                    ]
                 }
             ]
         },

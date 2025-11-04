@@ -171,6 +171,132 @@ class DocumentViewer {
         URL.revokeObjectURL(url);
     }
 
+    // Workspace export methods - export entire workspace (all root nodes, always collated)
+    
+    exportWorkspaceToRTF() {
+        if (!window.APP_STATE.rootNodes || window.APP_STATE.rootNodes.length === 0) {
+            alert('No content in workspace to export');
+            return;
+        }
+
+        // Build combined HTML content from all root nodes
+        let combinedHTML = '';
+        for (const node of window.APP_STATE.rootNodes) {
+            const nodeContent = node.getDocumentContent(true); // Always collate children
+            combinedHTML += nodeContent + '\n';
+        }
+
+        // Convert HTML to RTF
+        let rtfContent = this.htmlToRTF(combinedHTML);
+        
+        // Create and download file
+        const blob = new Blob([rtfContent], { type: 'application/rtf' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'workspace.rtf';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+
+    exportWorkspaceToPDF() {
+        if (!window.APP_STATE.rootNodes || window.APP_STATE.rootNodes.length === 0) {
+            alert('No content in workspace to export');
+            return;
+        }
+
+        // Build combined HTML content from all root nodes
+        let combinedHTML = '';
+        for (const node of window.APP_STATE.rootNodes) {
+            const nodeContent = node.getDocumentContent(true); // Always collate children
+            combinedHTML += nodeContent + '\n';
+        }
+
+        // Create a new window for printing
+        const printWindow = window.open('', '_blank');
+        
+        printWindow.document.write(`
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>Print - Workspace</title>
+                <style>
+                    body {
+                        font-family: 'Times New Roman', serif;
+                        font-size: 12pt;
+                        line-height: 1.6;
+                        margin: 1in;
+                        color: black;
+                        background: white;
+                    }
+                    h1, h2, h3 { 
+                        color: black; 
+                        page-break-after: avoid;
+                    }
+                    h1 { font-size: 18pt; }
+                    h2 { font-size: 16pt; }
+                    h3 { font-size: 14pt; }
+                    .description-section {
+                        background: none;
+                        border: 1px solid #ccc;
+                        padding: 10pt;
+                        margin: 10pt 0;
+                    }
+                    .page-reference {
+                        font-style: italic;
+                        font-size: 10pt;
+                        color: #666;
+                    }
+                    ul, ol { margin: 10pt 0; }
+                    li { margin: 2pt 0; }
+                    @media print {
+                        .description-section {
+                            border: 1px solid black;
+                        }
+                    }
+                </style>
+            </head>
+            <body>
+                ${combinedHTML}
+            </body>
+            </html>
+        `);
+        
+        printWindow.document.close();
+        printWindow.focus();
+        printWindow.print();
+    }
+
+    exportWorkspaceToJSON() {
+        if (!window.APP_STATE.rootNodes || window.APP_STATE.rootNodes.length === 0) {
+            alert('No content in workspace to export');
+            return;
+        }
+
+        // Export all root nodes with their children
+        const workspaceData = {
+            version: '2.0',
+            exportDate: new Date().toISOString(),
+            rootNodes: window.APP_STATE.rootNodes.map(node => node.toJSON())
+        };
+        
+        // Create formatted JSON string
+        const jsonContent = JSON.stringify(workspaceData, null, 2);
+        
+        // Create and download file
+        const blob = new Blob([jsonContent], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'workspace.json';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+
     // Utility: Sanitize filename by replacing invalid filesystem characters
     sanitizeFilename(filename) {
         // Replace characters that are invalid in filenames: / \ : * ? " < > |
