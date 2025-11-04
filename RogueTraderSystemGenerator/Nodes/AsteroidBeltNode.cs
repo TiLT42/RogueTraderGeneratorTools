@@ -34,6 +34,7 @@ namespace RogueTraderSystemGenerator.Nodes
 
         public override void Generate()
         {
+            ResetVariables();
             int numResourcesToGenerate = Globals.RollD5();
             if(_systemCreationRules.BountifulAsteroids)
             {

@@ -289,6 +289,7 @@ namespace RogueTraderSystemGenerator.Nodes
 
         public override void Generate()
         {
+            ResetVariables();
             _primitiveXenosNode = new PrimitiveXenosNode(_systemCreationRules) {Parent = this};
             Children.Add(_primitiveXenosNode);
             _nativeSpeciesNode = new NativeSpeciesNode(_systemCreationRules) {Parent = this};

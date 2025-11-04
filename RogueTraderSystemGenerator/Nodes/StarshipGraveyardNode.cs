@@ -90,7 +90,7 @@ namespace RogueTraderSystemGenerator.Nodes
 
         public override void Generate()
         {
-            _hulks = new List<StarshipHulk>();
+            ResetVariables();
             int randValue = Globals.RollD100();
             if (randValue <= 15)
             {
