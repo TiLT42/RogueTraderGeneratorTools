@@ -9,3 +9,10 @@
 /RogueTraderSystemGenerator/bin/Release
 electron_logs.txt
 test-workspace.js
+test-workspace-save-load.js
+test-workspace.js
+test-workspace-data.rtw
+manual-test-steps.md
+*.rtw
+test-integration.js
+test-all-nodes.js
