@@ -259,4 +259,55 @@
       console.log('Planet serialization round-trip test executed: true');
     }
   } catch(e){ console.warn('Planet serialization round-trip test failed:', e.message); }
+
+  // 9. Starship Graveyard regeneration resource reset test
+  try {
+    if (typeof StarshipGraveyardNode !== 'undefined') {
+      window.__clearSeed(); window.__setSeed(54321);
+      const graveyard = new StarshipGraveyardNode();
+      // Create a mock systemCreationRules to enable resource generation
+      graveyard.systemCreationRules = {
+        dominantRuinedSpecies: 'Undefined',
+        ruinedEmpireIncreasedAbundanceArcheotechCaches: false,
+        ruinedEmpireIncreasedAbundanceXenosRuins: false
+      };
+      
+      // First generation
+      graveyard.generate();
+      const firstArcheotech = graveyard._resourceArcheotechTotal;
+      const firstXenotech = graveyard._resourceXenosTotal;
+      const firstHulkCount = graveyard.hulks.length;
+      
+      // Verify resources were generated (at least one should be non-zero)
+      assert(firstArcheotech > 0 || firstXenotech > 0, 'Initial generation should create resources');
+      assert(firstHulkCount > 0, 'Initial generation should create hulks');
+      
+      // Manually corrupt the resource totals to simulate the bug
+      graveyard._resourceArcheotechTotal += 500;
+      graveyard._resourceXenosTotal += 500;
+      const corruptedArcheotech = graveyard._resourceArcheotechTotal;
+      const corruptedXenotech = graveyard._resourceXenosTotal;
+      
+      // Regenerate - this should reset the totals
+      graveyard.generate();
+      const secondArcheotech = graveyard._resourceArcheotechTotal;
+      const secondXenotech = graveyard._resourceXenosTotal;
+      const secondHulkCount = graveyard.hulks.length;
+      
+      // Verify that regeneration properly reset the totals (not accumulated from corrupted values)
+      assert(secondArcheotech !== corruptedArcheotech, 'Archeotech total should reset, not accumulate from corrupted value');
+      assert(secondXenotech !== corruptedXenotech, 'Xenotech total should reset, not accumulate from corrupted value');
+      
+      // Verify that the new totals are reasonable (not accumulated)
+      // The maximum possible for a single generation is roughly: (d10+2) * (d100 + maybe d10+5) 
+      // Let's say max ~12 packets * ~115 abundance = ~1380, but typically much less
+      assert(secondArcheotech < 2000, 'Regenerated archeotech total should be reasonable (< 2000)');
+      assert(secondXenotech < 2000, 'Regenerated xenotech total should be reasonable (< 2000)');
+      
+      // Also verify hulks were regenerated
+      assert(secondHulkCount > 0, 'Regeneration should create hulks');
+      
+      console.log(`Starship Graveyard regeneration test executed: true (first: A=${firstArcheotech}, X=${firstXenotech}, second: A=${secondArcheotech}, X=${secondXenotech})`);
+    }
+  } catch(e){ console.warn('Starship Graveyard regeneration test failed:', e.message); }
 })();

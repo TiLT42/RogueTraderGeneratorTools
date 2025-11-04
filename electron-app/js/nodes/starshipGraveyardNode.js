@@ -21,13 +21,22 @@ class StarshipGraveyardNode extends NodeBase {
         // No pirate ships child in parity version (placeholder feature removed)
     }
 
-    // ----- Public Generation -----
-    generate() {
-        super.generate();
-        this.pageReference = createPageReference(17, 'Table 1-5: Starship Graveyard Origins');
+    // ----- Reset Method -----
+    reset() {
+        super.reset();
+        this.fleetComposition = '';
         this.hulks = [];
         this.xenosRuins = [];
         this.archeotechCaches = [];
+        this._resourceArcheotechTotal = 0;
+        this._resourceXenosTotal = 0;
+    }
+
+    // ----- Public Generation -----
+    generate() {
+        this.reset();
+        super.generate();
+        this.pageReference = createPageReference(17, 'Table 1-5: Starship Graveyard Origins');
         // Fallback injection: if systemCreationRules not provided by ZoneNode (edge cases like manual insertion)
         if (!this.systemCreationRules) {
             let p = this.parent; while (p && !this.systemCreationRules) { if (p.systemCreationRules) this.systemCreationRules = p.systemCreationRules; p = p.parent; }
