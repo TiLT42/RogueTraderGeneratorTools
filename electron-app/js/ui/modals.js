@@ -91,82 +91,164 @@ class Modals {
     showSettings() {
         this.title.textContent = 'Settings';
         this.body.innerHTML = `
-            <div class="form-group">
-                <h3>Display Options</h3>
-                <label>
-                    <input type="checkbox" id="show-page-numbers" ${window.APP_STATE.settings.showPageNumbers ? 'checked' : ''}>
-                    Show page references
-                </label>
-                <br><br>
-                <label>
-                    <input type="checkbox" id="merge-children" ${window.APP_STATE.settings.mergeWithChildDocuments ? 'checked' : ''}>
-                    Merge with child documents
-                </label>
-                <br><br>
-                <label>
-                    <input type="checkbox" id="allow-free-movement" ${window.APP_STATE.settings.allowFreeMovement ? 'checked' : ''}>
-                    Allow free node movement
-                </label>
+            <div class="settings-intro">
+                In order for the generator to know what books to use, you must first let it know which ones you own. 
+                Be aware that you need to actually have these books for the generated results to make any sense. 
+                Rules are not reproduced here. Please select the books you want to use for the generators.
             </div>
             
-            <div class="form-group">
-                <h3>Enabled Books</h3>
-                <label>
-                    <input type="checkbox" id="book-core" ${window.APP_STATE.settings.enabledBooks.CoreRuleBook ? 'checked' : ''}>
-                    Core Rulebook
-                </label>
-                <br>
-                <label>
-                    <input type="checkbox" id="book-stars" ${window.APP_STATE.settings.enabledBooks.StarsOfInequity ? 'checked' : ''}>
-                    Stars of Inequity
-                </label>
-                <br>
-                <label>
-                    <input type="checkbox" id="book-battlefleet" ${window.APP_STATE.settings.enabledBooks.BattlefleetKoronus ? 'checked' : ''}>
-                    Battlefleet Koronus
-                </label>
-                <br>
-                <label>
-                    <input type="checkbox" id="book-bestiary" ${window.APP_STATE.settings.enabledBooks.TheKoronusBestiary ? 'checked' : ''}>
-                    The Koronus Bestiary
-                </label>
-                <br>
-                <label>
-                    <input type="checkbox" id="book-storm" ${window.APP_STATE.settings.enabledBooks.IntoTheStorm ? 'checked' : ''}>
-                    Into the Storm
-                </label>
-                <br>
-                <label>
-                    <input type="checkbox" id="book-reaver" ${window.APP_STATE.settings.enabledBooks.TheSoulReaver ? 'checked' : ''}>
-                    The Soul Reaver
-                </label>
+            <div class="settings-section">
+                <h3 class="settings-section-title">Enabled Books</h3>
+                
+                <div class="settings-book-item">
+                    <label class="settings-book-label">
+                        <input type="checkbox" id="book-core" checked disabled>
+                        <strong>Rogue Trader Core Rulebook</strong>
+                    </label>
+                    <div class="settings-book-description">
+                        This book is required and can't be unselected. The generator will frequently refer to the core rules.
+                    </div>
+                </div>
+
+                <div class="settings-book-item">
+                    <label class="settings-book-label">
+                        <input type="checkbox" id="book-stars" ${window.APP_STATE.settings.enabledBooks.StarsOfInequity ? 'checked' : ''}>
+                        <strong>Stars of Inequity</strong>
+                    </label>
+                    <div class="settings-book-description">
+                        Allows you to generate star systems, as well as xenos and treasures. This book is required to access the vast majority of features in this application.
+                    </div>
+                </div>
+
+                <div class="settings-book-item">
+                    <label class="settings-book-label">
+                        <input type="checkbox" id="book-bestiary" ${window.APP_STATE.settings.enabledBooks.TheKoronusBestiary ? 'checked' : ''}>
+                        <strong>The Koronus Bestiary</strong>
+                    </label>
+                    <div class="settings-book-description">
+                        Adds an alternate, more detailed method of generating Xenos, as well as a generator for primitive species.
+                    </div>
+                </div>
+
+                <div class="settings-book-item">
+                    <label class="settings-book-label">
+                        <input type="checkbox" id="book-storm" ${window.APP_STATE.settings.enabledBooks.IntoTheStorm ? 'checked' : ''}>
+                        <strong>Into the Storm</strong>
+                    </label>
+                    <div class="settings-book-description">
+                        Adds additional hulls and components for starship generation.
+                    </div>
+                </div>
+
+                <div class="settings-book-item">
+                    <label class="settings-book-label">
+                        <input type="checkbox" id="book-battlefleet" ${window.APP_STATE.settings.enabledBooks.BattlefleetKoronus ? 'checked' : ''}>
+                        <strong>Battlefleet Koronus</strong>
+                    </label>
+                    <div class="settings-book-description">
+                        Enables generation of Xenos and Chaos ships, which is used for both pirate fleets and starship graveyards.
+                    </div>
+                </div>
+
+                <div class="settings-book-item">
+                    <label class="settings-book-label">
+                        <input type="checkbox" id="book-reaver" ${window.APP_STATE.settings.enabledBooks.TheSoulReaver ? 'checked' : ''}>
+                        <strong>The Soul Reaver</strong>
+                    </label>
+                    <div class="settings-book-description">
+                        Adds Dark Eldar to the selection of races that can be encountered in space. Requires Battlefleet Koronus.
+                    </div>
+                </div>
+            </div>
+
+            <div class="settings-section">
+                <h3 class="settings-section-title">Xenos Generator Sources</h3>
+                <div class="settings-intro">
+                    If you wish to use the Xenos generator, you must also select which sources to use. If you select both, 
+                    the generator will use both sources at random, providing the largest possible selection of results. 
+                    Selecting both sources (if you have them) is strongly recommended for variety. Selecting none of them 
+                    will disable the Xenos generator.
+                </div>
+
+                <div class="settings-book-item">
+                    <label class="settings-book-label">
+                        <input type="checkbox" id="xenos-stars" ${window.APP_STATE.settings.xenosGeneratorSources.StarsOfInequity ? 'checked' : ''}>
+                        <strong>Stars of Inequity</strong>
+                    </label>
+                    <div class="settings-book-description">
+                        The generator will use the Xenos archetypes from this book. These are limited in how much they can vary, 
+                        but have a strong identity to make them memorable.
+                    </div>
+                </div>
+
+                <div class="settings-book-item">
+                    <label class="settings-book-label">
+                        <input type="checkbox" id="xenos-bestiary" ${window.APP_STATE.settings.xenosGeneratorSources.TheKoronusBestiary ? 'checked' : ''}>
+                        <strong>The Koronus Bestiary</strong>
+                    </label>
+                    <div class="settings-book-description">
+                        The generator will use both the Flora and Fauna generators from this book. This can produce a vast assortment of creatures.
+                    </div>
+                </div>
             </div>
         `;
 
         this.okButton.textContent = 'Save';
         this.okButton.onclick = () => {
-            // Save display options
-            window.APP_STATE.settings.showPageNumbers = document.getElementById('show-page-numbers').checked;
-            window.APP_STATE.settings.mergeWithChildDocuments = document.getElementById('merge-children').checked;
-            window.APP_STATE.settings.allowFreeMovement = document.getElementById('allow-free-movement').checked;
-
-            // Update UI checkboxes
-            document.getElementById('page-references').checked = window.APP_STATE.settings.showPageNumbers;
-            document.getElementById('collate-nodes').checked = window.APP_STATE.settings.mergeWithChildDocuments;
-
             // Save book settings
-            window.APP_STATE.settings.enabledBooks.CoreRuleBook = document.getElementById('book-core').checked;
+            window.APP_STATE.settings.enabledBooks.CoreRuleBook = true; // Always true
             window.APP_STATE.settings.enabledBooks.StarsOfInequity = document.getElementById('book-stars').checked;
             window.APP_STATE.settings.enabledBooks.BattlefleetKoronus = document.getElementById('book-battlefleet').checked;
             window.APP_STATE.settings.enabledBooks.TheKoronusBestiary = document.getElementById('book-bestiary').checked;
             window.APP_STATE.settings.enabledBooks.IntoTheStorm = document.getElementById('book-storm').checked;
             window.APP_STATE.settings.enabledBooks.TheSoulReaver = document.getElementById('book-reaver').checked;
 
+            // Save xenos generator sources
+            window.APP_STATE.settings.xenosGeneratorSources.StarsOfInequity = document.getElementById('xenos-stars').checked;
+            window.APP_STATE.settings.xenosGeneratorSources.TheKoronusBestiary = document.getElementById('xenos-bestiary').checked;
+
+            // Enable/disable xenos sources based on book availability
+            if (!window.APP_STATE.settings.enabledBooks.StarsOfInequity) {
+                window.APP_STATE.settings.xenosGeneratorSources.StarsOfInequity = false;
+            }
+            if (!window.APP_STATE.settings.enabledBooks.TheKoronusBestiary) {
+                window.APP_STATE.settings.xenosGeneratorSources.TheKoronusBestiary = false;
+            }
+
+            // Persist settings to localStorage
+            saveSettings();
+
             // Refresh display
             window.documentViewer.refresh();
             
             this.hide();
         };
+
+        // Add event listeners to manage dependencies
+        setTimeout(() => {
+            const starsCheckbox = document.getElementById('book-stars');
+            const bestiaryCheckbox = document.getElementById('book-bestiary');
+            const xenosStarsCheckbox = document.getElementById('xenos-stars');
+            const xenosBestiaryCheckbox = document.getElementById('xenos-bestiary');
+
+            const updateXenosOptions = () => {
+                xenosStarsCheckbox.disabled = !starsCheckbox.checked;
+                if (!starsCheckbox.checked) {
+                    xenosStarsCheckbox.checked = false;
+                }
+
+                xenosBestiaryCheckbox.disabled = !bestiaryCheckbox.checked;
+                if (!bestiaryCheckbox.checked) {
+                    xenosBestiaryCheckbox.checked = false;
+                }
+            };
+
+            starsCheckbox.addEventListener('change', updateXenosOptions);
+            bestiaryCheckbox.addEventListener('change', updateXenosOptions);
+
+            // Initialize state
+            updateXenosOptions();
+        }, 0);
 
         this.show();
     }
