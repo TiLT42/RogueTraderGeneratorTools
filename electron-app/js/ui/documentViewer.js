@@ -136,42 +136,137 @@ class DocumentViewer {
     }
 
     htmlToRTF(html) {
-        // RTF header
-        let rtf = '{\\rtf1\\ansi\\deff0 {\\fonttbl {\\f0 Times New Roman;}}';
-        rtf += '\\f0\\fs24 '; // Font 0, 12pt
+        // RTF header with proper font table
+        let rtf = '{\\rtf1\\ansi\\deff0\n';
+        rtf += '{\\fonttbl{\\f0\\froman Times New Roman;}}\n';
+        rtf += '\\f0\\fs24\n'; // Font 0, 12pt (fs24 = 12pt in RTF)
         
-        // Simple HTML to RTF conversion
-        let text = html;
+        // Helper function to escape RTF special characters in text content
+        const escapeRTF = (text) => {
+            return text
+                .replace(/\\/g, '\\\\')
+                .replace(/\{/g, '\\{')
+                .replace(/\}/g, '\\}')
+                .replace(/\n/g, '\\par\n');
+        };
         
-        // Remove HTML tags and convert basic formatting
-        text = text.replace(/<h1[^>]*>(.*?)<\/h1>/gi, '\\fs28\\b $1\\b0\\fs24\\par\\par');
-        text = text.replace(/<h2[^>]*>(.*?)<\/h2>/gi, '\\fs26\\b $1\\b0\\fs24\\par\\par');
-        text = text.replace(/<h3[^>]*>(.*?)<\/h3>/gi, '\\fs24\\b $1\\b0\\fs24\\par\\par');
-        text = text.replace(/<p[^>]*>(.*?)<\/p>/gi, '$1\\par\\par');
-        text = text.replace(/<strong[^>]*>(.*?)<\/strong>/gi, '\\b $1\\b0');
-        text = text.replace(/<b[^>]*>(.*?)<\/b>/gi, '\\b $1\\b0');
-        text = text.replace(/<em[^>]*>(.*?)<\/em>/gi, '\\i $1\\i0');
-        text = text.replace(/<i[^>]*>(.*?)<\/i>/gi, '\\i $1\\i0');
-        text = text.replace(/<ul[^>]*>/gi, '');
-        text = text.replace(/<\/ul>/gi, '\\par');
-        text = text.replace(/<ol[^>]*>/gi, '');
-        text = text.replace(/<\/ol>/gi, '\\par');
-        text = text.replace(/<li[^>]*>(.*?)<\/li>/gi, '\\bullet $1\\par');
-        text = text.replace(/<div[^>]*>(.*?)<\/div>/gi, '$1\\par');
-        text = text.replace(/<br\s*\/?>/gi, '\\par');
+        // Helper to decode HTML entities
+        const decodeHTMLEntities = (text) => {
+            return text
+                .replace(/&lt;/g, '<')
+                .replace(/&gt;/g, '>')
+                .replace(/&amp;/g, '&')
+                .replace(/&quot;/g, '"')
+                .replace(/&nbsp;/g, ' ');
+        };
         
-        // Remove remaining HTML tags
-        text = text.replace(/<[^>]*>/g, '');
+        // Helper to process inline formatting recursively
+        // This function preserves RTF codes and only escapes plain text
+        const processInlineFormatting = (content) => {
+            // Process innermost tags first (italic inside bold, etc.)
+            // Handle <i> and <em>
+            let hasItalic = /<(i|em)[^>]*>/.test(content);
+            if (hasItalic) {
+                content = content.replace(/<(i|em)[^>]*>(.*?)<\/\1>/gis, (match, tag, text) => {
+                    // Recursively process nested tags
+                    const processed = processInlineFormatting(text);
+                    return '\\i ' + processed + '\\i0 ';
+                });
+            }
+            
+            // Handle <b> and <strong>
+            let hasBold = /<(b|strong)[^>]*>/.test(content);
+            if (hasBold) {
+                content = content.replace(/<(b|strong)[^>]*>(.*?)<\/\1>/gis, (match, tag, text) => {
+                    // Recursively process nested tags
+                    const processed = processInlineFormatting(text);
+                    return '\\b ' + processed + '\\b0 ';
+                });
+            }
+            
+            // If no more formatting tags to process, handle remaining HTML and escape text
+            if (!hasItalic && !hasBold) {
+                // Remove any other remaining tags
+                content = content.replace(/<[^>]*>/g, '');
+                // Decode HTML entities first
+                content = decodeHTMLEntities(content);
+                // Always escape the content - we only get here if there are no HTML formatting tags
+                return escapeRTF(content);
+            }
+            
+            return content;
+        };
         
-        // Escape RTF special characters
-        text = text.replace(/\\/g, '\\\\');
-        text = text.replace(/\{/g, '\\{');
-        text = text.replace(/\}/g, '\\}');
+        // Process HTML and convert to RTF
+        let result = html;
         
-        // Clean up multiple paragraph breaks
-        text = text.replace(/\\par\\par\\par+/g, '\\par\\par');
+        // Handle headings with proper escaping
+        result = result.replace(/<h1[^>]*>(.*?)<\/h1>/gis, (match, content) => {
+            let text = content.replace(/<[^>]*>/g, ''); // Strip inner tags
+            text = decodeHTMLEntities(text);
+            return '\\fs32\\b ' + escapeRTF(text) + '\\b0\\fs24\\par\\par\n';
+        });
         
-        rtf += text;
+        result = result.replace(/<h2[^>]*>(.*?)<\/h2>/gis, (match, content) => {
+            let text = content.replace(/<[^>]*>/g, '');
+            text = decodeHTMLEntities(text);
+            return '\\fs28\\b ' + escapeRTF(text) + '\\b0\\fs24\\par\\par\n';
+        });
+        
+        result = result.replace(/<h3[^>]*>(.*?)<\/h3>/gis, (match, content) => {
+            let text = content.replace(/<[^>]*>/g, '');
+            text = decodeHTMLEntities(text);
+            return '\\fs24\\b ' + escapeRTF(text) + '\\b0\\fs24\\par\\par\n';
+        });
+        
+        // Handle lists - process list items before removing list tags
+        result = result.replace(/<li[^>]*>(.*?)<\/li>/gis, (match, content) => {
+            // Process inline formatting within list items
+            const processed = processInlineFormatting(content);
+            return '\\bullet\\tab ' + processed + '\\par\n';
+        });
+        
+        result = result.replace(/<ul[^>]*>/gi, '');
+        result = result.replace(/<\/ul>/gi, '\\par\n');
+        result = result.replace(/<ol[^>]*>/gi, '');
+        result = result.replace(/<\/ol>/gi, '\\par\n');
+        
+        // Handle page references - special case for italic paragraphs
+        result = result.replace(/<p[^>]*class="page-reference"[^>]*>(.*?)<\/p>/gis, (match, content) => {
+            let text = content.replace(/<[^>]*>/g, '');
+            text = decodeHTMLEntities(text);
+            return '\\i ' + escapeRTF(text) + '\\i0\\par\n';
+        });
+        
+        // Handle regular paragraphs - process inline formatting
+        result = result.replace(/<p[^>]*>(.*?)<\/p>/gis, (match, content) => {
+            const processed = processInlineFormatting(content);
+            return processed + '\\par\\par\n';
+        });
+        
+        // Handle description sections - keep content as is, just remove the div tags
+        result = result.replace(/<div[^>]*class="description-section"[^>]*>(.*?)<\/div>/gis, (match, content) => {
+            // Process the content recursively (it may contain other tags)
+            const text = content.replace(/<div[^>]*>/gi, '').replace(/<\/div>/gi, '');
+            return text + '\\par\n';
+        });
+        
+        // Handle other divs
+        result = result.replace(/<div[^>]*>(.*?)<\/div>/gis, (match, content) => {
+            const processed = processInlineFormatting(content);
+            return processed + '\\par\n';
+        });
+        
+        result = result.replace(/<br\s*\/?>/gi, '\\par\n');
+        
+        // Remove any remaining HTML tags
+        result = result.replace(/<[^>]*>/g, '');
+        
+        // Clean up excessive whitespace and paragraph breaks
+        result = result.replace(/\\par\n\\par\n\\par\n+/g, '\\par\\par\n');
+        result = result.replace(/\n\n+/g, '\n');
+        
+        rtf += result;
         rtf += '}';
         
         return rtf;
