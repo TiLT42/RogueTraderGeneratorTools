@@ -150,6 +150,44 @@ class DocumentViewer {
                 .replace(/\n/g, '\\par\n');
         };
         
+        // Helper to process inline formatting recursively
+        // This function preserves RTF codes and only escapes plain text
+        const processInlineFormatting = (content) => {
+            // Process innermost tags first (italic inside bold, etc.)
+            // Handle <i> and <em>
+            let hasItalic = /<(i|em)[^>]*>/.test(content);
+            if (hasItalic) {
+                content = content.replace(/<(i|em)[^>]*>(.*?)<\/\1>/gis, (match, tag, text) => {
+                    // Recursively process nested tags
+                    const processed = processInlineFormatting(text);
+                    return '\\i ' + processed + '\\i0 ';
+                });
+            }
+            
+            // Handle <b> and <strong>
+            let hasBold = /<(b|strong)[^>]*>/.test(content);
+            if (hasBold) {
+                content = content.replace(/<(b|strong)[^>]*>(.*?)<\/\1>/gis, (match, tag, text) => {
+                    // Recursively process nested tags
+                    const processed = processInlineFormatting(text);
+                    return '\\b ' + processed + '\\b0 ';
+                });
+            }
+            
+            // If no more formatting tags to process, handle remaining HTML and escape text
+            if (!hasItalic && !hasBold) {
+                // Remove any other remaining tags
+                content = content.replace(/<[^>]*>/g, '');
+                // Only escape if there are no RTF codes already present
+                // RTF codes start with backslash, so check if content has them
+                if (!/\\[a-z]+[0-9]*\s/.test(content)) {
+                    return escapeRTF(content);
+                }
+            }
+            
+            return content;
+        };
+        
         // Process HTML and convert to RTF
         let result = html;
         
@@ -169,63 +207,44 @@ class DocumentViewer {
             return '\\fs24\\b ' + escapeRTF(text) + '\\b0\\fs24\\par\\par\n';
         });
         
-        // Handle bold and italic within paragraphs first
-        result = result.replace(/<strong[^>]*>(.*?)<\/strong>/gis, (match, content) => {
-            const text = content.replace(/<[^>]*>/g, '');
-            return '\\b ' + escapeRTF(text) + '\\b0 ';
+        // Handle lists - process list items before removing list tags
+        result = result.replace(/<li[^>]*>(.*?)<\/li>/gis, (match, content) => {
+            // Process inline formatting within list items
+            const processed = processInlineFormatting(content);
+            return '\\bullet\\tab ' + processed + '\\par\n';
         });
         
-        result = result.replace(/<b[^>]*>(.*?)<\/b>/gis, (match, content) => {
-            const text = content.replace(/<[^>]*>/g, '');
-            return '\\b ' + escapeRTF(text) + '\\b0 ';
-        });
-        
-        result = result.replace(/<em[^>]*>(.*?)<\/em>/gis, (match, content) => {
-            const text = content.replace(/<[^>]*>/g, '');
-            return '\\i ' + escapeRTF(text) + '\\i0 ';
-        });
-        
-        result = result.replace(/<i[^>]*>(.*?)<\/i>/gis, (match, content) => {
-            const text = content.replace(/<[^>]*>/g, '');
-            return '\\i ' + escapeRTF(text) + '\\i0 ';
-        });
-        
-        // Handle lists
         result = result.replace(/<ul[^>]*>/gi, '');
         result = result.replace(/<\/ul>/gi, '\\par\n');
         result = result.replace(/<ol[^>]*>/gi, '');
         result = result.replace(/<\/ol>/gi, '\\par\n');
         
-        result = result.replace(/<li[^>]*>(.*?)<\/li>/gis, (match, content) => {
-            // Content may already have RTF codes from bold/italic processing
-            const text = content.replace(/<[^>]*>/g, ''); // Remove any remaining HTML tags
-            return '\\bullet\\tab ' + text + '\\par\n';
-        });
-        
-        // Handle paragraphs and divs
-        result = result.replace(/<p[^>]*>(.*?)<\/p>/gis, (match, content) => {
-            const text = content.replace(/<[^>]*>/g, '');
-            return text + '\\par\\par\n';
-        });
-        
-        result = result.replace(/<div[^>]*class="description-section"[^>]*>(.*?)<\/div>/gis, (match, content) => {
-            // Description sections - keep content as is, just remove the div tags
-            const text = content.replace(/<div[^>]*>/gi, '').replace(/<\/div>/gi, '');
-            return text + '\\par\n';
-        });
-        
-        result = result.replace(/<div[^>]*>(.*?)<\/div>/gis, (match, content) => {
-            const text = content.replace(/<[^>]*>/g, '');
-            return text + '\\par\n';
-        });
-        
-        result = result.replace(/<br\s*\/?>/gi, '\\par\n');
-        
-        // Handle remaining paragraph references (these are usually italicized)
+        // Handle page references - special case for italic paragraphs
         result = result.replace(/<p[^>]*class="page-reference"[^>]*>(.*?)<\/p>/gis, (match, content) => {
             const text = content.replace(/<[^>]*>/g, '');
             return '\\i ' + escapeRTF(text) + '\\i0\\par\n';
         });
+        
+        // Handle regular paragraphs - process inline formatting
+        result = result.replace(/<p[^>]*>(.*?)<\/p>/gis, (match, content) => {
+            const processed = processInlineFormatting(content);
+            return processed + '\\par\\par\n';
+        });
+        
+        // Handle description sections - keep content as is, just remove the div tags
+        result = result.replace(/<div[^>]*class="description-section"[^>]*>(.*?)<\/div>/gis, (match, content) => {
+            // Process the content recursively (it may contain other tags)
+            const text = content.replace(/<div[^>]*>/gi, '').replace(/<\/div>/gi, '');
+            return text + '\\par\n';
+        });
+        
+        // Handle other divs
+        result = result.replace(/<div[^>]*>(.*?)<\/div>/gis, (match, content) => {
+            const processed = processInlineFormatting(content);
+            return processed + '\\par\n';
+        });
+        
+        result = result.replace(/<br\s*\/?>/gi, '\\par\n');
         
         // Remove any remaining HTML tags
         result = result.replace(/<[^>]*>/g, '');
