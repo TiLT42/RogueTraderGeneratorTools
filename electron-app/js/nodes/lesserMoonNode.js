@@ -4,6 +4,7 @@ class LesserMoonNode extends NodeBase {
     constructor(id=null) {
         super(NodeTypes.LesserMoon,id);
         this.nodeName = 'Lesser Moon';
+        this.fontWeight = 'bold';
         this.fontForeground = '#bdc3c7';
         this.mineralResources = [];
         this.inhabitants = 'None';

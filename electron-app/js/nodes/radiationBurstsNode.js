@@ -3,6 +3,7 @@ class RadiationBurstsNode extends NodeBase {
     constructor(id = null) {
         super(NodeTypes.RadiationBursts, id);
         this.nodeName = 'Radiation Bursts';
+        this.fontWeight = 'bold';
         // Parity field with C#: NumRadiationBurstsInThisZone
         this.numRadiationBurstsInThisZone = 0;
         this.pageReference = createPageReference(16, 'Radiation Bursts');

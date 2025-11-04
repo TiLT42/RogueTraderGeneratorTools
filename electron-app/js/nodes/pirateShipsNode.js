@@ -3,6 +3,7 @@ class PirateShipsNode extends NodeBase {
     constructor(id = null) {
         super(NodeTypes.PirateShips, id);
         this.nodeName = 'Pirate Den';
+        this.fontStyle = 'italic';
         this.fontForeground = '#e74c3c';
         this.containsWayfarerStation = false; // parity: _pirateDenContainsWayfarerStation
         this.pirateSpecies = Species.None;    // parity: _pirateSpecies (kept internal; not surfaced in description)

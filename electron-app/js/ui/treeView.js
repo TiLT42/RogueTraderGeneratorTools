@@ -80,9 +80,25 @@ class TreeView {
         const content = document.createElement('div');
         content.className = `tree-node-content ${node.type}`;
         content.dataset.nodeId = node.id;
-        content.style.fontWeight = node.fontWeight;
-        content.style.fontStyle = node.fontStyle;
-        content.style.color = node.fontForeground;
+
+        // Apply font weight class if node has bold styling OR if it's a root node
+        if (node.fontWeight === 'bold' || !node.parent) {
+            content.classList.add('font-bold');
+        }
+
+        // Apply font style class if node has italic styling
+        if (node.fontStyle === 'italic') {
+            content.classList.add('font-italic');
+        }
+
+        // Apply zone-specific classes for color coding
+        if (node.type === NodeTypes.Zone && node.zone) {
+            // Convert camelCase to kebab-case (e.g., InnerCauldron -> inner-cauldron)
+            const zoneClass = node.zone
+                .replace(/([a-z])([A-Z])/g, '$1-$2')
+                .toLowerCase();
+            content.classList.add(`zone-${zoneClass}`);
+        }
 
         // Add expander if has children
         if (node.children.length > 0) {

@@ -4,6 +4,7 @@ class AsteroidNode extends NodeBase {
         super(NodeTypes.Asteroid, id);
         // C# sets NodeName = "Large Asteroid" and explicitly writes Type line
         this.nodeName = 'Large Asteroid';
+        this.fontWeight = 'bold';
         this.fontForeground = '#95a5a6';
     }
 

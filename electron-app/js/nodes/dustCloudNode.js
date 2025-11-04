@@ -7,6 +7,7 @@ class DustCloudNode extends NodeBase {
     constructor(id = null) {
         super(NodeTypes.DustCloud, id);
         this.nodeName = 'Dust Cloud';
+        this.fontWeight = 'bold';
     }
 
     generate() {

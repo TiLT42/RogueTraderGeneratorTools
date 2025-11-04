@@ -5,6 +5,7 @@ class GravityRiptideNode extends NodeBase {
     constructor(id = null) {
         super(NodeTypes.GravityRiptide, id);
         this.nodeName = 'Gravity Riptide';
+        this.fontWeight = 'bold';
         this.pageReference = createPageReference(15, 'Gravity Riptide');
     }
 

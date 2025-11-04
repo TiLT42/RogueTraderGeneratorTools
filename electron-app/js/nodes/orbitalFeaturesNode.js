@@ -6,6 +6,7 @@ class OrbitalFeaturesNode extends NodeBase {
     constructor(id = null) {
         super(NodeTypes.OrbitalFeatures, id);
         this.nodeName = 'Orbital Features';
+        this.fontStyle = 'italic';
     }
 
     generate() {
