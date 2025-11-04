@@ -81,8 +81,8 @@ class TreeView {
         content.className = `tree-node-content ${node.type}`;
         content.dataset.nodeId = node.id;
 
-        // Apply font weight class if node has bold styling
-        if (node.fontWeight === 'bold') {
+        // Apply font weight class if node has bold styling OR if it's a root node
+        if (node.fontWeight === 'bold' || !node.parent) {
             content.classList.add('font-bold');
         }
 

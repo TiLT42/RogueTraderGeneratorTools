@@ -108,6 +108,7 @@ body {
 .tree-node {
     margin: 1px 0;
     user-select: none;
+    position: relative;
 }
 
 .tree-node-content {
@@ -198,6 +199,38 @@ body {
 .tree-node-children {
     margin-left: 20px;
     list-style: none;
+    position: relative;
+}
+
+/* Tree lines connecting parent and children */
+.tree-node-children::before {
+    content: '';
+    position: absolute;
+    left: -10px;
+    top: 0;
+    bottom: 14px;
+    width: 1px;
+    background-color: #d0d0d0;
+}
+
+.tree-node-children > .tree-node::before {
+    content: '';
+    position: absolute;
+    left: -10px;
+    top: 14px;
+    width: 10px;
+    height: 1px;
+    background-color: #d0d0d0;
+}
+
+.tree-node-children > .tree-node:last-child::after {
+    content: '';
+    position: absolute;
+    left: -10px;
+    top: 14px;
+    bottom: 0;
+    width: 1px;
+    background-color: #fafafa;
 }
 
 .tree-node-expander {

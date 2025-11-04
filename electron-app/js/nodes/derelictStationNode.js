@@ -4,6 +4,7 @@ class DerelictStationNode extends NodeBase {
     constructor(id = null) {
         super(NodeTypes.DerelictStation, id);
         this.nodeName = 'Derelict Station';
+        this.fontWeight = 'bold';
         this.stationOrigin = '';
         this.hullIntegrity = 0; // 4d10 total (parity)
         this.armor = 10; // Fixed armour value

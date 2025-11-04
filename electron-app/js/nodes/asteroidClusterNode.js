@@ -5,6 +5,7 @@ class AsteroidClusterNode extends NodeBase {
     constructor(id = null) {
         super(NodeTypes.AsteroidCluster, id);
         this.nodeName = 'Asteroid Cluster';
+        this.fontWeight = 'bold';
         this.fontForeground = '#95a5a6';
         this.systemCreationRules = null; // passed from parent system/zone
         // Legacy simple list retained; new parity uses aggregated counters below

@@ -4,6 +4,7 @@ class AsteroidBeltNode extends NodeBase {
     constructor(id = null) {
         super(NodeTypes.AsteroidBelt, id);
         this.nodeName = 'Asteroid Belt';
+        this.fontWeight = 'bold';
         this.fontForeground = '#95a5a6';
         
         // Properties
