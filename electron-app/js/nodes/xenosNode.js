@@ -346,6 +346,9 @@ class XenosNode extends NodeBase {
             armour: data.armour || ''
         });
         
+        // Note: xenosData is NOT restored because it's only used during generation
+        // The description is already saved and should not be regenerated
+        
         // Restore children (if any)
         if (data.children) {
             for (const childData of data.children) {
@@ -358,6 +361,31 @@ class XenosNode extends NodeBase {
         }
         
         return node;
+    }
+
+    // Override getNodeContent to avoid regenerating description when xenosData is null
+    getNodeContent(includeChildren = false) {
+        // Only regenerate description if xenosData exists (i.e., during generation)
+        // If loading from file, description is already saved
+        if (this.xenosData) {
+            this.updateDescription();
+        }
+
+        let content = `<h2>${this.nodeName}</h2>`;
+        if (this.description) {
+            content += `<div class="description-section">${this.description}</div>`;
+        }
+        if (this.customDescription) {
+            content += `<div class="description-section"><h3>Notes</h3>${this.customDescription}</div>`;
+        }
+        // Intentionally omit default pageReference footer for this node type
+
+        if (includeChildren) {
+            for (const child of this.children) {
+                content += '\n\n' + child.getDocumentContent(true);
+            }
+        }
+        return content;
     }
 
     toJSON() {
