@@ -3,6 +3,7 @@ const path = require('path');
 const fs = require('fs');
 
 let mainWindow;
+let menuTemplate;
 // Detect explicit dev mode from CLI. We intentionally do NOT use app.isPackaged here
 // so that `npm start` won't auto-open DevTools, only `npm run dev` (which passes --dev).
 const isDev = process.argv.includes('--dev');
@@ -46,7 +47,7 @@ function createWindow() {
 }
 
 function createMenu() {
-    const template = [
+    menuTemplate = [
         {
             label: 'File',
             submenu: [
@@ -196,6 +197,7 @@ function createMenu() {
             label: 'Generate',
             submenu: [
                 {
+                    id: 'generate-system',
                     label: 'New System',
                     click: () => {
                         mainWindow.webContents.send('menu-action', 'generate-system');
@@ -208,12 +210,14 @@ function createMenu() {
                     }
                 },
                 {
+                    id: 'generate-primitive-species',
                     label: 'New Primitive Species',
                     click: () => {
                         mainWindow.webContents.send('menu-action', 'generate-primitive-species');
                     }
                 },
                 {
+                    id: 'generate-xenos',
                     label: 'New Xenos',
                     submenu: [
                         { label: 'Random World', click: () => mainWindow.webContents.send('menu-action', 'generate-xenos', 'random') },
@@ -227,6 +231,7 @@ function createMenu() {
                     ]
                 },
                 {
+                    id: 'generate-treasure',
                     label: 'New Treasure',
                     submenu: [
                         { label: 'Random', click: () => mainWindow.webContents.send('menu-action', 'generate-treasure', 'random') },
@@ -262,7 +267,53 @@ function createMenu() {
         }
     ];
 
-    const menu = Menu.buildFromTemplate(template);
+    const menu = Menu.buildFromTemplate(menuTemplate);
+    Menu.setApplicationMenu(menu);
+}
+
+function updateMenuItemAvailability(settings) {
+    if (!menuTemplate) {
+        console.error('Menu template not initialized - cannot update menu item availability');
+        return;
+    }
+    
+    // Find the Generate menu
+    const generateMenu = menuTemplate.find(item => item.label === 'Generate');
+    if (!generateMenu) {
+        console.error('Generate menu not found in menu template');
+        return;
+    }
+    
+    // Update menu item availability based on settings
+    // This mirrors the WPF logic from MainWindow.xaml.cs UpdateMenuItemAvailability()
+    
+    // New System requires Stars of Inequity
+    const systemMenuItem = generateMenu.submenu.find(item => item.id === 'generate-system');
+    if (systemMenuItem) {
+        systemMenuItem.enabled = settings.enabledBooks.StarsOfInequity;
+    }
+    
+    // New Primitive Species requires The Koronus Bestiary
+    const primitiveSpeciesMenuItem = generateMenu.submenu.find(item => item.id === 'generate-primitive-species');
+    if (primitiveSpeciesMenuItem) {
+        primitiveSpeciesMenuItem.enabled = settings.enabledBooks.TheKoronusBestiary;
+    }
+    
+    // New Treasure requires Stars of Inequity
+    const treasureMenuItem = generateMenu.submenu.find(item => item.id === 'generate-treasure');
+    if (treasureMenuItem) {
+        treasureMenuItem.enabled = settings.enabledBooks.StarsOfInequity;
+    }
+    
+    // New Xenos requires at least one xenos generator source to be enabled
+    const xenosMenuItem = generateMenu.submenu.find(item => item.id === 'generate-xenos');
+    if (xenosMenuItem) {
+        xenosMenuItem.enabled = settings.xenosGeneratorSources.StarsOfInequity || 
+                                 settings.xenosGeneratorSources.TheKoronusBestiary;
+    }
+    
+    // Rebuild the menu with updated settings
+    const menu = Menu.buildFromTemplate(menuTemplate);
     Menu.setApplicationMenu(menu);
 }
 
@@ -308,4 +359,13 @@ ipcMain.handle('show-save-dialog', async (event, options) => {
 ipcMain.handle('show-open-dialog', async (event, options) => {
     const result = await dialog.showOpenDialog(mainWindow, options);
     return result;
+});
+
+// IPC handler for updating menu item availability when settings change
+ipcMain.on('settings-updated', (event, settings) => {
+    try {
+        updateMenuItemAvailability(settings);
+    } catch (error) {
+        console.error('Error updating menu item availability:', error);
+    }
 });

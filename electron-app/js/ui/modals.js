@@ -234,6 +234,11 @@ class Modals {
 
             // Persist settings to localStorage
             saveSettings();
+            
+            // Update menu item availability in main process
+            if (window.app && window.app.updateMenuAvailability) {
+                window.app.updateMenuAvailability();
+            }
 
             // Refresh display
             window.documentViewer.refresh();
