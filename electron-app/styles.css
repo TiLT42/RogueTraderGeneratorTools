@@ -155,7 +155,7 @@ body {
     text-overflow: ellipsis;
     white-space: nowrap;
     font-size: 13px;
-    color: #333;
+    color: #1a1a1a;
 }
 
 .tree-node-content.selected .tree-node-text {
@@ -169,7 +169,7 @@ body {
 
 .tree-node-content.font-italic .tree-node-text {
     font-style: italic;
-    color: #666;
+    color: #555;
 }
 
 .tree-node-content.selected.font-italic .tree-node-text {
