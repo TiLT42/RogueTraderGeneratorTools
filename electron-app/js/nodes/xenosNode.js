@@ -42,7 +42,8 @@ class XenosNode extends NodeBase {
                     this.generateKoronusBestiaryXenos();
                 }
             }
-            // If neither enabled, don't generate anything (matches WPF behavior)
+            // If neither enabled, don't generate anything (matches WPF behavior where empty XenosNode is created but not populated)
+            // This allows the node structure to exist but remain empty, which is then cleaned up by the parent
         }
         
         this.updateDescription();
