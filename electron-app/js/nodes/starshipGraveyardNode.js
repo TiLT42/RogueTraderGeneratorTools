@@ -4,7 +4,7 @@
 // - Majority / minority species selection with Dominant Ruined Species bias & adoption (60% bias, 70% adoption)
 // - Kroot / Stryxis ship count limitation rules
 // - Salvage integrity algorithm (salvageChance thresholds + boarding bonus)
-// - Resource generation (d10+2 total packets, split into archeotech / xenotech by species groups, abundance d100 [+ optional d10+5 Ruined Empire bonus])
+// - Resource generation (d10+2 total packets, split into archeotech / xenotech by species groups, abundance 25+2d10 per rulebook [+ optional d10+5 Ruined Empire bonus])
 // - Structured resource modeling (arrays of { type, abundance }) for parity with planets & stations
 class StarshipGraveyardNode extends NodeBase {
     constructor(id = null) {
@@ -196,12 +196,12 @@ class StarshipGraveyardNode extends NodeBase {
     }
 
     _accumulateArcheotech() {
-        let val = RollD100();
+        let val = 25 + RollD10(2);
         if (this.systemCreationRules?.ruinedEmpireIncreasedAbundanceArcheotechCaches) val += (RollD10() + 5);
         this._resourceArcheotechTotal += val;
     }
     _accumulateXenotech() {
-        let val = RollD100();
+        let val = 25 + RollD10(2);
         if (this.systemCreationRules?.ruinedEmpireIncreasedAbundanceXenosRuins) val += (RollD10() + 5);
         this._resourceXenosTotal += val;
     }
@@ -342,6 +342,8 @@ class StarshipGraveyardNode extends NodeBase {
             hulks: this.hulks,
             xenosRuins: this.xenosRuins,
             archeotechCaches: this.archeotechCaches,
+            _resourceArcheotechTotal: this._resourceArcheotechTotal,
+            _resourceXenosTotal: this._resourceXenosTotal,
             inhabitants: this.inhabitants,
             inhabitantDevelopment: this.inhabitantDevelopment,
             systemCreationRules: this.systemCreationRules
@@ -355,6 +357,8 @@ class StarshipGraveyardNode extends NodeBase {
         node.hulks = data.hulks || [];
         node.xenosRuins = data.xenosRuins || [];
         node.archeotechCaches = data.archeotechCaches || [];
+        node._resourceArcheotechTotal = data._resourceArcheotechTotal || 0;
+        node._resourceXenosTotal = data._resourceXenosTotal || 0;
         node.inhabitants = data.inhabitants || 'None';
         node.inhabitantDevelopment = data.inhabitantDevelopment || '';
         node.systemCreationRules = data.systemCreationRules || null;
