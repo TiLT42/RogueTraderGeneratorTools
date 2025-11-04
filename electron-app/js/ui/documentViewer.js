@@ -38,12 +38,6 @@ class DocumentViewer {
         this.render();
     }
 
-    // Helper method to sanitize filenames
-    sanitizeFilename(filename) {
-        // Replace invalid filesystem characters with underscores
-        return filename.replace(/[/\\:*?"<>|]/g, '_');
-    }
-
     printContent() {
         if (!this.currentNode) {
             alert('No content to print');
@@ -156,7 +150,8 @@ class DocumentViewer {
             jsonData = this.currentNode.toJSON();
         } else {
             // Export only current node without children
-            // Use destructuring to exclude children from the exported data
+            // Use destructuring to create a new object excluding the children property,
+            // avoiding mutation of the original toJSON() result
             const { children, ...nodeWithoutChildren } = this.currentNode.toJSON();
             jsonData = nodeWithoutChildren;
         }
@@ -174,6 +169,12 @@ class DocumentViewer {
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
+    }
+
+    // Utility: Sanitize filename by replacing invalid filesystem characters
+    sanitizeFilename(filename) {
+        // Replace characters that are invalid in filenames: / \ : * ? " < > |
+        return filename.replace(/[/\\:*?"<>|]/g, '_');
     }
 
     htmlToRTF(html) {
