@@ -135,6 +135,42 @@ class DocumentViewer {
         this.printContent();
     }
 
+    exportToJSON() {
+        if (!this.currentNode) {
+            alert('No content to export');
+            return;
+        }
+
+        const includeChildren = window.APP_STATE.settings.mergeWithChildDocuments;
+        
+        // Get JSON data, preserving hierarchy
+        let jsonData;
+        if (includeChildren) {
+            // Export current node with all children (recursively)
+            jsonData = this.currentNode.toJSON();
+        } else {
+            // Export only current node without children
+            const nodeData = this.currentNode.toJSON();
+            // Remove children from the exported data
+            delete nodeData.children;
+            jsonData = nodeData;
+        }
+        
+        // Create formatted JSON string
+        const jsonContent = JSON.stringify(jsonData, null, 2);
+        
+        // Create and download file
+        const blob = new Blob([jsonContent], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${this.currentNode.nodeName}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+
     htmlToRTF(html) {
         // RTF header with proper font table
         let rtf = '{\\rtf1\\ansi\\deff0\n';

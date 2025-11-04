@@ -165,6 +165,10 @@ class App {
                 window.documentViewer.exportToPDF();
                 break;
 
+            case 'export-json':
+                window.documentViewer.exportToJSON();
+                break;
+
             case 'generate-system':
                 this.generateNewSystem();
                 break;
