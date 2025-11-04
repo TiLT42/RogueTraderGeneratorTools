@@ -53,6 +53,7 @@ namespace RogueTraderSystemGenerator.Nodes
 
         public override void Generate()
         {
+            ResetVariables();
             bool xenos = false; // If false, generate Archeotech. Else generate Xenotech.
             int randValue = Globals.RollD100();
             // Override random value in certain cases to enable the dominant species for the system
