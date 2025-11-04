@@ -26,9 +26,9 @@ class XenosNode extends NodeBase {
         if (this.isPrimitiveXenos) {
             this.generatePrimitiveXenos();
         } else {
-            // Check settings to determine which rulebook to use (mimicking WPF logic)
-            const useStarsOfInequity = window.APP_STATE.settings.enabledBooks.StarsOfInequity;
-            const useKoronusBestiary = window.APP_STATE.settings.enabledBooks.TheKoronusBestiary;
+            // Check xenos generator source settings to determine which rulebook to use (mimicking WPF logic)
+            const useStarsOfInequity = window.APP_STATE.settings.xenosGeneratorSources.StarsOfInequity;
+            const useKoronusBestiary = window.APP_STATE.settings.xenosGeneratorSources.TheKoronusBestiary;
             
             if (useStarsOfInequity && !useKoronusBestiary) {
                 this.generateStarsOfInequityXenos();
@@ -41,10 +41,9 @@ class XenosNode extends NodeBase {
                 } else {
                     this.generateKoronusBestiaryXenos();
                 }
-            } else {
-                // Neither enabled - default to primitive
-                this.generatePrimitiveXenos();
             }
+            // If neither enabled, don't generate anything (matches WPF behavior where empty XenosNode is created but not populated)
+            // This allows the node structure to exist but remain empty, which is then cleaned up by the parent
         }
         
         this.updateDescription();

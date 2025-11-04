@@ -1055,10 +1055,6 @@ class PlanetNode extends NodeBase {
     // NOTE (Parity): EnvironmentData.getOrderedWorldTypesForNotableSpecies() now mirrors C# logic exactly.
     // Territory -> base Temperate; Wasteland+ExtremeTemp -> Ice (Cold planet) / Desert (Hot planet);
     // Forest + (Hot | Burning | (Temperate & ExtremeTemp)) -> Jungle. One entry per Notable Species count.
-        const enabled = window.APP_STATE.settings.enabledBooks || {};
-        const hasXenosBooks = (enabled.StarsOfInequity || enabled.TheKoronusBestiary);
-        if (!hasXenosBooks) return; // No valid rulebooks enabled -> skip entirely
-
         const env = this.environment; // parity: environment exists only on inhabitable worlds
         const { getTotalNotableSpecies, getOrderedWorldTypesForNotableSpecies } = window.EnvironmentData;
         let speciesCount = 0;
@@ -1069,6 +1065,12 @@ class PlanetNode extends NodeBase {
             speciesCount += (RollD5() + 1);
         } else if (this.habitability === 'Verdant') {
             speciesCount += (RollD5() + 5);
+        }
+
+        // Match WPF: If both xenos generator sources are disabled, set species count to 0 (PlanetNode.cs lines 798-800)
+        const xenosSources = window.APP_STATE.settings.xenosGeneratorSources || {};
+        if (!xenosSources.StarsOfInequity && !xenosSources.TheKoronusBestiary) {
+            speciesCount = 0;
         }
 
         if (speciesCount <= 0) return; // Nothing to add
