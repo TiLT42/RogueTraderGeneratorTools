@@ -92,9 +92,8 @@ class Modals {
         this.title.textContent = 'Settings';
         this.body.innerHTML = `
             <div class="settings-intro">
-                In order for the generator to know what books to use, you must first let it know which ones you own. 
-                Be aware that you need to actually have these books for the generated results to make any sense. 
-                Rules are not reproduced here. Please select the books you want to use for the generators.
+                For the generator to know what books to use, you must first let it know which ones you own. 
+                Be aware that you need to have these books available for the generated results to make sense, since their rules are not reproduced here.
             </div>
             
             <div class="settings-section">
@@ -146,7 +145,7 @@ class Modals {
                         <strong>Battlefleet Koronus</strong>
                     </label>
                     <div class="settings-book-description">
-                        Enables generation of Xenos and Chaos ships, which is used for both pirate fleets and starship graveyards.
+                        Enables the generation of Xenos and Chaos ships, which are used for both pirate fleets and starship graveyards.
                     </div>
                 </div>
 
@@ -166,7 +165,7 @@ class Modals {
                 <div class="settings-intro">
                     If you wish to use the Xenos generator, you must also select which sources to use. If you select both, 
                     the generator will use both sources at random, providing the largest possible selection of results. 
-                    Selecting both sources (if you have them) is strongly recommended for variety. Selecting none of them 
+                    Selecting both sources (if available) is strongly recommended for variety. Selecting none of them 
                     will disable the Xenos generator.
                 </div>
 
@@ -177,7 +176,7 @@ class Modals {
                     </label>
                     <div class="settings-book-description">
                         The generator will use the Xenos archetypes from this book. These are limited in how much they can vary, 
-                        but have a strong identity to make them memorable.
+                        but they have a strong identity that makes them memorable.
                     </div>
                 </div>
 
