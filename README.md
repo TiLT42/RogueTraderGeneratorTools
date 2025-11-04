@@ -28,3 +28,10 @@ Having said that, everything surrounding the generator functions needs serious d
 Feel free to try it out if you've got the knowledge of how to run an Electron app. It should be compatible with Windows, Mac, and Linux, though the interface is very Windows-like at this point.
 
 The WPF code has not been touched and should work the same as always, but I don't intend to continue supporting it.
+
+#### UPDATE 04.11.25
+I've started another pass of fixes after procrastinating for a while. Thank you to those who have submitted issues. The focus for this pass has been on data integrity, which means exporting, saving, and loading. PDF and RTF exports are now fully implemented (although some bugs are expected, particularly regarding formatting), and I have also included a new JSON export option. Furthermore, you can now choose to export a single node (and its collated children if that option is selected) or the entire workspace, which you couldn't do in the original WPF app. The save/load functionality for workspaces was previously broken, but it should now function properly. My latest round of testing revealed no bugs, but I wouldn't be surprised if a couple of them appear later. A bug that caused incorrect resource allocation on Starship Graveyard nodes has been corrected.
+
+My focus will now turn to the UI. I have two priorities here, in this order:
+1) Make the tree list look like it did in the WPF app. I will consider using a few more colors and some iconography for readability.
+2) Remove the ugly menus at the top and replace them with a more platform-agnostic icon layout.
