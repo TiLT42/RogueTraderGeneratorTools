@@ -97,6 +97,21 @@ class Modals {
             </div>
             
             <div class="settings-section">
+                <h3 class="settings-section-title">Appearance</h3>
+                
+                <label class="toggle-switch">
+                    <input type="checkbox" id="dark-mode-toggle" ${window.APP_STATE.settings.darkMode ? 'checked' : ''}>
+                    <div class="toggle-switch-control">
+                        <div class="toggle-switch-slider"></div>
+                    </div>
+                    <div class="toggle-switch-label">
+                        <strong>Dark Mode</strong>
+                        <span>Switch between light and dark theme for the application interface</span>
+                    </div>
+                </label>
+            </div>
+            
+            <div class="settings-section">
                 <h3 class="settings-section-title">Enabled Books</h3>
                 
                 <div class="settings-book-item">
@@ -194,6 +209,10 @@ class Modals {
 
         this.okButton.textContent = 'Save';
         this.okButton.onclick = () => {
+            // Save dark mode setting
+            window.APP_STATE.settings.darkMode = document.getElementById('dark-mode-toggle').checked;
+            applyTheme(window.APP_STATE.settings.darkMode);
+
             // Save book settings
             window.APP_STATE.settings.enabledBooks.CoreRuleBook = true; // Always true
             window.APP_STATE.settings.enabledBooks.StarsOfInequity = document.getElementById('book-stars').checked;

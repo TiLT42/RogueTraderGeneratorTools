@@ -17,6 +17,9 @@ class App {
     initializeComponents() {
         // Load saved settings first
         const hasSettings = loadSettings();
+        
+        // Apply theme based on loaded settings
+        applyTheme(window.APP_STATE.settings.darkMode);
 
         // Initialize UI components
         window.treeView = new TreeView(document.getElementById('tree-container'));
