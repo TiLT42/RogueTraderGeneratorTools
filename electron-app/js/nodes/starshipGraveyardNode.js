@@ -342,6 +342,8 @@ class StarshipGraveyardNode extends NodeBase {
             hulks: this.hulks,
             xenosRuins: this.xenosRuins,
             archeotechCaches: this.archeotechCaches,
+            _resourceArcheotechTotal: this._resourceArcheotechTotal,
+            _resourceXenosTotal: this._resourceXenosTotal,
             inhabitants: this.inhabitants,
             inhabitantDevelopment: this.inhabitantDevelopment,
             systemCreationRules: this.systemCreationRules
@@ -355,6 +357,8 @@ class StarshipGraveyardNode extends NodeBase {
         node.hulks = data.hulks || [];
         node.xenosRuins = data.xenosRuins || [];
         node.archeotechCaches = data.archeotechCaches || [];
+        node._resourceArcheotechTotal = data._resourceArcheotechTotal || 0;
+        node._resourceXenosTotal = data._resourceXenosTotal || 0;
         node.inhabitants = data.inhabitants || 'None';
         node.inhabitantDevelopment = data.inhabitantDevelopment || '';
         node.systemCreationRules = data.systemCreationRules || null;
