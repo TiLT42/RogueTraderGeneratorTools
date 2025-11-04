@@ -209,7 +209,7 @@ class Modals {
 
         this.okButton.textContent = 'Save';
         this.okButton.onclick = () => {
-            // Save dark mode setting
+            // Save dark mode setting and apply theme (applyTheme function from globals.js)
             window.APP_STATE.settings.darkMode = document.getElementById('dark-mode-toggle').checked;
             applyTheme(window.APP_STATE.settings.darkMode);
 
