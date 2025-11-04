@@ -147,14 +147,14 @@ class Workspace {
 
     restoreNode(nodeData) {
         try {
-            // Create a temporary node instance to check for fromJSON method
-            const tempNode = createNode(nodeData.type, nodeData.id);
+            // Create the node instance
+            const node = createNode(nodeData.type, nodeData.id);
             
-            // Use the node's fromJSON method if it exists, otherwise use fallback
-            if (tempNode.constructor.fromJSON) {
-                return tempNode.constructor.fromJSON(nodeData);
+            // Use the node's fromJSON method if it exists for proper restoration
+            if (node.constructor.fromJSON) {
+                return node.constructor.fromJSON(nodeData);
             } else {
-                // Fallback for nodes without fromJSON
+                // Fallback: restore properties directly for nodes without fromJSON
                 return this.restoreNodeFallback(nodeData);
             }
         } catch (error) {
@@ -172,7 +172,8 @@ class Workspace {
                 if (key === 'children' || key === 'parent') {
                     continue; // Skip these, they're handled separately
                 }
-                if (nodeData.hasOwnProperty(key)) {
+                // Use Object.prototype.hasOwnProperty for safety
+                if (Object.prototype.hasOwnProperty.call(nodeData, key)) {
                     node[key] = nodeData[key];
                 }
             }
