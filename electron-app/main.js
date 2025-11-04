@@ -272,11 +272,17 @@ function createMenu() {
 }
 
 function updateMenuItemAvailability(settings) {
-    if (!menuTemplate) return;
+    if (!menuTemplate) {
+        console.error('Menu template not initialized - cannot update menu item availability');
+        return;
+    }
     
     // Find the Generate menu
     const generateMenu = menuTemplate.find(item => item.label === 'Generate');
-    if (!generateMenu) return;
+    if (!generateMenu) {
+        console.error('Generate menu not found in menu template');
+        return;
+    }
     
     // Update menu item availability based on settings
     // This mirrors the WPF logic from MainWindow.xaml.cs UpdateMenuItemAvailability()
@@ -357,10 +363,9 @@ ipcMain.handle('show-open-dialog', async (event, options) => {
 
 // IPC handler for updating menu item availability when settings change
 ipcMain.on('settings-updated', (event, settings) => {
-    updateMenuItemAvailability(settings);
-});
-
-// IPC handler for getting settings to initialize menu on startup
-ipcMain.handle('get-settings-for-menu', async (event) => {
-    return true; // Signal that we're ready to receive settings
+    try {
+        updateMenuItemAvailability(settings);
+    } catch (error) {
+        console.error('Error updating menu item availability:', error);
+    }
 });

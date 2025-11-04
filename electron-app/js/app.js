@@ -58,8 +58,14 @@ class App {
     
     updateMenuAvailability() {
         // Send settings to main process to update menu item availability
-        if (window.electronAPI && window.electronAPI.updateMenuSettings) {
-            window.electronAPI.updateMenuSettings(window.APP_STATE.settings);
+        try {
+            if (window.electronAPI && window.electronAPI.updateMenuSettings) {
+                window.electronAPI.updateMenuSettings(window.APP_STATE.settings);
+            } else {
+                console.warn('electronAPI.updateMenuSettings not available - menu items may not be updated');
+            }
+        } catch (error) {
+            console.error('Error updating menu availability:', error);
         }
     }
 
