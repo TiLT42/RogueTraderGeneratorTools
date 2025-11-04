@@ -156,10 +156,9 @@ class DocumentViewer {
             jsonData = this.currentNode.toJSON();
         } else {
             // Export only current node without children
-            // Create a shallow copy to avoid mutating the original
-            const nodeData = this.currentNode.toJSON();
-            jsonData = { ...nodeData };
-            delete jsonData.children;
+            // Use destructuring to exclude children from the exported data
+            const { children, ...nodeWithoutChildren } = this.currentNode.toJSON();
+            jsonData = nodeWithoutChildren;
         }
         
         // Create formatted JSON string
