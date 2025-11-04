@@ -63,6 +63,7 @@ window.APP_STATE = {
         showPageNumbers: false,
         mergeWithChildDocuments: false,
         allowFreeMovement: true,
+        darkMode: false, // Default to light mode
         enabledBooks: {
             CoreRuleBook: true,
             StarsOfInequity: true,
@@ -103,6 +104,15 @@ function saveSettings() {
         localStorage.setItem('rogueTraderSettings', JSON.stringify(window.APP_STATE.settings));
     } catch (error) {
         console.error('Error saving settings:', error);
+    }
+}
+
+// Apply dark mode theme
+function applyTheme(isDarkMode) {
+    if (isDarkMode) {
+        document.body.classList.add('dark-mode');
+    } else {
+        document.body.classList.remove('dark-mode');
     }
 }
 
