@@ -80,9 +80,6 @@ class TreeView {
         const content = document.createElement('div');
         content.className = `tree-node-content ${node.type}`;
         content.dataset.nodeId = node.id;
-        content.style.fontWeight = node.fontWeight;
-        content.style.fontStyle = node.fontStyle;
-        content.style.color = node.fontForeground;
 
         // Add expander if has children
         if (node.children.length > 0) {

@@ -11,6 +11,19 @@
         <div class="main-container">
             <!-- Left Panel - Tree View -->
             <div class="left-panel">
+                <div class="tree-header">
+                    <h3 class="tree-title">Content Explorer</h3>
+                    <div class="tree-options">
+                        <label class="tree-option">
+                            <input type="checkbox" id="page-references">
+                            <span>Page refs</span>
+                        </label>
+                        <label class="tree-option">
+                            <input type="checkbox" id="collate-nodes">
+                            <span>Collate</span>
+                        </label>
+                    </div>
+                </div>
                 <div id="tree-container">
                     <ul id="node-tree"></ul>
                 </div>
@@ -27,20 +40,6 @@
                         <p>Select or generate a system from the Generate menu to begin.</p>
                     </div>
                 </div>
-            </div>
-        </div>
-
-        <!-- Bottom Panel - Options -->
-        <div class="bottom-panel">
-            <div class="options-container">
-                <label>
-                    <input type="checkbox" id="page-references">
-                    Display page references
-                </label>
-                <label>
-                    <input type="checkbox" id="collate-nodes">
-                    Collate nodes
-                </label>
             </div>
         </div>
     </div>
