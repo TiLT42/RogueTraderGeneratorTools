@@ -147,34 +147,37 @@ class Workspace {
 
     restoreNode(nodeData) {
         try {
+            // Create a temporary node instance to check for fromJSON method
+            const tempNode = createNode(nodeData.type, nodeData.id);
+            
+            // Use the node's fromJSON method if it exists, otherwise use fallback
+            if (tempNode.constructor.fromJSON) {
+                return tempNode.constructor.fromJSON(nodeData);
+            } else {
+                // Fallback for nodes without fromJSON
+                return this.restoreNodeFallback(nodeData);
+            }
+        } catch (error) {
+            console.error('Error restoring node:', error);
+            return null;
+        }
+    }
+
+    restoreNodeFallback(nodeData) {
+        try {
             const node = createNode(nodeData.type, nodeData.id);
             
-            // Restore basic properties
-            node.nodeName = nodeData.nodeName || '';
-            node.description = nodeData.description || '';
-            node.customDescription = nodeData.customDescription || '';
-            node.pageReference = nodeData.pageReference || '';
-            node.isGenerated = nodeData.isGenerated || false;
-            node.fontWeight = nodeData.fontWeight || 'normal';
-            node.fontStyle = nodeData.fontStyle || 'normal';
-            node.fontForeground = nodeData.fontForeground || '#000000';
+            // Restore all properties from nodeData (except internal properties)
+            for (const key in nodeData) {
+                if (key === 'children' || key === 'parent') {
+                    continue; // Skip these, they're handled separately
+                }
+                if (nodeData.hasOwnProperty(key)) {
+                    node[key] = nodeData[key];
+                }
+            }
 
-            // Restore type-specific properties
-            if (nodeData.starType !== undefined) node.starType = nodeData.starType;
-            if (nodeData.dominion !== undefined) node.dominion = nodeData.dominion;
-            if (nodeData.systemFeatures !== undefined) node.systemFeatures = nodeData.systemFeatures;
-            if (nodeData.numZones !== undefined) node.numZones = nodeData.numZones;
-            if (nodeData.zoneNumber !== undefined) node.zoneNumber = nodeData.zoneNumber;
-            if (nodeData.content !== undefined) node.content = nodeData.content;
-            if (nodeData.planetType !== undefined) node.planetType = nodeData.planetType;
-            if (nodeData.atmosphere !== undefined) node.atmosphere = nodeData.atmosphere;
-            if (nodeData.temperature !== undefined) node.temperature = nodeData.temperature;
-            if (nodeData.habitability !== undefined) node.habitability = nodeData.habitability;
-            if (nodeData.population !== undefined) node.population = nodeData.population;
-            if (nodeData.techLevel !== undefined) node.techLevel = nodeData.techLevel;
-            if (nodeData.resources !== undefined) node.resources = nodeData.resources;
-
-            // Restore children
+            // Restore children recursively
             if (nodeData.children) {
                 for (const childData of nodeData.children) {
                     const child = this.restoreNode(childData);
@@ -186,7 +189,7 @@ class Workspace {
 
             return node;
         } catch (error) {
-            console.error('Error restoring node:', error);
+            console.error('Error in restoreNodeFallback:', error);
             return null;
         }
     }
