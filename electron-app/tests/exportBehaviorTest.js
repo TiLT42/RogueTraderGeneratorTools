@@ -146,13 +146,22 @@ mockAppState.settings.mergeWithChildDocuments = false;
 
 const result4a = mockViewer.simulateCurrentNodeExport();
 const result4b = mockViewer.simulateWorkspaceExport();
-console.log('Current node exports how many systems?:', result4a.content.match(/Test System/g)?.length || 0);
-console.log('Workspace exports how many systems?:', result4b.content.match(/Test System/g)?.length || 0);
 
-if (result4a.nodeName === 'Test System 1' && (result4a.content.match(/Test System/g)?.length || 0) === 1) {
+// Count actual systems by checking if each system name appears in the content
+const systemsInCurrentNode = [system1, system2, system3].filter(s => 
+    result4a.content.includes(s.nodeName)
+).length;
+const systemsInWorkspace = [system1, system2, system3].filter(s => 
+    result4b.content.includes(s.nodeName)
+).length;
+
+console.log('Current node exports how many systems?:', systemsInCurrentNode);
+console.log('Workspace exports how many systems?:', systemsInWorkspace);
+
+if (result4a.nodeName === 'Test System 1' && systemsInCurrentNode === 1) {
     console.log('✓ Current node exports only selected node (1 system)');
 }
-if (result4b.nodeCount === 3 && (result4b.content.match(/Test System/g)?.length || 0) === 3) {
+if (result4b.nodeCount === 3 && systemsInWorkspace === 3) {
     console.log('✓ Workspace exports all root nodes (3 systems)');
 }
 

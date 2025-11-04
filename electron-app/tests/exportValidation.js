@@ -23,7 +23,7 @@ const foundMethods = [];
 const missingMethods = [];
 
 for (const method of requiredMethods) {
-    const methodRegex = new RegExp(`\\s+${method}\\s*\\(`, 'm');
+    const methodRegex = new RegExp(`\\b${method}\\s*\\(`, 'm');
     if (methodRegex.test(content)) {
         foundMethods.push(method);
         console.log(`✓ Found method: ${method}`);
