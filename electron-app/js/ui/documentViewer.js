@@ -38,6 +38,12 @@ class DocumentViewer {
         this.render();
     }
 
+    // Helper method to sanitize filenames
+    sanitizeFilename(filename) {
+        // Replace invalid filesystem characters with underscores
+        return filename.replace(/[/\\:*?"<>|]/g, '_');
+    }
+
     printContent() {
         if (!this.currentNode) {
             alert('No content to print');
@@ -118,7 +124,7 @@ class DocumentViewer {
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `${this.currentNode.nodeName}.rtf`;
+        a.download = `${this.sanitizeFilename(this.currentNode.nodeName)}.rtf`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
@@ -159,15 +165,12 @@ class DocumentViewer {
         // Create formatted JSON string
         const jsonContent = JSON.stringify(jsonData, null, 2);
         
-        // Sanitize filename to remove invalid characters
-        const sanitizedName = this.currentNode.nodeName.replace(/[/\\:*?"<>|]/g, '_');
-        
         // Create and download file
         const blob = new Blob([jsonContent], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `${sanitizedName}.json`;
+        a.download = `${this.sanitizeFilename(this.currentNode.nodeName)}.json`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
