@@ -318,7 +318,45 @@ class XenosNode extends NodeBase {
 
     static fromJSON(data) {
         const node = new XenosNode(data.worldType, data.isPrimitiveXenos, data.id);
-        Object.assign(node, data);
+        
+        // Restore base properties
+        Object.assign(node, {
+            nodeName: data.nodeName || 'Xeno Creature',
+            description: data.description || '',
+            customDescription: data.customDescription || '',
+            pageReference: data.pageReference || '',
+            isGenerated: data.isGenerated || false,
+            fontWeight: data.fontWeight || 'normal',
+            fontStyle: data.fontStyle || 'normal',
+            fontForeground: data.fontForeground || '#e74c3c'
+        });
+        
+        // Restore xenos-specific properties
+        Object.assign(node, {
+            worldType: data.worldType || 'TemperateWorld',
+            isPrimitiveXenos: data.isPrimitiveXenos || false,
+            xenosType: data.xenosType || null,
+            stats: data.stats || {},
+            wounds: data.wounds || 0,
+            movement: data.movement || '',
+            skills: data.skills || [],
+            talents: data.talents || [],
+            traits: data.traits || [],
+            weapons: data.weapons || [],
+            armour: data.armour || ''
+        });
+        
+        // Restore children (if any)
+        if (data.children) {
+            for (const childData of data.children) {
+                const child = createNode(childData.type);
+                const restoredChild = child.constructor.fromJSON ? 
+                    child.constructor.fromJSON(childData) : 
+                    NodeBase.fromJSON(childData);
+                node.addChild(restoredChild);
+            }
+        }
+        
         return node;
     }
 
