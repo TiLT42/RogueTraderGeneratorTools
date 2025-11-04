@@ -93,7 +93,10 @@ class TreeView {
 
         // Apply zone-specific classes for color coding
         if (node.type === NodeTypes.Zone && node.zone) {
-            const zoneClass = node.zone.toLowerCase().replace(/([A-Z])/g, '-$1').toLowerCase();
+            // Convert camelCase to kebab-case (e.g., InnerCauldron -> inner-cauldron)
+            const zoneClass = node.zone
+                .replace(/([a-z])([A-Z])/g, '$1-$2')
+                .toLowerCase();
             content.classList.add(`zone-${zoneClass}`);
         }
 
