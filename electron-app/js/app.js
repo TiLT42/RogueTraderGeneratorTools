@@ -40,9 +40,6 @@ class App {
         // Initialize splitter
         this.setupSplitter();
 
-        // Sync UI checkboxes with loaded settings
-        window.workspace.updateUIFromSettings();
-
         // Create initial empty workspace
         this.createDefaultWorkspace();
 

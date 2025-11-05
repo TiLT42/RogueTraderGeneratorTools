@@ -90,6 +90,9 @@ function loadSettings() {
             const parsed = JSON.parse(savedSettings);
             // Merge saved settings with defaults to handle new settings
             Object.assign(window.APP_STATE.settings, parsed);
+            // Always reset session-only settings to defaults
+            window.APP_STATE.settings.showPageNumbers = false;
+            window.APP_STATE.settings.mergeWithChildDocuments = false;
             return true;
         }
         return false;
@@ -101,7 +104,11 @@ function loadSettings() {
 
 function saveSettings() {
     try {
-        localStorage.setItem('rogueTraderSettings', JSON.stringify(window.APP_STATE.settings));
+        // Create a copy of settings excluding session-only settings
+        const settingsToSave = { ...window.APP_STATE.settings };
+        delete settingsToSave.showPageNumbers;
+        delete settingsToSave.mergeWithChildDocuments;
+        localStorage.setItem('rogueTraderSettings', JSON.stringify(settingsToSave));
     } catch (error) {
         console.error('Error saving settings:', error);
     }
