@@ -4,7 +4,7 @@ This document describes the implementation of Tabler Icons in the Rogue Trader G
 
 ## Overview
 
-All custom icons have been replaced with professional SVG icons from the [Tabler Icons](https://tabler.io/icons) library (v3.24.0). This provides consistent, modern iconography across the entire application.
+All custom icons have been replaced with professional SVG icons from the [Tabler Icons](https://tabler.io/icons) library (v3.35.0). This provides consistent, modern iconography across the entire application.
 
 ## Changes Made
 
@@ -34,7 +34,7 @@ Copyright (c) 2020-2024 Paweł Kuna
 
 ### 4. Dependencies (`package.json`)
 
-Added `@tabler/icons` v3.24.0 as a project dependency.
+Added `@tabler/icons` v3.35.0 as a project dependency.
 
 ## Icon Mapping Reference
 
