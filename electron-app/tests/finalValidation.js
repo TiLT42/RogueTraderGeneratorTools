@@ -6,7 +6,7 @@ console.log('🧪 Running final comprehensive tests...\n');
 
 // Test 1: Verify icons.js exports
 console.log('Test 1: Verifying icons.js exports...');
-const { Icons } = require('../js/ui/icons.js');
+const { Icons } = require(path.join(__dirname, '../js/ui/icons.js'));
 if (!Icons) {
   console.error('❌ Icons object not exported');
   process.exit(1);
@@ -46,7 +46,7 @@ console.log('✓ All icons are properly formatted SVG\n');
 
 // Test 4: Verify treeView.js uses SVG
 console.log('Test 4: Verifying treeView.js uses SVG...');
-const treeViewContent = fs.readFileSync('../js/ui/treeView.js', 'utf8');
+const treeViewContent = fs.readFileSync(path.join(__dirname, '../js/ui/treeView.js'), 'utf8');
 if (!treeViewContent.includes('icon.innerHTML = this.getNodeIcon')) {
   console.error('❌ treeView.js does not use innerHTML for icons');
   process.exit(1);
@@ -59,7 +59,7 @@ console.log('✓ treeView.js correctly uses SVG icons\n');
 
 // Test 5: Verify modals.js has attribution
 console.log('Test 5: Verifying About dialog attribution...');
-const modalsContent = fs.readFileSync('../js/ui/modals.js', 'utf8');
+const modalsContent = fs.readFileSync(path.join(__dirname, '../js/ui/modals.js'), 'utf8');
 if (!modalsContent.includes('Tabler Icons') || !modalsContent.includes('Paweł Kuna')) {
   console.error('❌ About dialog missing proper attribution');
   process.exit(1);
@@ -68,7 +68,7 @@ console.log('✓ About dialog has proper attribution\n');
 
 // Test 6: Verify package.json has dependency
 console.log('Test 6: Verifying package.json dependency...');
-const packageJson = JSON.parse(fs.readFileSync('../package.json', 'utf8'));
+const packageJson = JSON.parse(fs.readFileSync(path.join(__dirname, '../package.json'), 'utf8'));
 if (!packageJson.dependencies || !packageJson.dependencies['@tabler/icons']) {
   console.error('❌ @tabler/icons not in package.json dependencies');
   process.exit(1);

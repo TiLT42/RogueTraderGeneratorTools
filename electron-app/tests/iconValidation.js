@@ -1,5 +1,6 @@
 // Icon validation test
-const { Icons } = require('../js/ui/icons.js');
+const path = require('path');
+const { Icons } = require(path.join(__dirname, '../js/ui/icons.js'));
 
 console.log('Checking all icons are defined...');
 
