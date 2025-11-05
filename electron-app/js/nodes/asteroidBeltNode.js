@@ -78,8 +78,9 @@ class AsteroidBeltNode extends NodeBase {
 
     updateDescription() {
         // No duplicate header - base class will add H3
-        // Parity: Only list Base Mineral Resources (no extra flavor text in C#)
-        let desc = '<h4>Base Mineral Resources</h4>';
+        // Start with introductory paragraph to avoid gap
+        let desc = '<p>This asteroid belt contains the following mineral resources:</p>';
+        desc += '<h4>Base Mineral Resources</h4>';
         const mineralItems = this._buildMineralListItems();
         if (mineralItems.length === 0) desc += '<p>None</p>'; else {
             desc += '<ul>' + mineralItems.map(i=>`<li>${i}</li>`).join('') + '</ul>';

@@ -1119,7 +1119,8 @@ class PlanetNode extends NodeBase {
     }
 
     updateDescription() {
-        let desc = `<h3>${this.isMoon ? 'Moon' : 'Planet'} Classification</h3>`;
+        // Start with body information to avoid gap
+        let desc = '';
         const addPageRef = (p,t='') => window.APP_STATE.settings.showPageNumbers ? ` <span class="page-reference">${createPageReference(p,t)}</span>` : '';
         desc += `<p><strong>Body:</strong> ${this.body}${addPageRef(19,'Table 1-6: Body')}</p>`;
         desc += `<p><strong>Gravity:</strong> ${this.gravity}${addPageRef(20,'Table 1-7: Gravity')}</p>`;
@@ -1136,7 +1137,7 @@ class PlanetNode extends NodeBase {
         // Territories & Landmarks
         if (this.environment) {
             const territories = this.environment.territories || [];
-            desc += `<h3>Territories</h3>`;
+            desc += `<h4>Territories</h4>`;
             if (territories.length === 0) desc += '<p>None</p>'; else {
                 desc += '<ul>';
                 territories.forEach(t => {
@@ -1158,25 +1159,25 @@ class PlanetNode extends NodeBase {
                 if (lm.length === 0) return null;
                 return lm.map(x=>`<li>${x}</li>`).join('');
             }).filter(Boolean);
-            if (landmarkBlocks.length>0) desc += `<h3>Landmarks</h3><ul>${landmarkBlocks.join('')}</ul>`;
+            if (landmarkBlocks.length>0) desc += `<h4>Landmarks</h4><ul>${landmarkBlocks.join('')}</ul>`;
         }
 
         // Resources
-        desc += `<h3>Base Mineral Resources</h3>`;
+        desc += `<h4>Base Mineral Resources</h4>`;
         if (this.mineralResources.length === 0) desc += '<p>None</p>'; else {
             desc += '<ul>' + this.mineralResources.map(r=> (typeof r === 'string'? `<li>${r}</li>` : `<li>${r.type} (Abundance ${r.abundance})</li>`)).join('') + '</ul>';
         }
-        desc += `<h3>Organic Compounds</h3>`;
+        desc += `<h4>Organic Compounds</h4>`;
         if (this.organicCompounds.length === 0) desc += '<p>None</p>'; else {
             desc += '<ul>' + this.organicCompounds.map(c=> typeof c==='string'? `<li>${c}</li>` : `<li>${c.type} (Abundance ${c.abundance})</li>`).join('') + '</ul>';
         }
-        desc += `<h3>Archeotech Caches</h3>`;
+        desc += `<h4>Archeotech Caches</h4>`;
         if (this.archeotechCaches.length === 0) desc += '<p>None</p>'; else desc += '<ul>'+this.archeotechCaches.map(a=> (typeof a==='string'? `<li>${a}</li>` : `<li>${a.type} (Abundance ${a.abundance})</li>`)).join('')+'</ul>';
-        desc += `<h3>Xenos Ruins</h3>`;
+        desc += `<h4>Xenos Ruins</h4>`;
         if (this.xenosRuins.length === 0) desc += '<p>None</p>'; else desc += '<ul>'+this.xenosRuins.map(x=> (typeof x==='string'? `<li>${x}</li>` : `<li>${x.type} (Abundance ${x.abundance})</li>`)).join('')+'</ul>';
 
         // Inhabitants (simplified model retained)
-    desc += `<h3>Inhabitants</h3>`;
+    desc += `<h4>Inhabitants</h4>`;
     let speciesLine = this.inhabitants;
     if (this.isInhabitantHomeWorld && this.inhabitants !== 'None') speciesLine += ' (Home World)';
     desc += `<p><strong>Species:</strong> ${speciesLine}</p>`;

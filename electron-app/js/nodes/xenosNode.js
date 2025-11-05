@@ -142,9 +142,13 @@ class XenosNode extends NodeBase {
         } else if (this.xenosType === 'KoronusBestiary') {
             // Base profile text if available via data (no inline refs; consolidated below)
             baseProfileText = (this.xenosData && typeof this.xenosData._getBaseProfileText === 'function') ? this.xenosData._getBaseProfileText() : this.baseProfile;
+            // Always add some introductory content to avoid gap when floraType is NotFlora
             if (this.floraType !== 'NotFlora') {
                 const floraMap = {TrapPassive:'Trap, Passive', TrapActive:'Trap, Active', Combatant:'Combatant'};
                 desc += `<p><strong>Flora Type:</strong> ${floraMap[this.floraType]||this.floraType}</p>`;
+            } else {
+                // Add placeholder paragraph to avoid gap
+                desc += `<p><strong>Species Type:</strong> ${this.nodeName}</p>`;
             }
         } else if (this.xenosType === 'Primitive') {
             if (this.unusualCommunication !== 'No') {
@@ -240,7 +244,7 @@ class XenosNode extends NodeBase {
     }
 
     generateStatBlock() {
-        let statBlock = `<h3>Characteristics</h3>`;
+        let statBlock = `<h4>Characteristics</h4>`;
         statBlock += `<div class="stat-block">`;
         statBlock += `<table class="stats-table">`;
         statBlock += `<tr>`;
