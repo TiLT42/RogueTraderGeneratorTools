@@ -16,7 +16,7 @@ class DocumentViewer {
             this.container.innerHTML = `
                 <div class="document-content">
                     <h2>Welcome to Rogue Trader Generator Tools</h2>
-                    <p>Select or generate a system from the Generate menu to begin.</p>
+                    <p>Select or generate a system from the Generate toolbox to begin.</p>
                     <p>Use the tree view on the left to navigate through your generated content.</p>
                 </div>
             `;
