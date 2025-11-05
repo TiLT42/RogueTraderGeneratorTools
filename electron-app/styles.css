@@ -100,6 +100,237 @@ body {
     flex-direction: column;
 }
 
+/* Toolbar Styles */
+.toolbar {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 8px 12px;
+    background-color: var(--bg-secondary);
+    border-bottom: 1px solid var(--border-primary);
+}
+
+.toolbar-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    color: var(--text-primary);
+    cursor: pointer;
+    font-size: 13px;
+    transition: all 0.2s ease;
+}
+
+.toolbar-btn:hover:not(:disabled) {
+    background-color: var(--bg-hover);
+    border-color: var(--border-primary);
+}
+
+.toolbar-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.toolbar-btn .icon {
+    width: 18px;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.toolbar-btn .icon svg {
+    width: 100%;
+    height: 100%;
+}
+
+.toolbar-separator {
+    width: 1px;
+    height: 24px;
+    background-color: var(--border-primary);
+    margin: 0 4px;
+}
+
+.toolbar-spacer {
+    flex: 1;
+}
+
+.toolbar-label {
+    font-size: 13px;
+}
+
+/* Dropdown Styles */
+.dropdown {
+    position: relative;
+}
+
+.dropdown-toggle .chevron {
+    width: 12px;
+    height: 12px;
+    margin-left: 2px;
+}
+
+.dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    margin-top: 4px;
+    background-color: var(--bg-primary);
+    border: 1px solid var(--border-primary);
+    border-radius: 4px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    min-width: 220px;
+    z-index: 1000;
+    display: none;
+    padding: 4px 0;
+}
+
+.dropdown-menu.show {
+    display: block;
+}
+
+.dropdown-item {
+    display: block;
+    width: 100%;
+    padding: 8px 16px;
+    background: transparent;
+    border: none;
+    text-align: left;
+    color: var(--text-primary);
+    cursor: pointer;
+    font-size: 13px;
+    transition: background-color 0.2s ease;
+}
+
+.dropdown-item:hover {
+    background-color: var(--bg-hover);
+}
+
+.dropdown-section-title {
+    padding: 6px 16px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+}
+
+.dropdown-separator {
+    height: 1px;
+    background-color: var(--border-primary);
+    margin: 4px 0;
+}
+
+/* Sidebar Styles */
+.sidebar {
+    display: flex;
+    flex-direction: column;
+    background-color: var(--bg-secondary);
+    border-right: 1px solid var(--border-primary);
+}
+
+.left-sidebar {
+    width: 80px;
+}
+
+.sidebar-header {
+    padding: 12px 8px;
+    border-bottom: 1px solid var(--border-primary);
+    text-align: center;
+}
+
+.sidebar-header h3 {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+.sidebar-content {
+    flex: 1;
+    padding: 8px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.sidebar-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 12px 8px;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.sidebar-btn:hover:not(:disabled) {
+    background-color: var(--bg-hover);
+    border-color: var(--border-primary);
+}
+
+.sidebar-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.sidebar-btn .icon {
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.sidebar-btn .icon svg {
+    width: 100%;
+    height: 100%;
+}
+
+.sidebar-label {
+    font-size: 11px;
+    text-align: center;
+    line-height: 1.2;
+}
+
+.sidebar .dropdown {
+    width: 100%;
+}
+
+.sidebar .dropdown-toggle {
+    width: 100%;
+}
+
+.sidebar .dropdown-menu {
+    left: 100%;
+    top: 0;
+    margin-left: 4px;
+    margin-top: 0;
+}
+
+.sidebar .dropdown-toggle .chevron {
+    position: absolute;
+    right: 4px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 10px;
+    height: 10px;
+}
+
+/* Content Area */
+.content-area {
+    flex: 1;
+    display: flex;
+    min-height: 0;
+}
+
 /* Main layout */
 .main-container {
     flex: 1;
