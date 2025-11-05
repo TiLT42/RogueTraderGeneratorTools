@@ -29,7 +29,7 @@ class TreeView {
                     this.showContextMenu(node, e.clientX, e.clientY);
                 }
             } else {
-                // Right-click on empty space - show Generate menu
+                // Right-click on empty space - show Generate toolbox
                 this.showContextMenu(null, e.clientX, e.clientY);
             }
         });
@@ -70,7 +70,7 @@ class TreeView {
             li.style.textAlign = 'center';
             li.style.color = '#666';
             li.style.fontStyle = 'italic';
-            li.textContent = 'No content generated yet. Use the Generate menu to create a system.';
+            li.textContent = 'No content generated yet. Use the Generate toolbox to create a system.';
             ul.appendChild(li);
         }
     }
