@@ -47,10 +47,10 @@ if (setupSplitterIndex < updateUIIndex && updateUIIndex < createWorkspaceIndex) 
 const workspaceJsPath = path.join(__dirname, '..', 'js', 'workspace.js');
 const workspaceJsContent = fs.readFileSync(workspaceJsPath, 'utf8');
 const hasUpdateUIMethod = workspaceJsContent.includes('updateUIFromSettings()');
-const syncesPageRefs = workspaceJsContent.includes("getElementById('page-references').checked");
-const syncesCollate = workspaceJsContent.includes("getElementById('collate-nodes').checked");
+const syncsPageRefs = workspaceJsContent.includes("getElementById('page-references').checked");
+const syncsCollate = workspaceJsContent.includes("getElementById('collate-nodes').checked");
 
-if (hasUpdateUIMethod && syncesPageRefs && syncesCollate) {
+if (hasUpdateUIMethod && syncsPageRefs && syncsCollate) {
     console.log('✓ PASS: updateUIFromSettings() method exists and syncs both checkboxes');
 } else {
     console.log('✗ FAIL: updateUIFromSettings() method incomplete');
