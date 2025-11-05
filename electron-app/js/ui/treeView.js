@@ -62,17 +62,8 @@ class TreeView {
                 const li = this.createNodeElement(node);
                 ul.appendChild(li);
             }
-        } else {
-            // Show empty state message
-            const li = document.createElement('li');
-            li.className = 'tree-empty-state';
-            li.style.padding = '20px';
-            li.style.textAlign = 'center';
-            li.style.color = '#666';
-            li.style.fontStyle = 'italic';
-            li.textContent = 'No content generated yet. Use the Generate toolbox to create a system.';
-            ul.appendChild(li);
         }
+        // Empty tree - no message needed, just keep it empty
     }
 
     createNodeElement(node) {
