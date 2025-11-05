@@ -35,3 +35,6 @@ I've started another pass of fixes after procrastinating for a while. Thank you 
 My focus will now turn to the UI. I have two priorities here, in this order:
 1) Make the tree list look like it did in the WPF app. I will consider using a few more colors and some iconography for readability.
 2) Remove the ugly menus at the top and replace them with a more platform-agnostic icon layout.
+
+#### UPDATE 05.11.25
+The UI has now been updated to address the points listed above. The Electron app is now at a more advanced stage than the WPF app ever was, though there is still a significant risk of bugs and a few adjustments that need to be made. It's getting close to something that can be released properly. Until then, I will continue tweaking and improving it.
