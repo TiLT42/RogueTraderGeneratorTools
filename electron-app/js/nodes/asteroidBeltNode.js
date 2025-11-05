@@ -6,6 +6,7 @@ class AsteroidBeltNode extends NodeBase {
         this.nodeName = 'Asteroid Belt';
         this.fontWeight = 'bold';
         this.fontForeground = '#95a5a6';
+        this.headerLevel = 3; // H3: Feature node
         
         // Properties
         this.systemCreationRules = null; // provided by System / Zone when created
@@ -76,16 +77,17 @@ class AsteroidBeltNode extends NodeBase {
     }
 
     updateDescription() {
-        let desc = `<h3>Asteroid Belt</h3>`;
-        // Parity: Only list Base Mineral Resources (no extra flavor text in C#)
-        desc += `<h3>Base Mineral Resources</h3>`;
+        // No duplicate header - base class will add H3
+        // Start with introductory paragraph to avoid gap
+        let desc = '<p>This asteroid belt contains the following mineral resources:</p>';
+        desc += '<h4>Base Mineral Resources</h4>';
         const mineralItems = this._buildMineralListItems();
         if (mineralItems.length === 0) desc += '<p>None</p>'; else {
             desc += '<ul>' + mineralItems.map(i=>`<li>${i}</li>`).join('') + '</ul>';
         }
         // Inhabitants shown only if externally assigned (Starfarers etc.)
         if (this.inhabitants && this.inhabitants !== 'None') {
-            desc += `<h3>Inhabitants</h3>`;
+            desc += `<h4>Inhabitants</h4>`;
             desc += `<p><strong>Species:</strong> ${this.inhabitants}</p>`;
             if (this.inhabitantDevelopment) desc += `<p><strong>Development:</strong> ${this.inhabitantDevelopment}</p>`;
         }

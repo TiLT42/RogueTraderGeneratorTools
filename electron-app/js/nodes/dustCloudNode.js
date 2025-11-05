@@ -8,6 +8,7 @@ class DustCloudNode extends NodeBase {
         super(NodeTypes.DustCloud, id);
         this.nodeName = 'Dust Cloud';
         this.fontWeight = 'bold';
+        this.headerLevel = 3; // H3: Feature/hazard node
     }
 
     generate() {
@@ -18,13 +19,14 @@ class DustCloudNode extends NodeBase {
     }
 
     updateDescription() {
+        // No duplicate header - base class will add H3
         const showPage = window.APP_STATE?.settings?.showPageNumbers;
         let ref = '';
         if (showPage) {
             // Use core rulebook page 227; ruleName left blank (parity just shows the sentence).
             ref = `<span class="page-reference">${createPageReference(227, '', 'CoreRuleBook')}</span>`;
         }
-        this.description = `<h3>Dust Cloud</h3><p>Dust Clouds follow the rules for Nebulae on page 227 of the Rogue Trader Core Rulebook.${ref? ' ': ''}${ref}</p>`;
+        this.description = `<p>Dust Clouds follow the rules for Nebulae on page 227 of the Rogue Trader Core Rulebook.${ref? ' ': ''}${ref}</p>`;
     }
 
     static fromJSON(data) {

@@ -8,6 +8,7 @@ class SolarFlaresNode extends NodeBase {
         super(NodeTypes.SolarFlares, id);
         this.nodeName = 'Solar Flares';
         this.fontWeight = 'bold';
+        this.headerLevel = 3; // H3: Feature/hazard node
         this.numSolarFlaresInThisZone = 0; // parity field
         this.pageReference = createPageReference(16, 'Solar Flares');
     }
@@ -25,9 +26,10 @@ class SolarFlaresNode extends NodeBase {
     }
 
     updateDescription() {
+        // No duplicate header - base class will add H3
         const showPages = window.APP_STATE?.settings?.showPageNumbers;
         const ref = showPages ? ` <span class="page-reference">${createPageReference(16,'Solar Flares')}</span>` : '';
-        let desc = `<h3>Solar Flares</h3>`;
+        let desc = '';
         if (this.numSolarFlaresInThisZone > 1) {
             const bonus = this.numSolarFlaresInThisZone - 1;
             desc += `<p>There are Solar Flares in this zone that are unusually strong. There are a total of ${this.numSolarFlaresInThisZone} instances of Solar Flares present, giving a +${bonus} bonus to the 1d10 roll for determining if there is a Solar Flare that day.${ref}</p>`;

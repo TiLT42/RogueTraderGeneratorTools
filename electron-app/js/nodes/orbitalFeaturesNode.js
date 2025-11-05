@@ -7,6 +7,7 @@ class OrbitalFeaturesNode extends NodeBase {
         super(NodeTypes.OrbitalFeatures, id);
         this.nodeName = 'Orbital Features';
         this.fontStyle = 'italic';
+        this.headerLevel = 1; // H1: Organizational node for moons/asteroids
     }
 
     generate() {
@@ -16,8 +17,9 @@ class OrbitalFeaturesNode extends NodeBase {
     }
 
     updateDescription() {
-        // Minimal header only (WPF flow doc suppressed header, but we retain an HTML header for clarity.)
-        this.description = '<h3>Orbital Features</h3>';
+        // No duplicate header - base class will add H1
+        // Minimal description or leave empty for just the header
+        this.description = '';
     }
 
     // Simplified context menu: only allow description edit (other add operations occur through planet generation parity)

@@ -5,6 +5,7 @@ class ZoneNode extends NodeBase {
         super(NodeTypes.Zone, id);
         this.nodeName = 'Zone';
         this.fontStyle = 'italic';
+        this.headerLevel = 1; // H1: Organizational node encompassing planets/features
         this.zone = 'PrimaryBiosphere'; // InnerCauldron, PrimaryBiosphere, OuterReaches
         this.zoneSize = 'Normal'; // Weak, Normal, Dominant
     }
@@ -141,9 +142,10 @@ class ZoneNode extends NodeBase {
     }
 
     updateDescription() {
-    let desc = `<h3>${this.nodeName}</h3>`;
-    const addPageRef = (pageNum, tableName='Table 1-2: Star Generation') => (window.APP_STATE?.settings?.showPageNumbers ? ` <span class=\"page-reference\">${createPageReference(pageNum, tableName)}</span>` : '');
-    desc += `<p><strong>System Influence:</strong> ${this.getZoneSizeString()}${addPageRef(13)}</p>`;
+        // No duplicate header - base class will add H1 with zone name
+        let desc = '';
+        const addPageRef = (pageNum, tableName='Table 1-2: Star Generation') => (window.APP_STATE?.settings?.showPageNumbers ? ` <span class=\"page-reference\">${createPageReference(pageNum, tableName)}</span>` : '');
+        desc += `<p><strong>System Influence:</strong> ${this.getZoneSizeString()}${addPageRef(13)}</p>`;
         
         if (this.children.length === 0) {
             desc += `<p>This system's ${this.nodeName} is empty and barren. Maybe there was something here once, but there's nothing left now.</p>`;

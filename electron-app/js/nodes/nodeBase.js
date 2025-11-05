@@ -16,6 +16,8 @@ class NodeBase {
         // Generic inhabitant fields used by many concrete nodes (not all nodes set these)
         this.inhabitants = this.inhabitants || 'None';
         this.inhabitantDevelopment = this.inhabitantDevelopment || '';
+        // Header level for document hierarchy (1-4, where 1 is highest/organizational)
+        this.headerLevel = 2; // Default: H2 for most content nodes
     }
 
     // Base reset hook: subclasses override to clear generation-specific state before regenerate
@@ -93,14 +95,16 @@ class NodeBase {
             this.updateDescription();
         }
         
-        let content = `<h2>${this.nodeName}</h2>`;
+        // Use the node's header level for proper hierarchy
+        const headerTag = `h${this.headerLevel}`;
+        let content = `<${headerTag}>${this.nodeName}</${headerTag}>`;
         
         if (this.description) {
             content += `<div class="description-section">${this.description}</div>`;
         }
         
         if (this.customDescription) {
-            content += `<div class="description-section"><h3>Notes</h3>${this.customDescription}</div>`;
+            content += `<div class="description-section"><h4>Notes</h4>${this.customDescription}</div>`;
         }
         
         if (this.pageReference && window.APP_STATE.settings.showPageNumbers) {

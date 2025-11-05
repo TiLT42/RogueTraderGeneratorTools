@@ -6,6 +6,7 @@ class AsteroidNode extends NodeBase {
         this.nodeName = 'Large Asteroid';
         this.fontWeight = 'bold';
         this.fontForeground = '#95a5a6';
+        this.headerLevel = 3; // H3: Feature node (smaller than planets/moons)
     }
 
     generate() {
@@ -15,10 +16,10 @@ class AsteroidNode extends NodeBase {
     }
 
     updateDescription() {
-        let desc = `<h3>Large Asteroid</h3>`;
-        desc += `<p><strong>Type:</strong> Large Asteroid</p>`;
+        // No duplicate header - base class will add H3
+        let desc = '<p><strong>Type:</strong> Large Asteroid</p>';
         if (this.inhabitants && this.inhabitants !== 'None') {
-            desc += `<h3>Inhabitants</h3>`;
+            desc += `<h4>Inhabitants</h4>`;
             desc += `<p><strong>Species:</strong> ${this.inhabitants}</p>`;
             if (this.inhabitantDevelopment) desc += `<p><strong>Development:</strong> ${this.inhabitantDevelopment}</p>`;
         }

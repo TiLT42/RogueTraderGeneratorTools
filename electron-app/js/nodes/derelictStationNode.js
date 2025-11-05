@@ -5,6 +5,7 @@ class DerelictStationNode extends NodeBase {
         super(NodeTypes.DerelictStation, id);
         this.nodeName = 'Derelict Station';
         this.fontWeight = 'bold';
+        this.headerLevel = 3; // H3: Feature node
         this.stationOrigin = '';
         this.hullIntegrity = 0; // 4d10 total (parity)
         this.armor = 10; // Fixed armour value
@@ -148,7 +149,8 @@ class DerelictStationNode extends NodeBase {
     }
 
     updateDescription() {
-        let desc = `<h3>Derelict Station</h3>`;
+        // No duplicate header - base class will add H3
+        let desc = '';
         const showPages = window.APP_STATE?.settings?.showPageNumbers;
         const originRef = showPages ? ` <span class="page-reference">${createPageReference(15, 'Table 1-4: Derelict Station Origins')}</span>` : '';
         const statRef = showPages ? ` <span class="page-reference">${createPageReference(15, 'Derelict Station')}</span>` : '';

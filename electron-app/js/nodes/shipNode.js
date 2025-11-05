@@ -39,9 +39,10 @@ class ShipNode extends NodeBase {
         const s = this.ship;
         const classLabel = window.StarshipToolsData.getShipClassLabel(s.shipClass);
 
-        let desc = `<h3>${s.shipName}</h3>`;
-        desc += `<p><strong>Species:</strong> ${s.race}</p>`;
+        // Start with species and class to avoid gap
+        let desc = `<p><strong>Species:</strong> ${s.race}</p>`;
         desc += `<p><strong>Ship Class:</strong> ${classLabel}</p>`;
+        desc += `<p><strong>Ship Name:</strong> ${s.shipName}</p>`;
 
         // Human pirate builds (except Wolfpack Raider) show power/space and components
         if (s.race === Species.Human && s.shipName !== 'Wolfpack Raider') {
@@ -56,7 +57,7 @@ class ShipNode extends NodeBase {
                     desc += `<p><strong>${title}:</strong> None</p>`;
                     return;
                 }
-                desc += `<h3>${title}</h3><ul>`;
+                desc += `<h4>${title}</h4><ul>`;
                 for (const c of list) {
                     const name = showSlot && c.slot ? `${c.slot}: ${c.componentName}` : c.componentName;
                     let ref = '';
@@ -74,7 +75,7 @@ class ShipNode extends NodeBase {
         } else if (s.race === Species.Ork) {
             // Ork upgrades list
             if (s.OrkUpgrades && s.OrkUpgrades.length > 0) {
-                desc += `<h3>Orky Ship Modifications</h3><ul>`;
+                desc += `<h4>Orky Ship Modifications</h4><ul>`;
                 for (const u of s.OrkUpgrades) desc += `<li>${u}</li>`;
                 desc += `</ul>`;
             } else {

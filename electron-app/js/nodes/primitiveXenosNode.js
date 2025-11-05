@@ -5,6 +5,7 @@ class PrimitiveXenosNode extends NodeBase {
         this.nodeName = 'Primitive Xenos';
         this.fontStyle = 'italic';
         this.fontForeground = '#e74c3c';
+        this.headerLevel = 1; // H1: Organizational node
         this.worldType = 'TemperateWorld';
         this.systemCreationRules = null; // parity: allow propagation for future dominant species hooks
     }
@@ -12,17 +13,18 @@ class PrimitiveXenosNode extends NodeBase {
     generate() {
         super.generate();
         // Parity: C# only adds a header (no count text). Keep minimal for consistency.
-        this.description = `<h3>Primitive Xenos</h3>`;
+        this.description = '';
     }
 
     // Override to avoid footer page reference and maintain consistency
     getNodeContent(includeChildren = false) {
-        let content = `<h2>${this.nodeName}</h2>`;
+        const headerTag = `h${this.headerLevel}`;
+        let content = `<${headerTag}>${this.nodeName}</${headerTag}>`;
         if (this.description) {
             content += `<div class="description-section">${this.description}</div>`;
         }
         if (this.customDescription) {
-            content += `<div class="description-section"><h3>Notes</h3>${this.customDescription}</div>`;
+            content += `<div class="description-section"><h4>Notes</h4>${this.customDescription}</div>`;
         }
         if (includeChildren) {
             for (const child of this.children) {

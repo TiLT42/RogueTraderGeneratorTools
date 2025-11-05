@@ -6,6 +6,7 @@ class GravityRiptideNode extends NodeBase {
         super(NodeTypes.GravityRiptide, id);
         this.nodeName = 'Gravity Riptide';
         this.fontWeight = 'bold';
+        this.headerLevel = 3; // H3: Feature/hazard node
         this.pageReference = createPageReference(15, 'Gravity Riptide');
     }
 
@@ -16,8 +17,9 @@ class GravityRiptideNode extends NodeBase {
     }
 
     updateDescription() {
+        // No duplicate header - base class will add H3
         // Parity with C# (static rules reference line)
-        this.description = `<h3>Gravity Riptide</h3><p>Gravity Riptides follow the rules for Gravity Tides on page 227 of the Rogue Trader Core Rulebook.</p>`;
+        this.description = `<p>Gravity Riptides follow the rules for Gravity Tides on page 227 of the Rogue Trader Core Rulebook.</p>`;
     }
 
     static fromJSON(data) {
