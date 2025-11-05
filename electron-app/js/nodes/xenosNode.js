@@ -406,7 +406,7 @@ class XenosNode extends NodeBase {
     }
 
     toExportJSON() {
-        const data = super.toExportJSON();
+        const data = this._getBaseExportData();
         
         // Add xenos stats in a user-friendly format
         if (this.stats && Object.keys(this.stats).length > 0) {
@@ -419,6 +419,9 @@ class XenosNode extends NodeBase {
         if (this.traits && this.traits.length > 0) data.traits = this.traits;
         if (this.weapons && this.weapons.length > 0) data.weapons = this.weapons;
         if (this.armour) data.armour = this.armour;
+        
+        // Add children at the end for better readability
+        this._addChildrenToExport(data);
         
         return data;
     }

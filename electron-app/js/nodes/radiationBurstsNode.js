@@ -39,6 +39,20 @@ class RadiationBurstsNode extends NodeBase {
         };
     }
 
+    toExportJSON() {
+        const data = this._getBaseExportData();
+        
+        // Include the count for user reference
+        if (this.numRadiationBurstsInThisZone > 0) {
+            data.numRadiationBurstsInThisZone = this.numRadiationBurstsInThisZone;
+        }
+        
+        // Add children at the end for better readability
+        this._addChildrenToExport(data);
+        
+        return data;
+    }
+
     static fromJSON(data) {
         const node = new RadiationBurstsNode(data.id);
         Object.assign(node, data);

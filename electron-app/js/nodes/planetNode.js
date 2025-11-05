@@ -1251,7 +1251,7 @@ class PlanetNode extends NodeBase {
     }
 
     toExportJSON() {
-        const data = super.toExportJSON();
+        const data = this._getBaseExportData();
         
         // Add planet characteristics
         if (this.isMoon) data.isMoon = true;
@@ -1313,6 +1313,9 @@ class PlanetNode extends NodeBase {
         // Add special flags
         if (this.maidenWorld) data.maidenWorld = true;
         if (this.warpStorm) data.warpStorm = true;
+        
+        // Add children at the end for better readability
+        this._addChildrenToExport(data);
         
         return data;
     }

@@ -969,7 +969,7 @@ class SystemNode extends NodeBase {
     }
 
     toExportJSON() {
-        const data = super.toExportJSON();
+        const data = this._getBaseExportData();
         
         // Add system-specific data
         if (this.star) {
@@ -978,6 +978,60 @@ class SystemNode extends NodeBase {
         if (this.systemFeatures && this.systemFeatures.length > 0) {
             data.systemFeatures = this.systemFeatures;
         }
+        
+        // Add system creation rules if present
+        if (this.systemCreationRules && Object.keys(this.systemCreationRules).length > 0) {
+            data.systemCreationRules = this.systemCreationRules;
+        }
+        
+        // Add system feature effects (these help users understand what rules were triggered)
+        const featureEffects = {};
+        
+        // Gravity Tides effects
+        if (this.gravityTidesGravityWellsAroundPlanets) {
+            featureEffects.gravityTidesGravityWellsAroundPlanets = true;
+        }
+        if (this.gravityTidesTravelTimeBetweenPlanetsHalves) {
+            featureEffects.gravityTidesTravelTimeBetweenPlanetsHalves = true;
+        }
+        
+        // Ill-Omened effects
+        if (this.illOmenedFickleFatePoints) {
+            featureEffects.illOmenedFickleFatePoints = true;
+        }
+        if (this.illOmenedWillPowerPenalty) {
+            featureEffects.illOmenedWillPowerPenalty = true;
+        }
+        if (this.illOmenedDoubledInsanity) {
+            featureEffects.illOmenedDoubledInsanity = true;
+        }
+        if (this.illOmenedFearFromPsychicExploration) {
+            featureEffects.illOmenedFearFromPsychicExploration = true;
+        }
+        
+        // Warp Stasis effects
+        if (this.warpStasisFocusPowerPenalties) {
+            featureEffects.warpStasisFocusPowerPenalties = true;
+        }
+        if (this.warpStasisNoPush) {
+            featureEffects.warpStasisNoPush = true;
+        }
+        if (this.warpStasisReducedPsychicPhenomena) {
+            featureEffects.warpStasisReducedPsychicPhenomena = true;
+        }
+        
+        // Warp Turbulence effect
+        if (this.numPlanetsInWarpStorms > 0) {
+            featureEffects.numPlanetsInWarpStorms = this.numPlanetsInWarpStorms;
+        }
+        
+        // Only add featureEffects if there are any
+        if (Object.keys(featureEffects).length > 0) {
+            data.featureEffects = featureEffects;
+        }
+        
+        // Add children at the end for better readability
+        this._addChildrenToExport(data);
         
         return data;
     }

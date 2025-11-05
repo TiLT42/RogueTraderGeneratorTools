@@ -118,7 +118,7 @@ class ShipNode extends NodeBase {
     }
 
     toExportJSON() {
-        const data = super.toExportJSON();
+        const data = this._getBaseExportData();
         
         // Add ship data in a user-friendly format
         if (this.ship) {
@@ -158,6 +158,9 @@ class ShipNode extends NodeBase {
                 }
             }
         }
+        
+        // Add children at the end for better readability
+        this._addChildrenToExport(data);
         
         return data;
     }

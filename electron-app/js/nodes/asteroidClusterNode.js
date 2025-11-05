@@ -98,7 +98,7 @@ class AsteroidClusterNode extends NodeBase {
     }
 
     toExportJSON() {
-        const data = super.toExportJSON();
+        const data = this._getBaseExportData();
         
         // Add mineral resources in a user-friendly format
         const minerals = this._buildMineralListItems();
@@ -113,6 +113,9 @@ class AsteroidClusterNode extends NodeBase {
                 data.inhabitantDevelopment = this.inhabitantDevelopment;
             }
         }
+        
+        // Add children at the end for better readability
+        this._addChildrenToExport(data);
         
         return data;
     }

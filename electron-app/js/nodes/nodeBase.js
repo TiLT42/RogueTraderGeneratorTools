@@ -129,6 +129,19 @@ class NodeBase {
     // Export-friendly JSON without internal formatting fields
     // This is used for user-facing exports (Export -> JSON menu)
     toExportJSON() {
+        const data = this._getBaseExportData();
+        
+        // Add children at the end for readability
+        if (this.children && this.children.length > 0) {
+            data.children = this.children.map(child => child.toExportJSON());
+        }
+        
+        return data;
+    }
+    
+    // Protected method to get base export data without children
+    // Subclasses should call this, add their fields, then add children
+    _getBaseExportData() {
         const data = {
             type: this.type,
             name: this.nodeName,
@@ -140,11 +153,15 @@ class NodeBase {
             data.customNotes = this.customDescription;
         }
         
-        // Include children recursively
+        return data;
+    }
+    
+    // Helper method for subclasses to add children at the end
+    // This ensures children appear last in the JSON output for better readability
+    _addChildrenToExport(data) {
         if (this.children && this.children.length > 0) {
             data.children = this.children.map(child => child.toExportJSON());
         }
-        
         return data;
     }
 

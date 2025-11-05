@@ -367,7 +367,7 @@ class TreasureNode extends NodeBase {
     }
 
     toExportJSON() {
-        const data = super.toExportJSON();
+        const data = this._getBaseExportData();
         
         // Add treasure-specific data in a user-friendly format
         if (this._origin && this._origin !== TreasureOrigin.Undefined) {
@@ -397,6 +397,9 @@ class TreasureNode extends NodeBase {
         if (this._quirk2) {
             data.quirk2 = this._quirk2.content || this._quirk2;
         }
+        
+        // Add children at the end for better readability
+        this._addChildrenToExport(data);
         
         return data;
     }

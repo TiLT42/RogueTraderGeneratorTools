@@ -103,6 +103,54 @@ class AsteroidBeltNode extends NodeBase {
         return json;
     }
 
+    toExportJSON() {
+        const data = this._getBaseExportData();
+        
+        // Export resource data in structured format
+        const resources = {};
+        if (this.resourceIndustrialMetal > 0) {
+            resources.industrialMetals = {
+                abundance: this.resourceIndustrialMetal,
+                category: this._getResourceAbundanceText(this.resourceIndustrialMetal)
+            };
+        }
+        if (this.resourceOrnamental > 0) {
+            resources.ornamentals = {
+                abundance: this.resourceOrnamental,
+                category: this._getResourceAbundanceText(this.resourceOrnamental)
+            };
+        }
+        if (this.resourceRadioactive > 0) {
+            resources.radioactives = {
+                abundance: this.resourceRadioactive,
+                category: this._getResourceAbundanceText(this.resourceRadioactive)
+            };
+        }
+        if (this.resourceExoticMaterial > 0) {
+            resources.exoticMaterials = {
+                abundance: this.resourceExoticMaterial,
+                category: this._getResourceAbundanceText(this.resourceExoticMaterial)
+            };
+        }
+        
+        if (Object.keys(resources).length > 0) {
+            data.mineralResources = resources;
+        }
+        
+        // Add inhabitants if present
+        if (this.inhabitants && this.inhabitants !== 'None') {
+            data.inhabitants = this.inhabitants;
+            if (this.inhabitantDevelopment) {
+                data.inhabitantDevelopment = this.inhabitantDevelopment;
+            }
+        }
+        
+        // Add children at the end for better readability
+        this._addChildrenToExport(data);
+        
+        return data;
+    }
+
     static fromJSON(data) {
         const node = new AsteroidBeltNode(data.id);
         
