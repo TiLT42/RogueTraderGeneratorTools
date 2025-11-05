@@ -37,6 +37,8 @@
     
     --spinner-bg: #f3f3f3;
     --spinner-accent: #3498db;
+    
+    --shadow-color: rgba(0, 0, 0, 0.15);
 }
 
 /* Dark mode colors */
@@ -77,6 +79,8 @@ body.dark-mode {
     
     --spinner-bg: #3a3a3f;
     --spinner-accent: #0e639c;
+    
+    --shadow-color: rgba(0, 0, 0, 0.3);
 }
 
 /* Reset and base styles */
@@ -181,7 +185,7 @@ body {
     background-color: var(--bg-primary);
     border: 1px solid var(--border-primary);
     border-radius: 4px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 4px 12px var(--shadow-color);
     min-width: 220px;
     z-index: 1000;
     display: none;

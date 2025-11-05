@@ -1,7 +1,17 @@
 // Toolbar and sidebar UI management
 
+/**
+ * Toolbar class manages the modern UI toolbar and sidebar components.
+ * Replaces the traditional native menu system with a more modern,
+ * icon-based interface featuring a top toolbar for file operations
+ * and a left sidebar for generation tools.
+ * 
+ * Note: This class is instantiated once during application initialization
+ * and remains active for the lifetime of the application.
+ */
 class Toolbar {
     constructor() {
+        this.handleDocumentClick = this.handleDocumentClick.bind(this);
         this.setupToolbar();
         this.setupSidebar();
         this.setupDropdowns();
@@ -111,11 +121,18 @@ class Toolbar {
         });
 
         // Close dropdowns when clicking outside
-        document.addEventListener('click', (e) => {
-            if (!e.target.closest('.dropdown')) {
-                this.closeAllDropdowns();
-            }
-        });
+        document.addEventListener('click', this.handleDocumentClick);
+    }
+
+    handleDocumentClick(e) {
+        if (!e.target.closest('.dropdown')) {
+            this.closeAllDropdowns();
+        }
+    }
+
+    cleanup() {
+        // Remove event listeners to prevent memory leaks
+        document.removeEventListener('click', this.handleDocumentClick);
     }
 
     setupDropdown(button, menu) {
@@ -184,8 +201,9 @@ class Toolbar {
 
         // New Xenos requires at least one xenos generator source
         if (xenosBtn) {
-            xenosBtn.disabled = !(settings.xenosGeneratorSources.StarsOfInequity || 
-                                   settings.xenosGeneratorSources.TheKoronusBestiary);
+            const hasXenosSource = settings.xenosGeneratorSources.StarsOfInequity || 
+                                   settings.xenosGeneratorSources.TheKoronusBestiary;
+            xenosBtn.disabled = !hasXenosSource;
         }
     }
 }
