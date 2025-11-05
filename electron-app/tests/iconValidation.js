@@ -9,7 +9,7 @@ const requiredIcons = [
   'chevronDown', 'chevronRight',
   'treeStars', 'treeCircleDashed', 'treePlanet', 'treeCircleDot', 'treeCircles',
   'treeBuilding', 'treeCloud', 'treeTornado', 'treeAtom', 'treeSun', 'treeSkull',
-  'treeMoon', 'treeCircle', 'treeAlien', 'treeDna', 'treeShip', 'treeDiamond', 
+  'treeMoon', 'treeCircle', 'treeAlien', 'treeDna', 'treeShip', 'treeRocket', 'treeDiamond', 
   'treeFlag', 'treeFile'
 ];
 

@@ -138,25 +138,23 @@ class TreeView {
 
     getNodeIcon(nodeType) {
         const iconMap = {
-            [NodeTypes.System]: Icons.treeStars,
+            [NodeTypes.System]: Icons.treeSun,
             [NodeTypes.Zone]: Icons.treeCircleDashed,
-            [NodeTypes.Planet]: Icons.treePlanet,
-            [NodeTypes.GasGiant]: Icons.treeCircleDot,
+            [NodeTypes.Planet]: Icons.treeCircle,
+            [NodeTypes.GasGiant]: Icons.treePlanet,
             [NodeTypes.AsteroidBelt]: Icons.treeCircles,
             [NodeTypes.AsteroidCluster]: Icons.treeCircles,
             [NodeTypes.DerelictStation]: Icons.treeBuilding,
             [NodeTypes.DustCloud]: Icons.treeCloud,
             [NodeTypes.GravityRiptide]: Icons.treeTornado,
             [NodeTypes.RadiationBursts]: Icons.treeAtom,
-            [NodeTypes.SolarFlares]: Icons.treeSun,
+            [NodeTypes.SolarFlares]: Icons.treeStars,
             [NodeTypes.StarshipGraveyard]: Icons.treeSkull,
-            [NodeTypes.OrbitalFeatures]: Icons.treeCircle,
             [NodeTypes.LesserMoon]: Icons.treeMoon,
             [NodeTypes.Asteroid]: Icons.treeCircle,
             [NodeTypes.Xenos]: Icons.treeAlien,
             [NodeTypes.PrimitiveXenos]: Icons.treeDna,
-            [NodeTypes.NativeSpecies]: Icons.treeDna,
-            [NodeTypes.Ship]: Icons.treeShip,
+            [NodeTypes.Ship]: Icons.treeRocket,
             [NodeTypes.Treasure]: Icons.treeDiamond,
             [NodeTypes.PirateShips]: Icons.treeFlag
         };
