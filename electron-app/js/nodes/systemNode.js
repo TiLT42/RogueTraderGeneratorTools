@@ -6,6 +6,7 @@ class SystemNode extends NodeBase {
         // Name will be generated (retain newer naming style)
         this.nodeName = 'New System';
         this.fontWeight = 'bold';
+        this.headerLevel = 1; // H1: Top-level organizational node
         // Indicates whether planets in this system should receive individually evocative names
         // (set during generateSystemName based on naming pattern chosen)
         this.generateUniquePlanetNames = false;

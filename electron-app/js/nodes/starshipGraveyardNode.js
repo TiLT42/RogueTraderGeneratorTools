@@ -12,6 +12,7 @@ class StarshipGraveyardNode extends NodeBase {
         this.nodeName = 'Starship Graveyard';
         this.fontWeight = 'bold';
         this.fontForeground = '#e74c3c';
+        this.headerLevel = 3; // H3: Feature node
         this.fleetComposition = '';
         this.hulks = []; // { race, integrity, shipName, pageNumber, bookSource }
         this.systemCreationRules = null; // injected via ZoneNode like other feature nodes
@@ -301,8 +302,9 @@ class StarshipGraveyardNode extends NodeBase {
 
     // ----- Description / Serialization -----
     updateDescription() {
+        // No duplicate header - base class will add H3
         const showPages = window.APP_STATE?.settings?.showPageNumbers;
-        let desc = '<h3>Starship Graveyard</h3>';
+        let desc = '';
         const compRef = showPages ? ` <span class="page-reference">${createPageReference(17, 'Table 1-5: Starship Graveyard Origins')}</span>` : '';
         desc += `<p><strong>Fleet Composition:</strong> ${this.fleetComposition || 'Unknown'}${compRef}</p>`;
         if (this.hulks.length>0) {

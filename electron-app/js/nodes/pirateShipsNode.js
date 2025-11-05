@@ -5,6 +5,7 @@ class PirateShipsNode extends NodeBase {
         this.nodeName = 'Pirate Den';
         this.fontStyle = 'italic';
         this.fontForeground = '#e74c3c';
+        this.headerLevel = 3; // H3: Feature node
         this.containsWayfarerStation = false; // parity: _pirateDenContainsWayfarerStation
         this.pirateSpecies = Species.None;    // parity: _pirateSpecies (kept internal; not surfaced in description)
         this.numShips = 0;                    // cached count for description only
@@ -57,10 +58,11 @@ class PirateShipsNode extends NodeBase {
     }
 
     updateDescription() {
+        // No duplicate header - base class will add H3
         // NOTE (Parity): Wayfarer Station line should include page 210 (Core Rulebook) when page refs enabled.
         const showPages = window.APP_STATE?.settings?.showPageNumbers;
         const wayfarerRef = showPages ? ` <span class="page-reference">${createPageReference(210,'Wayfarer Station')}</span>` : '';
-        let desc = `<h3>Pirate Den</h3>`;
+        let desc = '';
         if (this.containsWayfarerStation) {
             desc += `<p>The pirates in this system are based around a space station (such as a Wayfarer Station).${wayfarerRef}</p>`;
         }
