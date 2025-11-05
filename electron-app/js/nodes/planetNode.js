@@ -1250,6 +1250,73 @@ class PlanetNode extends NodeBase {
         return json;
     }
 
+    toExportJSON() {
+        const data = super.toExportJSON();
+        
+        // Add planet characteristics
+        if (this.isMoon) data.isMoon = true;
+        if (this.body) data.body = this.body;
+        if (this.gravity) data.gravity = this.gravity;
+        if (this.atmosphericPresence) data.atmosphere = this.atmosphericPresence;
+        if (this.atmosphericComposition) data.atmosphericComposition = this.atmosphericComposition;
+        if (this.climate) data.climate = this.climate;
+        if (this.habitability && this.habitability !== 'Inhospitable') {
+            data.habitability = this.habitability;
+        }
+        
+        // Add terrain
+        if (this.numContinents > 0) data.continents = this.numContinents;
+        if (this.numIslands > 0) data.islands = this.numIslands;
+        
+        // Add environment details if available
+        if (this.environment) {
+            data.terrain = this.environment.terrain || [];
+            if (this.environment.landmarks && this.environment.landmarks.length > 0) {
+                data.landmarks = this.environment.landmarks;
+            }
+        }
+        
+        // Add resources in a user-friendly format
+        if (this.mineralResources && this.mineralResources.length > 0) {
+            data.mineralResources = this.mineralResources.map(r => ({
+                type: r.type,
+                abundance: r.abundance
+            }));
+        }
+        if (this.organicCompounds && this.organicCompounds.length > 0) {
+            data.organicCompounds = this.organicCompounds.map(o => ({
+                type: o.type,
+                abundance: o.abundance
+            }));
+        }
+        if (this.archeotechCaches && this.archeotechCaches.length > 0) {
+            data.archeotechCaches = this.archeotechCaches.map(a => ({
+                type: a.type,
+                abundance: a.abundance
+            }));
+        }
+        if (this.xenosRuins && this.xenosRuins.length > 0) {
+            data.xenosRuins = this.xenosRuins.map(x => ({
+                type: x.type,
+                abundance: x.abundance
+            }));
+        }
+        
+        // Add inhabitants
+        if (this.inhabitants && this.inhabitants !== 'None') {
+            data.inhabitants = this.inhabitants;
+            if (this.inhabitantDevelopment) data.inhabitantDevelopment = this.inhabitantDevelopment;
+            if (this.techLevel) data.techLevel = this.techLevel;
+            if (this.population) data.population = this.population;
+        }
+        
+        // Add special flags
+        if (this.maidenWorld) data.maidenWorld = true;
+        if (this.warpStorm) data.warpStorm = true;
+        
+        return data;
+    }
+
     static fromJSON(data) {
         const node = new PlanetNode(data.id);
         

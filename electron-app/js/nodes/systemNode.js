@@ -968,6 +968,20 @@ class SystemNode extends NodeBase {
         return json;
     }
 
+    toExportJSON() {
+        const data = super.toExportJSON();
+        
+        // Add system-specific data
+        if (this.star) {
+            data.star = this.star;
+        }
+        if (this.systemFeatures && this.systemFeatures.length > 0) {
+            data.systemFeatures = this.systemFeatures;
+        }
+        
+        return data;
+    }
+
     static fromJSON(data) {
         const node = new SystemNode(data.id);
         

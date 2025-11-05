@@ -126,6 +126,28 @@ class NodeBase {
         };
     }
 
+    // Export-friendly JSON without internal formatting fields
+    // This is used for user-facing exports (Export -> JSON menu)
+    toExportJSON() {
+        const data = {
+            type: this.type,
+            name: this.nodeName,
+            description: this.description
+        };
+        
+        // Rename customDescription to customNotes for better clarity
+        if (this.customDescription) {
+            data.customNotes = this.customDescription;
+        }
+        
+        // Include children recursively
+        if (this.children && this.children.length > 0) {
+            data.children = this.children.map(child => child.toExportJSON());
+        }
+        
+        return data;
+    }
+
     // Parity helper for Starfarers feature (mirrors C# SetInhabitantDevelopmentLevelForStarfarers)
     // level: 'Voidfarers' | 'Colony' | 'Orbital Habitation'
     setInhabitantDevelopmentLevelForStarfarers(level) {

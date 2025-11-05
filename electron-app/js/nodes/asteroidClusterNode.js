@@ -84,6 +84,39 @@ class AsteroidClusterNode extends NodeBase {
         this.description = desc;
     }
 
+    toJSON() {
+        const json = super.toJSON();
+        json.systemCreationRules = this.systemCreationRules;
+        json.mineralResources = this.mineralResources;
+        json.resourceIndustrialMetal = this.resourceIndustrialMetal;
+        json.resourceOrnamental = this.resourceOrnamental;
+        json.resourceRadioactive = this.resourceRadioactive;
+        json.resourceExoticMaterial = this.resourceExoticMaterial;
+        json.inhabitants = this.inhabitants;
+        json.inhabitantDevelopment = this.inhabitantDevelopment;
+        return json;
+    }
+
+    toExportJSON() {
+        const data = super.toExportJSON();
+        
+        // Add mineral resources in a user-friendly format
+        const minerals = this._buildMineralListItems();
+        if (minerals.length > 0) {
+            data.mineralResources = minerals;
+        }
+        
+        // Add inhabitants if present
+        if (this.inhabitants && this.inhabitants !== 'None') {
+            data.inhabitants = this.inhabitants;
+            if (this.inhabitantDevelopment) {
+                data.inhabitantDevelopment = this.inhabitantDevelopment;
+            }
+        }
+        
+        return data;
+    }
+
     static fromJSON(data) {
         const node = new AsteroidClusterNode(data.id);
         Object.assign(node, data, {
