@@ -1119,9 +1119,10 @@ class PlanetNode extends NodeBase {
     }
 
     updateDescription() {
-        // Start with body information to avoid gap
+        // Start with classification to identify planet vs moon
         let desc = '';
         const addPageRef = (p,t='') => window.APP_STATE.settings.showPageNumbers ? ` <span class="page-reference">${createPageReference(p,t)}</span>` : '';
+        desc += `<p><strong>Classification:</strong> ${this.isMoon ? 'Moon' : 'Planet'}</p>`;
         desc += `<p><strong>Body:</strong> ${this.body}${addPageRef(19,'Table 1-6: Body')}</p>`;
         desc += `<p><strong>Gravity:</strong> ${this.gravity}${addPageRef(20,'Table 1-7: Gravity')}</p>`;
         desc += `<p><strong>Atmospheric Presence:</strong> ${this.atmosphericPresence}${addPageRef(21,'Table 1-9: Atmospheric Presence')}</p>`;
