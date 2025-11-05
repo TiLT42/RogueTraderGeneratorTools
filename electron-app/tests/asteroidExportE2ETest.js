@@ -51,7 +51,7 @@ if (beltExport.mineralResources && typeof beltExport.mineralResources === 'objec
     // Verify structure of mineral resources
     let validStructure = true;
     for (const [key, value] of Object.entries(beltExport.mineralResources)) {
-        if (!value.abundance || !value.category) {
+        if (value.abundance === undefined || value.category === undefined) {
             console.log(`✗ Resource ${key} missing abundance or category`);
             validStructure = false;
         }
@@ -97,7 +97,7 @@ if (clusterExport.mineralResources && typeof clusterExport.mineralResources === 
     // Verify structure of mineral resources
     let validStructure = true;
     for (const [key, value] of Object.entries(clusterExport.mineralResources)) {
-        if (!value.abundance || !value.category) {
+        if (value.abundance === undefined || value.category === undefined) {
             console.log(`✗ Resource ${key} missing abundance or category`);
             validStructure = false;
         }
