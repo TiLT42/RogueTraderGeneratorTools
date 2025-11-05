@@ -276,17 +276,26 @@ Similar to Asteroid Belt but represents a cluster rather than a belt.
   "type": "asteroid-cluster",
   "name": "Asteroid Cluster",
   "description": "<p>A cluster of asteroids...</p>",
-  "mineralResources": [
-    "Significant (75) industrial metals",
-    "Limited (25) ornamentals"
-  ],
-  "inhabitants": "None"
+  "mineralResources": {
+    "industrialMetals": {
+      "abundance": 75,
+      "category": "Sustainable"
+    },
+    "ornamentals": {
+      "abundance": 25,
+      "category": "Limited"
+    }
+  },
+  "inhabitants": "Human",
+  "inhabitantDevelopment": "Mining Colony"
 }
 ```
 
 **Fields:**
-- `mineralResources` (array, optional): Array of human-readable resource strings
-- `inhabitants` (string, optional): Species name
+- `mineralResources` (object, optional): Structured resource data
+  - Each resource type has `abundance` (number) and `category` (string: "Minimal", "Limited", "Sustainable", "Significant", "Major", "Plentiful")
+  - Possible resource types: `industrialMetals`, `ornamentals`, `radioactives`, `exoticMaterials`
+- `inhabitants` (string, optional): Species name (only if inhabited)
 - `inhabitantDevelopment` (string, optional): Development level
 
 ### Solar Flares Node
@@ -514,20 +523,14 @@ node.mineralResources.forEach(resource => {
 });
 ```
 
-### 2. Handle Different Resource Formats
-
-Note that `AsteroidBeltNode` and `AsteroidClusterNode` use different resource formats:
-- Asteroid Belts: Structured object with named properties
-- Asteroid Clusters: Array of formatted strings
-
-### 3. Parse HTML Descriptions Carefully
+### 2. Parse HTML Descriptions Carefully
 
 The `description` field contains HTML. If you need to display it:
 - Use an HTML sanitizer if displaying in a web context
 - Strip tags if you need plain text
 - Or better yet, use the structured data fields instead
 
-### 4. Understand the Hierarchy
+### 3. Understand the Hierarchy
 
 Typical hierarchy:
 ```
@@ -543,7 +546,7 @@ System
       └─ Radiation Bursts
 ```
 
-### 5. Version Compatibility
+### 4. Version Compatibility
 
 The export format includes an `exportDate` but no version number. The structure is designed to be extensible:
 - New fields may be added in future versions
@@ -604,9 +607,6 @@ A: The `description` is for display purposes. Use the structured data fields ins
 
 **Q: Are there breaking changes between versions?**
 A: No. The format is designed to be backward compatible. New fields may be added but existing fields won't be removed or changed.
-
-**Q: Why do resource formats differ between node types?**
-A: Asteroid Belts use structured objects (more precise), while Asteroid Clusters use formatted strings (simpler, matches game presentation).
 
 ## Support
 
