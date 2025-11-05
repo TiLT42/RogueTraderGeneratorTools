@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Context Menu Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .test-results {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            background: #f9f9f9;
+        }
+        .test-pass { color: green; }
+        .test-fail { color: red; }
+        .context-menu {
+            position: fixed;
+            background: white;
+            border: 1px solid #ccc;
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
+            z-index: 1000;
+        }
+        .context-menu.hidden {
+            display: none;
+        }
+        .context-menu-item {
+            padding: 8px 12px;
+            cursor: pointer;
+        }
+        .context-menu-item:hover {
+            background: #f0f0f0;
+        }
+        .context-menu-separator {
+            height: 1px;
+            background: #ccc;
+            margin: 4px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Context Menu Test</h1>
+    <div id="test-results" class="test-results">
+        <p>Running tests...</p>
+    </div>
+
+    <!-- Include required scripts -->
+    <script src="../js/globals.js"></script>
+    <script src="../js/random.js"></script>
+    <script src="../js/nodes/nodeBase.js"></script>
+    <script src="../js/ui/contextMenu.js"></script>
+
+    <!-- Context menu container -->
+    <div id="context-menu" class="context-menu hidden"></div>
+
+    <script>
+        const results = [];
+        
+        function logTest(name, passed, message = '') {
+            results.push({ name, passed, message });
+            console.log(`${passed ? '✓' : '✗'} ${name}${message ? ': ' + message : ''}`);
+        }
+
+        function displayResults() {
+            const resultsDiv = document.getElementById('test-results');
+            let html = '<h2>Test Results</h2>';
+            
+            results.forEach(r => {
+                const className = r.passed ? 'test-pass' : 'test-fail';
+                html += `<p class="${className}">${r.passed ? '✓' : '✗'} ${r.name}${r.message ? ': ' + r.message : ''}</p>`;
+            });
+            
+            const passed = results.filter(r => r.passed).length;
+            const total = results.length;
+            html += `<p><strong>${passed}/${total} tests passed</strong></p>`;
+            
+            resultsDiv.innerHTML = html;
+        }
+
+        // Test the context menu
+        try {
+            const contextMenu = new ContextMenu();
+            
+            // Test 1: Empty space context menu
+            const emptySpaceItems = contextMenu.getContextMenuItems(null);
+            logTest('Empty space menu has items', emptySpaceItems.length > 0);
+            logTest('Has "Generate Solar System"', emptySpaceItems.some(i => i.label === 'Generate Solar System'));
+            logTest('Has "Generate Starship"', emptySpaceItems.some(i => i.label === 'Generate Starship'));
+            logTest('Has "Generate Primitive Species"', emptySpaceItems.some(i => i.label === 'Generate Primitive Species'));
+            
+            // Test 2: Planet context menu
+            const planet = new NodeBase(NodeTypes.Planet);
+            planet.nodeName = 'Test Planet';
+            const planetItems = contextMenu.getContextMenuItems(planet);
+            logTest('Planet menu has "Regenerate"', planetItems.some(i => i.label === 'Regenerate'));
+            logTest('Planet menu has "Edit Notes"', planetItems.some(i => i.label === 'Edit Notes'));
+            logTest('Planet menu does NOT have "Generate"', !planetItems.some(i => i.label === 'Generate'));
+            logTest('Planet menu does NOT have "Edit Description"', !planetItems.some(i => i.label === 'Edit Description'));
+            logTest('Planet menu has "Rename"', planetItems.some(i => i.label === 'Rename'));
+            logTest('Planet menu has "Delete"', planetItems.some(i => i.label === 'Delete'));
+            
+            // Test 3: Zone context menu
+            const zone = new NodeBase(NodeTypes.Zone);
+            const zoneItems = contextMenu.getContextMenuItems(zone);
+            logTest('Zone menu does NOT have "Regenerate"', !zoneItems.some(i => i.label === 'Regenerate'));
+            logTest('Zone menu does NOT have "Edit Notes"', !zoneItems.some(i => i.label === 'Edit Notes'));
+            logTest('Zone menu does NOT have "Rename"', !zoneItems.some(i => i.label === 'Rename'));
+            logTest('Zone menu does NOT have "Delete"', !zoneItems.some(i => i.label === 'Delete'));
+            logTest('Zone menu has "Add Planet"', zoneItems.some(i => i.label === 'Add Planet'));
+            logTest('Zone menu has "Add Gas Giant"', zoneItems.some(i => i.label === 'Add Gas Giant'));
+            
+            // Test 4: Node movement
+            const parent = new NodeBase(NodeTypes.System);
+            const child1 = new NodeBase(NodeTypes.Planet);
+            child1.nodeName = 'Planet 1';
+            const child2 = new NodeBase(NodeTypes.Planet);
+            child2.nodeName = 'Planet 2';
+            
+            parent.addChild(child1);
+            parent.addChild(child2);
+            
+            logTest('Initial order correct', parent.children[0] === child1 && parent.children[1] === child2);
+            
+            child2.moveUp();
+            logTest('moveUp works', parent.children[0] === child2 && parent.children[1] === child1);
+            
+            child1.moveDown();
+            logTest('moveDown does nothing at end', parent.children[0] === child2 && parent.children[1] === child1);
+            
+            child2.moveDown();
+            logTest('moveDown works', parent.children[0] === child1 && parent.children[1] === child2);
+            
+        } catch (error) {
+            logTest('Context menu test', false, error.message);
+            console.error(error);
+        }
+        
+        displayResults();
+    </script>
+</body>
+</html>
