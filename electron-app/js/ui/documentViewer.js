@@ -63,13 +63,14 @@ class DocumentViewer {
                         color: black;
                         background: white;
                     }
-                    h1, h2, h3 { 
+                    h1, h2, h3, h4 { 
                         color: black; 
                         page-break-after: avoid;
                     }
-                    h1 { font-size: 18pt; }
-                    h2 { font-size: 16pt; }
-                    h3 { font-size: 14pt; }
+                    h1 { font-size: 20pt; font-weight: bold; }
+                    h2 { font-size: 16pt; font-weight: bold; }
+                    h3 { font-size: 14pt; font-weight: bold; }
+                    h4 { font-size: 12pt; font-weight: bold; }
                     .description-section {
                         background: none;
                         border: 1px solid #ccc;
@@ -231,13 +232,14 @@ class DocumentViewer {
                         color: black;
                         background: white;
                     }
-                    h1, h2, h3 { 
+                    h1, h2, h3, h4 { 
                         color: black; 
                         page-break-after: avoid;
                     }
-                    h1 { font-size: 18pt; }
-                    h2 { font-size: 16pt; }
-                    h3 { font-size: 14pt; }
+                    h1 { font-size: 20pt; font-weight: bold; }
+                    h2 { font-size: 16pt; font-weight: bold; }
+                    h3 { font-size: 14pt; font-weight: bold; }
+                    h4 { font-size: 12pt; font-weight: bold; }
                     .description-section {
                         background: none;
                         border: 1px solid #ccc;
