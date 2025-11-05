@@ -18,7 +18,7 @@ class ContextMenu {
             if (e.target.classList.contains('context-menu-item')) {
                 e.stopPropagation();
                 const action = e.target.dataset.action;
-                if (action && this.currentNode) {
+                if (action) {
                     this.handleAction(action);
                 }
                 this.hide();
@@ -75,10 +75,21 @@ class ContextMenu {
     getContextMenuItems(node) {
         const items = [];
 
-        // Generate / Edit Description (excluded entirely for Zone nodes per WPF parity)
+        // If no node (right-click on empty space), show Generate menu items
+        if (!node) {
+            items.push({ label: 'Generate Solar System', action: 'generate-system' });
+            items.push({ label: 'Generate Starship', action: 'generate-starship' });
+            items.push({ label: 'Generate Primitive Species', action: 'generate-primitive-species' });
+            items.push({ type: 'separator' });
+            items.push({ label: 'Generate Xenos', action: 'generate-xenos' });
+            items.push({ label: 'Generate Treasure', action: 'generate-treasure' });
+            return items;
+        }
+
+        // Regenerate / Edit Notes (excluded entirely for Zone nodes per WPF parity)
         if (node.type !== NodeTypes.Zone && this.canGenerate(node)) {
-            items.push({ label: 'Generate', action: 'generate' });
-            items.push({ label: 'Edit Description', action: 'edit-description' });
+            items.push({ label: 'Regenerate', action: 'generate' });
+            items.push({ label: 'Edit Notes', action: 'edit-description' });
             items.push({ type: 'separator' });
         }
 
@@ -119,6 +130,14 @@ class ContextMenu {
             items.push({ type: 'separator' });
         }
 
+        // Add orbital feature options to planets and gas giants (but not moons)
+        if ((node.type === NodeTypes.Planet || node.type === NodeTypes.GasGiant) && !node.isMoon) {
+            items.push({ label: 'Add Moon', action: 'add-moon' });
+            items.push({ label: 'Add Lesser Moon', action: 'add-lesser-moon' });
+            items.push({ label: 'Add Asteroid', action: 'add-asteroid' });
+            items.push({ type: 'separator' });
+        }
+
         if (node.type === NodeTypes.NativeSpecies) {
             items.push({ label: 'Add Xenos', action: 'add-xenos' });
             items.push({ type: 'separator' });
@@ -139,10 +158,9 @@ class ContextMenu {
     }
 
     handleAction(action) {
-        if (!this.currentNode) return;
-
         switch (action) {
             case 'generate':
+                if (!this.currentNode) return;
                 // Clear existing children before regeneration to avoid stale sub-nodes persisting
                 if (typeof this.currentNode.removeAllChildren === 'function') {
                     this.currentNode.removeAllChildren();
@@ -155,92 +173,195 @@ class ContextMenu {
                 break;
 
             case 'edit-description':
+                if (!this.currentNode) return;
                 window.modals.showEditDescription(this.currentNode);
                 break;
 
             case 'move-up':
+                if (!this.currentNode) return;
                 this.currentNode.moveUp();
                 window.treeView.refresh();
+                window.treeView.selectNode(this.currentNode);
                 break;
 
             case 'move-down':
+                if (!this.currentNode) return;
                 this.currentNode.moveDown();
                 window.treeView.refresh();
+                window.treeView.selectNode(this.currentNode);
                 break;
 
             case 'move-to-outer-scope':
+                if (!this.currentNode) return;
                 this.currentNode.moveToOuterScope();
                 window.treeView.refresh();
                 break;
 
             case 'rename':
+                if (!this.currentNode) return;
                 window.modals.showRename(this.currentNode);
                 break;
 
             case 'delete':
+                if (!this.currentNode) return;
                 if (confirm(`Delete "${this.currentNode.nodeName}"?`)) {
+                    const parentNode = this.currentNode.parent;
                     window.treeView.removeNode(this.currentNode);
+                    
+                    // If the parent is an Orbital Features node and now has no children, remove it too
+                    if (parentNode && parentNode.type === NodeTypes.OrbitalFeatures && parentNode.children.length === 0) {
+                        window.treeView.removeNode(parentNode);
+                    }
+                    
                     window.documentViewer.clear();
                 }
                 break;
 
+            // Generate menu actions (when right-clicking on empty space)
+            case 'generate-system':
+                if (window.app && typeof window.app.generateNewSystem === 'function') {
+                    window.app.generateNewSystem();
+                }
+                break;
+
+            case 'generate-starship':
+                if (window.app && typeof window.app.generateNewStarship === 'function') {
+                    window.app.generateNewStarship();
+                }
+                break;
+
+            case 'generate-primitive-species':
+                if (window.app && typeof window.app.generateNewPrimitiveSpecies === 'function') {
+                    window.app.generateNewPrimitiveSpecies();
+                }
+                break;
+
+            case 'generate-xenos':
+                if (window.app && typeof window.app.generateNewXenos === 'function') {
+                    window.app.generateNewXenos();
+                }
+                break;
+
+            case 'generate-treasure':
+                if (window.app && typeof window.app.generateNewTreasure === 'function') {
+                    window.app.generateNewTreasure();
+                }
+                break;
+
             case 'add-planet':
+                if (!this.currentNode) return;
                 if (this.currentNode.type === NodeTypes.Zone) this.currentNode.addPlanet();
                 else this.addChildNode(NodeTypes.Planet, 'New Planet');
                 window.treeView.refresh(); markDirty();
                 break;
             case 'add-gas-giant':
+                if (!this.currentNode) return;
                 if (this.currentNode.type === NodeTypes.Zone) this.currentNode.addGasGiant();
                 else this.addChildNode(NodeTypes.GasGiant, 'New Gas Giant');
                 window.treeView.refresh(); markDirty();
                 break;
             case 'add-asteroid-belt':
+                if (!this.currentNode) return;
                 if (this.currentNode.type === NodeTypes.Zone) this.currentNode.addAsteroidBelt();
                 else this.addChildNode(NodeTypes.AsteroidBelt, 'Asteroid Belt');
                 window.treeView.refresh(); markDirty();
                 break;
             case 'add-asteroid-cluster':
+                if (!this.currentNode) return;
                 if (this.currentNode.type === NodeTypes.Zone) this.currentNode.addAsteroidCluster();
                 window.treeView.refresh(); markDirty();
                 break;
             case 'add-derelict-station':
+                if (!this.currentNode) return;
                 if (this.currentNode.type === NodeTypes.Zone) this.currentNode.addDerelictStation();
                 window.treeView.refresh(); markDirty();
                 break;
             case 'add-dust-cloud':
+                if (!this.currentNode) return;
                 if (this.currentNode.type === NodeTypes.Zone) this.currentNode.addDustCloud();
                 window.treeView.refresh(); markDirty();
                 break;
             case 'add-gravity-riptide':
+                if (!this.currentNode) return;
                 if (this.currentNode.type === NodeTypes.Zone) this.currentNode.addGravityRiptide();
                 window.treeView.refresh(); markDirty();
                 break;
             case 'add-radiation-bursts':
+                if (!this.currentNode) return;
                 if (this.currentNode.type === NodeTypes.Zone) this.currentNode.addRadiationBursts();
                 window.treeView.refresh(); markDirty();
                 break;
             case 'add-solar-flares':
+                if (!this.currentNode) return;
                 if (this.currentNode.type === NodeTypes.Zone) this.currentNode.addSolarFlares();
                 window.treeView.refresh(); markDirty();
                 break;
             case 'add-starship-graveyard':
+                if (!this.currentNode) return;
                 if (this.currentNode.type === NodeTypes.Zone) this.currentNode.addStarshipGraveyard();
                 window.treeView.refresh(); markDirty();
                 break;
 
             case 'add-moon':
-                this.addChildNode(NodeTypes.LesserMoon, 'New Moon');
+                if (!this.currentNode) return;
+                // If this is a planet or gas giant, add to/create orbital features
+                if (this.currentNode.type === NodeTypes.Planet || this.currentNode.type === NodeTypes.GasGiant) {
+                    const orbitalFeatures = this.getOrCreateOrbitalFeatures(this.currentNode);
+                    const newNode = createNode(NodeTypes.Planet);
+                    newNode.isMoon = true;
+                    newNode.nodeName = 'New Moon';
+                    // Set maxSize based on parent planet's body value if available
+                    if (this.currentNode.bodyValue) {
+                        newNode.maxSize = this.currentNode.bodyValue;
+                    }
+                    orbitalFeatures.addChild(newNode);
+                } else {
+                    // For Orbital Features node, create a moon planet
+                    const newNode = createNode(NodeTypes.Planet);
+                    newNode.isMoon = true;
+                    newNode.nodeName = 'New Moon';
+                    // Try to get maxSize from parent planet
+                    if (this.currentNode.parent && this.currentNode.parent.bodyValue) {
+                        newNode.maxSize = this.currentNode.parent.bodyValue;
+                    }
+                    this.currentNode.addChild(newNode);
+                }
+                window.treeView.refresh();
+                markDirty();
                 break;
 
             case 'add-lesser-moon':
-                this.addChildNode(NodeTypes.LesserMoon, 'Lesser Moon');
+                if (!this.currentNode) return;
+                // If this is a planet or gas giant, add to/create orbital features
+                if (this.currentNode.type === NodeTypes.Planet || this.currentNode.type === NodeTypes.GasGiant) {
+                    const orbitalFeatures = this.getOrCreateOrbitalFeatures(this.currentNode);
+                    const newNode = createNode(NodeTypes.LesserMoon);
+                    newNode.nodeName = 'Lesser Moon';
+                    orbitalFeatures.addChild(newNode);
+                } else {
+                    this.addChildNode(NodeTypes.LesserMoon, 'Lesser Moon');
+                }
+                window.treeView.refresh();
+                markDirty();
                 break;
 
             case 'add-asteroid':
-                this.addChildNode(NodeTypes.Asteroid, 'Asteroid');
+                if (!this.currentNode) return;
+                // If this is a planet or gas giant, add to/create orbital features
+                if (this.currentNode.type === NodeTypes.Planet || this.currentNode.type === NodeTypes.GasGiant) {
+                    const orbitalFeatures = this.getOrCreateOrbitalFeatures(this.currentNode);
+                    const newNode = createNode(NodeTypes.Asteroid);
+                    newNode.nodeName = 'Asteroid';
+                    orbitalFeatures.addChild(newNode);
+                } else {
+                    this.addChildNode(NodeTypes.Asteroid, 'Asteroid');
+                }
+                window.treeView.refresh();
+                markDirty();
                 break;
 
             case 'add-xenos':
+                if (!this.currentNode) return;
                 if (this.currentNode.type === NodeTypes.NativeSpecies) {
                     // Get the parent planet to determine world type
                     let worldType = 'TemperateWorld';
@@ -264,6 +385,21 @@ class ContextMenu {
         this.currentNode.addChild(newNode);
         window.treeView.refresh();
         markDirty();
+    }
+
+    // Find or create the Orbital Features node for a planet or gas giant
+    getOrCreateOrbitalFeatures(planetOrGasGiant) {
+        // Look for existing Orbital Features node
+        for (const child of planetOrGasGiant.children) {
+            if (child.type === NodeTypes.OrbitalFeatures) {
+                return child;
+            }
+        }
+        
+        // Create new Orbital Features node if it doesn't exist
+        const orbitalFeatures = createNode(NodeTypes.OrbitalFeatures);
+        planetOrGasGiant.addChild(orbitalFeatures);
+        return orbitalFeatures;
     }
 
     canGenerate(node) {

@@ -28,6 +28,9 @@ class TreeView {
                 if (node) {
                     this.showContextMenu(node, e.clientX, e.clientY);
                 }
+            } else {
+                // Right-click on empty space - show Generate menu
+                this.showContextMenu(null, e.clientX, e.clientY);
             }
         });
 
