@@ -109,7 +109,7 @@ class TreeView {
         // Add icon
         const icon = document.createElement('span');
         icon.className = 'tree-node-icon';
-        icon.textContent = this.getNodeIcon(node.type);
+        icon.innerHTML = this.getNodeIcon(node.type);
         content.appendChild(icon);
 
         // Add text
@@ -137,30 +137,28 @@ class TreeView {
     }
 
     getNodeIcon(nodeType) {
-        const icons = {
-            [NodeTypes.System]: '🌟',
-            [NodeTypes.Zone]: '⭕',
-            [NodeTypes.Planet]: '🌍',
-            [NodeTypes.GasGiant]: '🪐',
-            [NodeTypes.AsteroidBelt]: '🌌',
-            [NodeTypes.AsteroidCluster]: '🌌',
-            [NodeTypes.DerelictStation]: '🏗️',
-            [NodeTypes.DustCloud]: '☁️',
-            [NodeTypes.GravityRiptide]: '🌀',
-            [NodeTypes.RadiationBursts]: '☢️',
-            [NodeTypes.SolarFlares]: '☀️',
-            [NodeTypes.StarshipGraveyard]: '💀',
-            [NodeTypes.OrbitalFeatures]: '🌙',
-            [NodeTypes.LesserMoon]: '🌒',
-            [NodeTypes.Asteroid]: '🪨',
-            [NodeTypes.Xenos]: '👽',
-            [NodeTypes.PrimitiveXenos]: '🐵',
-            [NodeTypes.NativeSpecies]: '🧬',
-            [NodeTypes.Ship]: '🚀',
-            [NodeTypes.Treasure]: '💎',
-            [NodeTypes.PirateShips]: '🏴‍☠️'
+        const iconMap = {
+            [NodeTypes.System]: Icons.treeSun,
+            [NodeTypes.Zone]: Icons.treeCircleDashed,
+            [NodeTypes.Planet]: Icons.treeCircle,
+            [NodeTypes.GasGiant]: Icons.treePlanet,
+            [NodeTypes.AsteroidBelt]: Icons.treeCircles,
+            [NodeTypes.AsteroidCluster]: Icons.treeCircles,
+            [NodeTypes.DerelictStation]: Icons.treeBuilding,
+            [NodeTypes.DustCloud]: Icons.treeCloud,
+            [NodeTypes.GravityRiptide]: Icons.treeTornado,
+            [NodeTypes.RadiationBursts]: Icons.treeAtom,
+            [NodeTypes.SolarFlares]: Icons.treeStars,
+            [NodeTypes.StarshipGraveyard]: Icons.treeSkull,
+            [NodeTypes.LesserMoon]: Icons.treeMoon,
+            [NodeTypes.Asteroid]: Icons.treeCircle,
+            [NodeTypes.Xenos]: Icons.treeAlien,
+            [NodeTypes.PrimitiveXenos]: Icons.treeDna,
+            [NodeTypes.Ship]: Icons.treeRocket,
+            [NodeTypes.Treasure]: Icons.treeDiamond,
+            [NodeTypes.PirateShips]: Icons.treeFlag
         };
-        return icons[nodeType] || '📄';
+        return iconMap[nodeType] || Icons.treeFile;
     }
 
     selectNode(node) {

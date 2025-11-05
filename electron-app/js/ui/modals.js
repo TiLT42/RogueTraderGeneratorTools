@@ -296,8 +296,9 @@ class Modals {
                 <p><em>This tool is not affiliated with Games Workshop or Fantasy Flight Games.</em></p>
                 <br>
                 <p style="font-size: 12px; color: var(--text-muted);">
-                    <strong>Icons:</strong> Custom-designed geometric SVG icons created specifically for this application.
-                    All icons are original works and are free from copyright restrictions.
+                    <strong>Icons:</strong> <a href="https://tabler.io/icons" target="_blank" style="color: var(--accent-primary);">Tabler Icons</a> 
+                    by Paweł Kuna - MIT License<br>
+                    Copyright (c) 2020-2024 Paweł Kuna
                 </p>
             </div>
         `;
