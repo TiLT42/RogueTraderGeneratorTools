@@ -109,8 +109,13 @@ class App {
             if (e.ctrlKey || e.metaKey) {
                 switch (e.key) {
                     case 's':
+                    case 'S':
                         e.preventDefault();
-                        window.workspace.saveWorkspace();
+                        if (e.shiftKey) {
+                            window.workspace.saveAsWorkspace();
+                        } else {
+                            window.workspace.saveWorkspace();
+                        }
                         break;
                     case 'o':
                         e.preventDefault();

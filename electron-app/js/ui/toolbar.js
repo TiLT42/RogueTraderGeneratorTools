@@ -31,6 +31,10 @@ class Toolbar {
             window.workspace.saveWorkspace();
         });
 
+        document.getElementById('btn-save-as').addEventListener('click', () => {
+            window.workspace.saveAsWorkspace();
+        });
+
         document.getElementById('btn-print').addEventListener('click', () => {
             window.documentViewer.printContent();
         });
@@ -157,6 +161,7 @@ class Toolbar {
         document.getElementById('icon-new').innerHTML = Icons.fileNew;
         document.getElementById('icon-open').innerHTML = Icons.fileOpen;
         document.getElementById('icon-save').innerHTML = Icons.save;
+        document.getElementById('icon-save-as').innerHTML = Icons.save;
         document.getElementById('icon-print').innerHTML = Icons.print;
         document.getElementById('icon-export').innerHTML = Icons.export;
         document.getElementById('icon-export-chevron').innerHTML = Icons.chevronDown;
