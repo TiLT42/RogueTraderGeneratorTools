@@ -864,6 +864,9 @@ class SystemNode extends NodeBase {
         const addPageRef = (page, tableName='') => window.APP_STATE.settings.showPageNumbers ? ` <span class="page-reference">${createPageReference(page, tableName)}</span>` : '';
 
         let desc = '';
+        
+        // Star Type - moved to top as introductory content to avoid gap
+        desc += `<p><strong>Star Type:</strong> ${this.star}${addPageRef(13,'Table 1-2: Star Generation')}</p>`;
 
         // System Features section (plural/singular logic simplified – always list).
         if (this.systemFeatures.length === 1) {
@@ -907,9 +910,6 @@ class SystemNode extends NodeBase {
         if (rulesList.length > 0) {
             desc += `<h3>Additional Special Rule${rulesList.length>1?'s':''}</h3><ul>${rulesList.join('')}</ul>`;
         }
-
-        // Star Type
-        desc += `<h3>Star Type</h3><p>${this.star}${addPageRef(13,'Table 1-2: Star Generation')}</p>`;
 
         // Zones summary (planned enhancement vs WPF FlowDocument; retained intentionally)
         desc += `<h3>System Zones</h3><ul>`;
