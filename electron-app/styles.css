@@ -255,7 +255,7 @@ body {
 .sidebar-content {
     flex: 1;
     padding: 8px;
-    overflow-y: auto;
+    overflow: visible;
     display: flex;
     flex-direction: column;
     gap: 8px;
