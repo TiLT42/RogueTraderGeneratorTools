@@ -174,6 +174,48 @@ class NodeBase {
                 if (window && window.console) console.warn('Invalid Starfarer development level:', level);
         }
     }
+
+    // Move this node up in its parent's children array
+    moveUp() {
+        if (this.parent) {
+            const siblings = this.parent.children;
+            const oldIndex = siblings.indexOf(this);
+            if (oldIndex > 0) {
+                siblings.splice(oldIndex, 1);
+                siblings.splice(oldIndex - 1, 0, this);
+                markDirty();
+            }
+        } else if (window.APP_STATE && window.APP_STATE.rootNodes) {
+            const rootNodes = window.APP_STATE.rootNodes;
+            const oldIndex = rootNodes.indexOf(this);
+            if (oldIndex > 0) {
+                rootNodes.splice(oldIndex, 1);
+                rootNodes.splice(oldIndex - 1, 0, this);
+                markDirty();
+            }
+        }
+    }
+
+    // Move this node down in its parent's children array
+    moveDown() {
+        if (this.parent) {
+            const siblings = this.parent.children;
+            const oldIndex = siblings.indexOf(this);
+            if (oldIndex >= 0 && oldIndex + 1 < siblings.length) {
+                siblings.splice(oldIndex, 1);
+                siblings.splice(oldIndex + 1, 0, this);
+                markDirty();
+            }
+        } else if (window.APP_STATE && window.APP_STATE.rootNodes) {
+            const rootNodes = window.APP_STATE.rootNodes;
+            const oldIndex = rootNodes.indexOf(this);
+            if (oldIndex >= 0 && oldIndex + 1 < rootNodes.length) {
+                rootNodes.splice(oldIndex, 1);
+                rootNodes.splice(oldIndex + 1, 0, this);
+                markDirty();
+            }
+        }
+    }
 }
 
 window.NodeBase = NodeBase;
