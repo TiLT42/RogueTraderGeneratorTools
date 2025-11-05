@@ -404,6 +404,27 @@ class XenosNode extends NodeBase {
             armour: this.armour
         };
     }
+
+    toExportJSON() {
+        const data = this._getBaseExportData();
+        
+        // Add xenos stats in a user-friendly format
+        if (this.stats && Object.keys(this.stats).length > 0) {
+            data.stats = this.stats;
+        }
+        if (this.wounds > 0) data.wounds = this.wounds;
+        if (this.movement) data.movement = this.movement;
+        if (this.skills && this.skills.length > 0) data.skills = this.skills;
+        if (this.talents && this.talents.length > 0) data.talents = this.talents;
+        if (this.traits && this.traits.length > 0) data.traits = this.traits;
+        if (this.weapons && this.weapons.length > 0) data.weapons = this.weapons;
+        if (this.armour) data.armour = this.armour;
+        
+        // Add children at the end for better readability
+        this._addChildrenToExport(data);
+        
+        return data;
+    }
 }
 
 window.XenosNode = XenosNode;

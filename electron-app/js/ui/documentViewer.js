@@ -143,16 +143,16 @@ class DocumentViewer {
 
         const includeChildren = window.APP_STATE.settings.mergeWithChildDocuments;
         
-        // Get JSON data, preserving hierarchy
+        // Get export-friendly JSON data (no internal IDs, font properties, etc.)
         let jsonData;
         if (includeChildren) {
             // Export current node with all children (recursively)
-            jsonData = this.currentNode.toJSON();
+            jsonData = this.currentNode.toExportJSON();
         } else {
             // Export only current node without children
             // Use destructuring to create a new object excluding the children property,
-            // avoiding mutation of the original toJSON() result
-            const { children, ...nodeWithoutChildren } = this.currentNode.toJSON();
+            // avoiding mutation of the original toExportJSON() result
+            const { children, ...nodeWithoutChildren } = this.currentNode.toExportJSON();
             jsonData = nodeWithoutChildren;
         }
         
@@ -275,11 +275,10 @@ class DocumentViewer {
             return;
         }
 
-        // Export all root nodes with their children
+        // Export all root nodes with their children using export-friendly format
         const workspaceData = {
-            version: '2.0',
             exportDate: new Date().toISOString(),
-            rootNodes: window.APP_STATE.rootNodes.map(node => node.toJSON())
+            nodes: window.APP_STATE.rootNodes.map(node => node.toExportJSON())
         };
         
         // Create formatted JSON string

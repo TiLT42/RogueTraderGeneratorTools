@@ -53,7 +53,6 @@ class Workspace {
         try {
             const workspaceData = {
                 version: '2.0',
-                settings: window.APP_STATE.settings,
                 rootNodes: window.APP_STATE.rootNodes.map(node => node.toJSON()),
                 nodeIdCounter: window.APP_STATE.nodeIdCounter
             };
@@ -108,10 +107,8 @@ class Workspace {
 
             const workspaceData = JSON.parse(result.content);
             
-            // Restore settings
-            if (workspaceData.settings) {
-                Object.assign(window.APP_STATE.settings, workspaceData.settings);
-            }
+            // Note: Settings are no longer saved with workspaces (as of version 2.1+)
+            // They are managed separately via localStorage
 
             // Restore node counter
             if (workspaceData.nodeIdCounter) {
@@ -132,7 +129,7 @@ class Workspace {
             window.APP_STATE.currentFilePath = filePath;
             window.APP_STATE.selectedNode = null;
 
-            // Update UI
+            // Update UI (settings are not restored from workspace, use current settings)
             this.updateUIFromSettings();
             window.treeView.refresh();
             window.documentViewer.clear();

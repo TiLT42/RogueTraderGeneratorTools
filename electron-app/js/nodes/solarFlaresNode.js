@@ -50,6 +50,20 @@ class SolarFlaresNode extends NodeBase {
         json.numSolarFlaresInThisZone = this.numSolarFlaresInThisZone;
         return json;
     }
+
+    toExportJSON() {
+        const data = this._getBaseExportData();
+        
+        // Include the count for user reference
+        if (this.numSolarFlaresInThisZone > 0) {
+            data.numSolarFlaresInThisZone = this.numSolarFlaresInThisZone;
+        }
+        
+        // Add children at the end for better readability
+        this._addChildrenToExport(data);
+        
+        return data;
+    }
 }
 
 window.SolarFlaresNode = SolarFlaresNode;

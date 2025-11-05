@@ -366,6 +366,44 @@ class TreasureNode extends NodeBase {
         };
     }
 
+    toExportJSON() {
+        const data = this._getBaseExportData();
+        
+        // Add treasure-specific data in a user-friendly format
+        if (this._origin && this._origin !== TreasureOrigin.Undefined) {
+            data.origin = this._origin;
+        }
+        if (this._treasureType && this._treasureType !== TreasureType.MeleeWeapon) {
+            data.treasureType = this._treasureType;
+        }
+        if (this._treasureName && this._treasureName.content) {
+            data.treasureName = this._treasureName.content;
+        }
+        if (this._craftsmanship && this._craftsmanship !== TreasureCraftsmanship.Undefined) {
+            data.craftsmanship = this._craftsmanship;
+        }
+        if (this._miraclesOfTheDarkAge && this._miraclesOfTheDarkAge.length > 0) {
+            data.miraclesOfTheDarkAge = this._miraclesOfTheDarkAge.map(m => m.content || m);
+        }
+        if (this._xenosConstruction) {
+            data.xenosConstruction = this._xenosConstruction.content || this._xenosConstruction;
+        }
+        if (this._markOfTheCurse) {
+            data.markOfTheCurse = this._markOfTheCurse.content || this._markOfTheCurse;
+        }
+        if (this._quirk1) {
+            data.quirk1 = this._quirk1.content || this._quirk1;
+        }
+        if (this._quirk2) {
+            data.quirk2 = this._quirk2.content || this._quirk2;
+        }
+        
+        // Add children at the end for better readability
+        this._addChildrenToExport(data);
+        
+        return data;
+    }
+
     static fromJSON(data) {
         const node = new TreasureNode(data.id, data.origin || TreasureOrigin.Undefined);
         Object.assign(node, {
