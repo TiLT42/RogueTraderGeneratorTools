@@ -307,11 +307,24 @@ class ContextMenu {
                 // If this is a planet or gas giant, add to/create orbital features
                 if (this.currentNode.type === NodeTypes.Planet || this.currentNode.type === NodeTypes.GasGiant) {
                     const orbitalFeatures = this.getOrCreateOrbitalFeatures(this.currentNode);
-                    const newNode = createNode(NodeTypes.LesserMoon);
+                    const newNode = createNode(NodeTypes.Planet);
+                    newNode.isMoon = true;
                     newNode.nodeName = 'New Moon';
+                    // Set maxSize based on parent planet's body value if available
+                    if (this.currentNode.bodyValue) {
+                        newNode.maxSize = this.currentNode.bodyValue;
+                    }
                     orbitalFeatures.addChild(newNode);
                 } else {
-                    this.addChildNode(NodeTypes.LesserMoon, 'New Moon');
+                    // For Orbital Features node, create a moon planet
+                    const newNode = createNode(NodeTypes.Planet);
+                    newNode.isMoon = true;
+                    newNode.nodeName = 'New Moon';
+                    // Try to get maxSize from parent planet
+                    if (this.currentNode.parent && this.currentNode.parent.bodyValue) {
+                        newNode.maxSize = this.currentNode.parent.bodyValue;
+                    }
+                    this.currentNode.addChild(newNode);
                 }
                 window.treeView.refresh();
                 markDirty();
