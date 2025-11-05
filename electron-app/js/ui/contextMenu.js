@@ -130,8 +130,8 @@ class ContextMenu {
             items.push({ type: 'separator' });
         }
 
-        // Add orbital feature options to planets and gas giants
-        if (node.type === NodeTypes.Planet || node.type === NodeTypes.GasGiant) {
+        // Add orbital feature options to planets and gas giants (but not moons)
+        if ((node.type === NodeTypes.Planet || node.type === NodeTypes.GasGiant) && !node.isMoon) {
             items.push({ label: 'Add Moon', action: 'add-moon' });
             items.push({ label: 'Add Lesser Moon', action: 'add-lesser-moon' });
             items.push({ label: 'Add Asteroid', action: 'add-asteroid' });
