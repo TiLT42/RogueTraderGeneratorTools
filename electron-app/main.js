@@ -29,8 +29,8 @@ function createWindow() {
         mainWindow.webContents.openDevTools({ mode: 'detach' });
     }
     
-    // Create application menu
-    createMenu();
+    // Remove the application menu (we're using toolbars instead)
+    Menu.setApplicationMenu(null);
 
     // Handle window closed
     mainWindow.on('closed', () => {

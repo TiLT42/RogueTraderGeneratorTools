@@ -75,7 +75,7 @@ class ContextMenu {
     getContextMenuItems(node) {
         const items = [];
 
-        // If no node (right-click on empty space), show Generate menu items
+        // If no node (right-click on empty space), show Generate toolbox items
         if (!node) {
             items.push({ label: 'Generate Solar System', action: 'generate-system' });
             items.push({ label: 'Generate Starship', action: 'generate-starship' });
@@ -217,7 +217,7 @@ class ContextMenu {
                 }
                 break;
 
-            // Generate menu actions (when right-clicking on empty space)
+            // Generate toolbox actions (when right-clicking on empty space)
             case 'generate-system':
                 if (window.app && typeof window.app.generateNewSystem === 'function') {
                     window.app.generateNewSystem();

@@ -27,6 +27,7 @@ class App {
         window.contextMenu = new ContextMenu();
         window.modals = new Modals();
         window.workspace = new Workspace();
+        window.toolbar = new Toolbar();
 
         // Set up Electron API
         this.setupElectronAPI();
@@ -50,14 +51,19 @@ class App {
             }, 500);
         }
         
-        // Notify main process about initial settings for menu item availability
+        // Update toolbar button availability based on settings
         this.updateMenuAvailability();
 
         console.log('Rogue Trader Generator Tools initialized');
     }
     
     updateMenuAvailability() {
-        // Send settings to main process to update menu item availability
+        // Update toolbar button states
+        if (window.toolbar) {
+            window.toolbar.updateButtonStates(window.APP_STATE.settings);
+        }
+        
+        // Send settings to main process to update menu item availability (if menus still exist)
         try {
             if (window.electronAPI && window.electronAPI.updateMenuSettings) {
                 window.electronAPI.updateMenuSettings(window.APP_STATE.settings);

@@ -280,7 +280,7 @@ class Modals {
         this.body.innerHTML = `
             <div style="text-align: center;">
                 <h3>Rogue Trader Generator Tools</h3>
-                <p>Electron Version</p>
+                <p>Electron Version 2.0</p>
                 <p>A tool for generating systems, ships, xenos, and treasures for the Rogue Trader RPG.</p>
                 <br>
                 <p><strong>Content from:</strong></p>
@@ -294,6 +294,11 @@ class Modals {
                 </ul>
                 <br>
                 <p><em>This tool is not affiliated with Games Workshop or Fantasy Flight Games.</em></p>
+                <br>
+                <p style="font-size: 12px; color: var(--text-muted);">
+                    <strong>Icons:</strong> Custom-designed geometric SVG icons created specifically for this application.
+                    All icons are original works and are free from copyright restrictions.
+                </p>
             </div>
         `;
 

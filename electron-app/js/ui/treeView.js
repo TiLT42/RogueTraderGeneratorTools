@@ -29,7 +29,7 @@ class TreeView {
                     this.showContextMenu(node, e.clientX, e.clientY);
                 }
             } else {
-                // Right-click on empty space - show Generate menu
+                // Right-click on empty space - show Generate toolbox
                 this.showContextMenu(null, e.clientX, e.clientY);
             }
         });
@@ -62,17 +62,8 @@ class TreeView {
                 const li = this.createNodeElement(node);
                 ul.appendChild(li);
             }
-        } else {
-            // Show empty state message
-            const li = document.createElement('li');
-            li.className = 'tree-empty-state';
-            li.style.padding = '20px';
-            li.style.textAlign = 'center';
-            li.style.color = '#666';
-            li.style.fontStyle = 'italic';
-            li.textContent = 'No content generated yet. Use the Generate menu to create a system.';
-            ul.appendChild(li);
         }
+        // Empty tree - no message needed, just keep it empty
     }
 
     createNodeElement(node) {
