@@ -14,7 +14,7 @@ npm install
 npm start
 ```
 
-This launches the cross-platform Electron application in 5-8 seconds.
+This launches the cross-platform Electron application (npm install takes 3-6 seconds, npm start takes 2-3 seconds).
 
 **For Windows-only WPF development**:
 - Requires Windows with Visual Studio 2019+ and .NET Framework 4.0+
@@ -448,7 +448,7 @@ d6_128x128.ico             # Application icon
 
 ### For All Developers
 - **DON'T cancel long-running operations**: Build and generation processes can take time
-  - npm install: 3-10 seconds (normal)
+  - npm install: 3-6 seconds (normal)
   - System generation: 1-2 seconds (normal)
   - msbuild: 30-120 seconds (normal)
 - **DON'T skip syntax validation**: Always run `find js -name "*.js" -exec node -c {} \;` for Electron changes
