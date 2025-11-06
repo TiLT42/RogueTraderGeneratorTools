@@ -106,12 +106,18 @@ class SystemNode extends NodeBase {
         super.generate();
         this.pageReference = createPageReference(12);
         this.nodeName = this.generateSystemName();
-        this.generateZones();
-        this.generateStar();
-        // NOTE(Parity Accepted): Original WPF generated System Features before zones & star; order retained here for readability since seed parity not required.
+        
+        // Match WPF generation order exactly:
+        // 1. Generate system features FIRST (sets systemCreationRules flags)
         this.generateSystemFeatures();
-
-        // Populate orbital elements (simplified parity)
+        
+        // 2. Generate zones
+        this.generateZones();
+        
+        // 3. Generate star (modifies zone sizes based on star type)
+        this.generateStar();
+        
+        // 4. Generate system elements (uses flags from features and zone sizes from star)
         this.generateSystemElements();
 
         // After elements are generated, propagate hazard counts (Solar Flares & Radiation Bursts) per zone
@@ -121,20 +127,20 @@ class SystemNode extends NodeBase {
             if (typeof z.updateRadiationBurstCounts === 'function') z.updateRadiationBurstCounts();
         });
 
-        // Starfarers (if feature chosen)
+        // 5. Generate starfarers inhabitants (if feature chosen)
         this.generateStarfarers();
 
-        // Additional Ruined Empire derived content
+        // 6. Generate additional ruins/caches (Ruined Empire feature)
         this.generateAdditionalXenosRuins();
         this.generateAdditionalArcheotechCaches();
 
-        // Sequential naming for planets & gas giants (naming before warp storms so storm flag appears in planet description after update)
+        // 7. Apply warp storms to planets
+        this.generateWarpStorms();
+
+        // 8. Generate names for all planets and gas giants
         this.assignSequentialBodyNames();
 
-        // Warp storms + starfarer homeworld handled in their respective generators (avoid duplicate passes)
-        this.generateWarpStorms();
-        this.applyStarfarersHomeWorld();
-
+        // 9. Update description (like WPF's GenerateFlowDocument)
         this.updateDescription();
     }
 
@@ -266,23 +272,17 @@ class SystemNode extends NodeBase {
         // Guarantees at least one effect, up to max unique effects. Probability distribution matches C#.
         if (max <= 0) return;
         const taken = new Set();
-        let first = true;
         while (true) {
             const roll = RandBetween(1, max); // uniform 1..max
             if (!taken.has(roll)) {
                 taken.add(roll);
                 callback(roll);
-                first = false;
                 if (taken.size === max) break; // all chosen
                 // continue loop to attempt another (next attempt may stop if duplicate rolled)
-                continue;
+            } else {
+                // Duplicate rolled => stop (mirrors C# returning 0 which terminates do/while)
+                break;
             }
-            // Duplicate rolled => stop (mirrors C# returning 0 which terminates do/while)
-            if (first) {
-                // Safety: if somehow first roll duplicate (impossible with empty set) fallback pick
-                callback(roll);
-            }
-            break;
         }
     }
 
@@ -932,6 +932,24 @@ class SystemNode extends NodeBase {
             }
             planet.generate();
             zoneNode.addChild(planet);
+            return planet;
+        }
+        return null;
+    }
+
+    insertPlanet(position, zone, forceInhabitable = false) {
+        const zoneNode = this.getZoneNode(zone);
+        if (zoneNode) {
+            const planet = createNode(NodeTypes.Planet);
+            planet.systemCreationRules = this.systemCreationRules;
+            planet.zone = zone;
+            if (forceInhabitable) {
+                planet.forceInhabitable = true;
+            }
+            planet.generate();
+            // Insert at specific position instead of appending
+            zoneNode.children.splice(position, 0, planet);
+            planet.parent = zoneNode;
             return planet;
         }
         return null;
