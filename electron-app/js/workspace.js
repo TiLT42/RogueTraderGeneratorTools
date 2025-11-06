@@ -144,14 +144,14 @@ class Workspace {
 
     restoreNode(nodeData) {
         try {
-            // Create the node instance
-            const node = createNode(nodeData.type, nodeData.id);
+            // Get the node class to check for fromJSON method
+            const NodeClass = window.getNodeClass(nodeData.type);
             
             // Use the node's fromJSON method if it exists for proper restoration
-            if (node.constructor.fromJSON) {
-                return node.constructor.fromJSON(nodeData);
+            if (NodeClass.fromJSON) {
+                return NodeClass.fromJSON(nodeData);
             } else {
-                // Fallback: restore properties directly for nodes without fromJSON
+                // Fallback: create node and restore properties directly
                 return this.restoreNodeFallback(nodeData);
             }
         } catch (error) {

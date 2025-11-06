@@ -264,10 +264,7 @@ class ZoneNode extends NodeBase {
         // Restore children
         if (data.children) {
             for (const childData of data.children) {
-                const child = createNode(childData.type);
-                const restoredChild = child.constructor.fromJSON ? 
-                    child.constructor.fromJSON(childData) : 
-                    NodeBase.fromJSON(childData);
+                const restoredChild = window.restoreChildNode(childData);
                 node.addChild(restoredChild);
             }
             // After restoring children, recompute hazard counts for parity

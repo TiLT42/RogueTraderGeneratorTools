@@ -1,50 +1,79 @@
-// Node factory function
-window.createNode = function(type, id = null, ...args) {
+// Get node class constructor without instantiating
+window.getNodeClass = function(type) {
     switch (type) {
         case NodeTypes.System:
-            return new SystemNode(id);
+            return SystemNode;
         case NodeTypes.Zone:
-            return new ZoneNode(id);
+            return ZoneNode;
         case NodeTypes.Planet:
-            return new PlanetNode(id);
+            return PlanetNode;
         case NodeTypes.GasGiant:
-            return new GasGiantNode(id);
+            return GasGiantNode;
         case NodeTypes.AsteroidBelt:
-            return new AsteroidBeltNode(id);
+            return AsteroidBeltNode;
         case NodeTypes.AsteroidCluster:
-            return new AsteroidClusterNode(id);
+            return AsteroidClusterNode;
         case NodeTypes.Asteroid:
-            return new AsteroidNode(id);
+            return AsteroidNode;
         case NodeTypes.DerelictStation:
-            return new DerelictStationNode(id);
+            return DerelictStationNode;
         case NodeTypes.DustCloud:
-            return new DustCloudNode(id);
+            return DustCloudNode;
         case NodeTypes.GravityRiptide:
-            return new GravityRiptideNode(id);
+            return GravityRiptideNode;
         case NodeTypes.RadiationBursts:
-            return new RadiationBurstsNode(id);
+            return RadiationBurstsNode;
         case NodeTypes.SolarFlares:
-            return new SolarFlaresNode(id);
+            return SolarFlaresNode;
         case NodeTypes.StarshipGraveyard:
-            return new StarshipGraveyardNode(id);
+            return StarshipGraveyardNode;
         case NodeTypes.OrbitalFeatures:
-            return new OrbitalFeaturesNode(id);
+            return OrbitalFeaturesNode;
         case NodeTypes.LesserMoon:
-            return new LesserMoonNode(id);
+            return LesserMoonNode;
+        case NodeTypes.Xenos:
+            return XenosNode;
+        case NodeTypes.PrimitiveXenos:
+            return PrimitiveXenosNode;
+        case NodeTypes.NativeSpecies:
+            return NativeSpeciesNode;
+        case NodeTypes.Ship:
+            return ShipNode;
+        case NodeTypes.Treasure:
+            return TreasureNode;
+        case NodeTypes.PirateShips:
+            return PirateShipsNode;
+        default:
+            return NodeBase;
+    }
+};
+
+// Helper to restore a child node from JSON data
+// This avoids double-allocation of IDs by checking for fromJSON before creating
+window.restoreChildNode = function(childData) {
+    const NodeClass = getNodeClass(childData.type);
+    if (NodeClass.fromJSON) {
+        return NodeClass.fromJSON(childData);
+    } else {
+        // Fallback: create node and restore basic properties
+        const node = createNode(childData.type, childData.id);
+        Object.assign(node, childData);
+        return node;
+    }
+};
+
+// Node factory function
+window.createNode = function(type, id = null, ...args) {
+    const NodeClass = getNodeClass(type);
+    switch (type) {
         case NodeTypes.Xenos:
             // args[0] = worldType, args[1] = isPrimitiveXenos
-            return new XenosNode(args[0] || 'TemperateWorld', args[1] || false, id);
-        case NodeTypes.PrimitiveXenos:
-            return new PrimitiveXenosNode(id);
-        case NodeTypes.NativeSpecies:
-            return new NativeSpeciesNode(id);
-        case NodeTypes.Ship:
-            return new ShipNode(id);
-        case NodeTypes.Treasure:
-            return new TreasureNode(id);
-        case NodeTypes.PirateShips:
-            return new PirateShipsNode(id);
+            return new NodeClass(args[0] || 'TemperateWorld', args[1] || false, id);
         default:
-            return new NodeBase(type, id);
+            // Most node constructors take (id, ...args), but NodeBase takes (type, id)
+            if (NodeClass === NodeBase) {
+                return new NodeClass(type, id, ...args);
+            }
+            return new NodeClass(id, ...args);
     }
 };

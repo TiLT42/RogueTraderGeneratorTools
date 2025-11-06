@@ -407,6 +407,14 @@ class TreasureNode extends NodeBase {
     static fromJSON(data) {
         const node = new TreasureNode(data.id, data.origin || TreasureOrigin.Undefined);
         Object.assign(node, {
+            nodeName: data.nodeName || 'Treasure',
+            description: data.description || '',
+            customDescription: data.customDescription || '',
+            pageReference: data.pageReference || '',
+            isGenerated: data.isGenerated || false,
+            fontWeight: data.fontWeight || 'bold',
+            fontStyle: data.fontStyle || 'normal',
+            fontForeground: data.fontForeground || '#f1c40f',
             _origin: data.origin || TreasureOrigin.Undefined,
             _treasureType: data.treasureType || TreasureType.MeleeWeapon,
             _treasureName: data.treasureName || { content: '' },
