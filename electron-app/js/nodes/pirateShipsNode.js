@@ -57,6 +57,13 @@ class PirateShipsNode extends NodeBase {
         this.updateDescription();
     }
 
+    // Override removeChild to update ship count when ships are deleted
+    removeChild(child) {
+        super.removeChild(child);
+        this.numShips = this.children.length;
+        this.updateDescription();
+    }
+
     updateDescription() {
         // No duplicate header - base class will add H3
         // NOTE (Parity): Wayfarer Station line should include page 210 (Core Rulebook) when page refs enabled.
@@ -69,14 +76,6 @@ class PirateShipsNode extends NodeBase {
         // Match C# wording: label style "Number of Pirate Ships Present"
         desc += `<p><strong>Number of Pirate Ships Present:</strong> ${this.numShips}</p>`;
         this.description = desc;
-    }
-
-    getContextMenuItems() {
-        return [
-            { label: 'Add Pirate Ship', action: 'add-pirate-ship' },
-            { type: 'separator' },
-            { label: 'Edit Description', action: 'edit-description' }
-        ];
     }
 
     toJSON() {
