@@ -153,7 +153,13 @@ class ZoneNode extends NodeBase {
             desc += `<p>This orbital zone contains ${this.children.length} significant stellar object(s):</p>`;
             desc += '<ul>';
             for (const child of this.children) {
-                desc += `<li><strong>${child.nodeName}</strong> (${child.type.replace('-', ' ')})</li>`;
+                const typeName = child.type.replace('-', ' ');
+                // Only show type in parentheses if it differs from node name (case-insensitive)
+                if (child.nodeName.toLowerCase() === typeName.toLowerCase()) {
+                    desc += `<li><strong>${child.nodeName}</strong></li>`;
+                } else {
+                    desc += `<li><strong>${child.nodeName}</strong> (${typeName})</li>`;
+                }
             }
             desc += '</ul>';
         }
