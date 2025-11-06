@@ -143,6 +143,24 @@ class ContextMenu {
             items.push({ type: 'separator' });
         }
 
+        // System node actions
+        if (node.type === NodeTypes.System) {
+            // Check if a Pirate Den already exists
+            const hasPirateDen = node.children.some(child => child.type === NodeTypes.PirateShips);
+            items.push({ 
+                label: 'Add Pirate Den', 
+                action: 'add-pirate-den',
+                enabled: !hasPirateDen
+            });
+            items.push({ type: 'separator' });
+        }
+
+        // Pirate Den node actions
+        if (node.type === NodeTypes.PirateShips) {
+            items.push({ label: 'Add Starship', action: 'add-pirate-ship' });
+            items.push({ type: 'separator' });
+        }
+
         // Common actions
         // Rename / Delete excluded for Zone nodes in parity scope
         if (node.type !== NodeTypes.Zone) {
@@ -369,6 +387,30 @@ class ContextMenu {
                         worldType = this.currentNode.parent.worldType;
                     }
                     this.currentNode.addXenos(worldType);
+                    window.treeView.refresh();
+                    markDirty();
+                }
+                break;
+
+            case 'add-pirate-den':
+                if (!this.currentNode) return;
+                if (this.currentNode.type === NodeTypes.System) {
+                    // Check if a Pirate Den already exists
+                    const existingPirateDen = this.currentNode.children.find(child => child.type === NodeTypes.PirateShips);
+                    if (!existingPirateDen) {
+                        const pirateDen = createNode(NodeTypes.PirateShips);
+                        pirateDen.generate();
+                        this.currentNode.addChild(pirateDen);
+                        window.treeView.refresh();
+                        markDirty();
+                    }
+                }
+                break;
+
+            case 'add-pirate-ship':
+                if (!this.currentNode) return;
+                if (this.currentNode.type === NodeTypes.PirateShips) {
+                    this.currentNode.addNewShip();
                     window.treeView.refresh();
                     markDirty();
                 }

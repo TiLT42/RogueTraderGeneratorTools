@@ -57,6 +57,13 @@ class PirateShipsNode extends NodeBase {
         this.updateDescription();
     }
 
+    // Override removeChild to update ship count when ships are deleted
+    removeChild(child) {
+        super.removeChild(child);
+        this.numShips = this.children.length;
+        this.updateDescription();
+    }
+
     updateDescription() {
         // No duplicate header - base class will add H3
         // NOTE (Parity): Wayfarer Station line should include page 210 (Core Rulebook) when page refs enabled.
