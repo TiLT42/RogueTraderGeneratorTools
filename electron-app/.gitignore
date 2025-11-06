@@ -32,4 +32,4 @@ pids/
 coverage/
 
 # Electron build output
-out/
+out/test_modal_fix.html

@@ -720,6 +720,10 @@ body {
 .modal-body {
     padding: 20px;
     overflow-y: auto;
+}
+
+/* Fixed height for settings modal specifically */
+.modal-body-settings {
     height: 810px;
 }
 
