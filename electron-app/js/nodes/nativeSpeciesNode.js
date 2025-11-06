@@ -45,7 +45,10 @@ class NativeSpeciesNode extends NodeBase {
     // JSON persistence
     toJSON() {
         const json = super.toJSON();
-        json.systemCreationRules = this.systemCreationRules; // stored if needed for future loads
+        // Only include systemCreationRules if it was explicitly set (not undefined)
+        if (this.systemCreationRules !== undefined) {
+            json.systemCreationRules = this.systemCreationRules;
+        }
         return json;
     }
     static fromJSON(data) {
@@ -58,9 +61,12 @@ class NativeSpeciesNode extends NodeBase {
             isGenerated: data.isGenerated || false,
             fontWeight: data.fontWeight || 'normal',
             fontStyle: data.fontStyle || 'normal',
-            fontForeground: data.fontForeground || '#95a5a6',
-            systemCreationRules: data.systemCreationRules || null
+            fontForeground: data.fontForeground || '#95a5a6'
         });
+        // Only restore systemCreationRules if it was explicitly saved
+        if ('systemCreationRules' in data) {
+            node.systemCreationRules = data.systemCreationRules;
+        }
         if (data.children) {
             for (const childData of data.children) {
                 const restoredChild = window.restoreChildNode(childData);
