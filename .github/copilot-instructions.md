@@ -78,7 +78,7 @@ This launches the cross-platform Electron application (npm install takes 3-6 sec
 - Install Visual Studio 2019+ with .NET Framework 4.0+ development tools
 - Install .NET Framework 4.0+ Developer Pack if not included
 - **Build command**: `msbuild RogueTraderSystemGenerator.sln /p:Configuration=Release`
-  - Takes 30-60 seconds normally. NEVER CANCEL - set timeout to 120+ seconds
+  - Takes 30-120 seconds normally. NEVER CANCEL - set timeout to 120+ seconds
   - Clean build may take up to 2 minutes - set timeout to 180+ seconds  
 - **Run**: `./RogueTraderSystemGenerator/bin/Release/RogueTraderGeneratorTools.exe`
 
@@ -105,7 +105,7 @@ This launches the cross-platform Electron application (npm install takes 3-6 sec
    - Generate → "Generate Primitive Xenos" → Verify species generated
    - Generate → "Generate Treasure" → Verify treasure created
 
-**TIMING**: Each workflow takes 1-5 seconds. NEVER CANCEL during generation.
+**TIMING**: Each workflow takes 1-2 seconds. NEVER CANCEL during generation.
 
 ### WPF Version Validation (Windows Only)
 **Manual Code Validation** (when working on Linux/macOS):
@@ -302,8 +302,8 @@ d6_128x128.ico             # Application icon
 - **Always check**: Compilation errors, missing references, logic flow
 
 **Build Requirements** (Windows only):
-- **Release build**: `msbuild RogueTraderSystemGenerator.sln /p:Configuration=Release` (60-120 seconds, NEVER CANCEL)
-- **Debug build**: `msbuild RogueTraderSystemGenerator.sln /p:Configuration=Debug` (45-90 seconds, NEVER CANCEL)
+- **Release build**: `msbuild RogueTraderSystemGenerator.sln /p:Configuration=Release` (30-120 seconds, NEVER CANCEL)
+- **Debug build**: `msbuild RogueTraderSystemGenerator.sln /p:Configuration=Debug` (30-120 seconds, NEVER CANCEL)
 - **Run**: `./RogueTraderSystemGenerator/bin/Release/RogueTraderGeneratorTools.exe`
 
 ### Code Quality and Validation
