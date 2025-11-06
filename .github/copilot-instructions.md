@@ -4,6 +4,35 @@ A desktop application that automates dice rolling and content generation from th
 
 Always reference these instructions first and fallback to search or bash commands only when you encounter unexpected information that does not match the info here.
 
+## Quick Start
+
+**For immediate development** (recommended for most contributors):
+
+```bash
+cd electron-app
+npm install
+npm start
+```
+
+This launches the cross-platform Electron application in 5-8 seconds.
+
+**For Windows-only WPF development**:
+- Requires Windows with Visual Studio 2019+ and .NET Framework 4.0+
+- Use `msbuild RogueTraderSystemGenerator.sln /p:Configuration=Release`
+
+## Dependencies
+
+### Electron Version (Cross-Platform)
+- **Node.js**: v14+ (v20+ recommended)
+- **npm**: v6+ (v10+ recommended)
+- **Electron**: v38.1.0
+- **@tabler/icons**: v3.35.0 (UI icons)
+
+### WPF Version (Windows Only)
+- **.NET Framework**: 4.0+
+- **Visual Studio**: 2019+ or MSBuild
+- **Windows-specific libraries**: PresentationCore, PresentationFramework, System.Xaml
+
 ## Working Effectively
 
 ### Repository Structure
@@ -379,3 +408,94 @@ d6_128x128.ico             # Application icon
 - **Stable production**: WPF version (complete feature set)
 - **Branch strategy**: master branch contains both versions
 - **Classic WPF branch**: Available for stable WPF-only development
+
+## Contributing Guidelines
+
+### Before Contributing
+1. **Check existing issues**: Review open issues to avoid duplicate work
+2. **Discuss major changes**: Open an issue first to discuss significant modifications
+3. **Test thoroughly**: Both Electron and WPF versions should be tested when applicable
+4. **Follow code style**: Match existing patterns and conventions in the codebase
+
+### Pull Request Process
+1. **Fork and branch**: Create a feature branch from `master`
+2. **Make minimal changes**: Keep changes focused and surgical
+3. **Test your changes**: 
+   - Electron: Run `npm start` and manually test generation workflows
+   - WPF: Build and test on Windows if modifying WPF code
+4. **Document changes**: Update documentation if adding new features
+5. **Submit PR**: Provide clear description of changes and motivation
+
+### Code Review Expectations
+- PRs will be reviewed for code quality, correctness, and alignment with project goals
+- Be responsive to feedback and willing to make adjustments
+- Maintain backward compatibility when possible
+- Avoid breaking changes without discussion
+
+### Areas Welcome for Contribution
+- **Bug fixes**: Always welcome for both Electron and WPF versions
+- **UI improvements**: Especially for the Electron version
+- **Documentation**: Improvements to README, code comments, or these instructions
+- **Testing**: Adding test infrastructure or test cases
+- **Feature enhancements**: Discuss first via issues
+
+### License and Copyright
+- All contributions must be compatible with the MIT license
+- Respect FFG/Games Workshop intellectual property - don't add copyrighted content tables
+- Original generator logic and code are acceptable
+
+## Common Pitfalls
+
+### For All Developers
+- **DON'T cancel long-running operations**: Build and generation processes can take time
+  - npm install: 3-10 seconds (normal)
+  - System generation: 1-2 seconds (normal)
+  - msbuild: 30-120 seconds (normal)
+- **DON'T skip syntax validation**: Always run `find js -name "*.js" -exec node -c {} \;` for Electron changes
+- **DON'T commit temporary files**: Use `/tmp` for temporary work files
+- **DON'T break existing functionality**: Test thoroughly before committing
+
+### Electron-Specific Pitfalls
+- **Missing node_modules**: Always run `npm install` in `electron-app/` first
+- **Syntax errors in JavaScript**: Validate with `node -c <file>` before testing
+- **Console errors**: Check browser developer console for runtime errors
+- **Settings not persisting**: localStorage issues - check browser console
+- **Export failures**: Verify file system permissions for export operations
+
+### WPF-Specific Pitfalls
+- **Cross-platform builds**: WPF CANNOT be built on Linux/macOS - use Windows only
+- **Missing .NET Framework**: Install .NET Framework 4.0+ Developer Pack
+- **Reference errors**: Ensure PresentationCore, PresentationFramework are available
+- **Build timeouts**: Never cancel builds - set timeout to 120-180 seconds
+- **Settings not saving**: Ensure `Properties.Settings.Default.Save()` is called
+
+### Generation Logic Pitfalls
+- **Random number consistency**: Both versions use different RNG implementations
+- **Table lookups**: Ensure book selection flags are properly checked
+- **Node creation**: Follow existing patterns for new node types
+- **Export formatting**: Test RTF/PDF/JSON exports after logic changes
+
+### Testing Pitfalls
+- **No automated tests**: Both versions require manual testing
+- **Incomplete testing**: Test all generation types (System, Starship, Xenos, etc.)
+- **Settings not tested**: Verify rule book toggles affect generation correctly
+- **Save/Load not tested**: Always test workspace persistence after changes
+
+## Additional Resources
+
+### Documentation
+- **README.md**: User-facing documentation and download links
+- **ELECTRON_CONVERSION.md**: Detailed conversion history and decisions
+- **electron-app/README.md**: Electron-specific setup and features
+- **electron-app/EXPORT_JSON_FORMAT.md**: JSON export format specification
+
+### External References
+- **Rogue Trader RPG**: Fantasy Flight Games/Games Workshop product line
+- **Electron Documentation**: https://www.electronjs.org/docs/latest/
+- **Node.js Documentation**: https://nodejs.org/docs/latest/
+- **.NET Framework**: Microsoft documentation for WPF development
+
+### Release Information
+- **Latest releases**: https://github.com/TiLT42/RogueTraderGeneratorTools/releases
+- **Current stable version**: v1.09 (WPF)
+- **Next version**: v2.0.0 (Electron - in active development)
