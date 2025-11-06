@@ -71,10 +71,7 @@ class PrimitiveXenosNode extends NodeBase {
                 if (childData.type === NodeTypes.Xenos) {
                     child = XenosNode.fromJSON(childData);
                 } else {
-                    const tempChild = createNode(childData.type);
-                    child = tempChild.constructor.fromJSON ? 
-                        tempChild.constructor.fromJSON(childData) : 
-                        tempChild;
+                    child = window.restoreChildNode(childData);
                 }
                 
                 // Propagate system creation rules to children

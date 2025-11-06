@@ -48,6 +48,20 @@ window.getNodeClass = function(type) {
     }
 };
 
+// Helper to restore a child node from JSON data
+// This avoids double-allocation of IDs by checking for fromJSON before creating
+window.restoreChildNode = function(childData) {
+    const NodeClass = getNodeClass(childData.type);
+    if (NodeClass.fromJSON) {
+        return NodeClass.fromJSON(childData);
+    } else {
+        // Fallback: create node and restore basic properties
+        const node = createNode(childData.type, childData.id);
+        Object.assign(node, childData);
+        return node;
+    }
+};
+
 // Node factory function
 window.createNode = function(type, id = null, ...args) {
     const NodeClass = getNodeClass(type);
