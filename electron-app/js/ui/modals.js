@@ -37,6 +37,8 @@ class Modals {
     hide() {
         this.overlay.classList.add('hidden');
         this.okButton.onclick = null;
+        // Remove any modal-specific classes
+        this.body.classList.remove('modal-body-settings');
     }
 
     showEditDescription(node) {
@@ -89,6 +91,9 @@ class Modals {
     }
 
     showSettings() {
+        // Add settings-specific class for fixed height
+        this.body.classList.add('modal-body-settings');
+        
         this.title.textContent = 'Settings';
         this.body.innerHTML = `
             <div class="settings-tabs">
