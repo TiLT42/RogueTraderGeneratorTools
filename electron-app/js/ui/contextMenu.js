@@ -400,7 +400,10 @@ class ContextMenu {
                     if (!existingPirateDen) {
                         const pirateDen = createNode(NodeTypes.PirateShips);
                         pirateDen.generate();
-                        this.currentNode.addChild(pirateDen);
+                        // Insert at the beginning (index 0) to match automatic generation behavior
+                        pirateDen.parent = this.currentNode;
+                        this.currentNode.children.unshift(pirateDen);
+                        markDirty();
                         window.treeView.refresh();
                         markDirty();
                     }
