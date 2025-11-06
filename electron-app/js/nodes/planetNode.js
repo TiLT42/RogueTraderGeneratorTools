@@ -415,11 +415,12 @@ class PlanetNode extends NodeBase {
             this.maxHabitabilityRoll = 9999;
         }
         if ((this.hasAtmosphere && (this.atmosphereTainted || this.atmospherePure)) || chanceOfAdaptedLife) {
-            let roll = RollD10() + this.habitabilityModifier;
-            // Haven feature: better habitability in Primary Biosphere boosts result by +1 (bounded later by max cap)
-            if (this.systemCreationRules?.havenBetterHabitability && this.zone === 'PrimaryBiosphere') {
-                roll += 1;
+            // Haven feature: better habitability applies SYSTEM-WIDE (not zone-specific)
+            // CRITICAL: WPF line 598 checks flag WITHOUT zone restriction, adds +2 to MODIFIER (not roll)
+            if (this.systemCreationRules?.havenBetterHabitability) {
+                this.habitabilityModifier += 2;
             }
+            let roll = RollD10() + this.habitabilityModifier;
             if (roll > this.maxHabitabilityRoll) roll = this.maxHabitabilityRoll;
             if (roll <= 1) this.habitability = 'Inhospitable';
             else if (roll <= 3) this.habitability = 'TrappedWater';
