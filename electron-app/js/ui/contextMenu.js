@@ -333,6 +333,8 @@ class ContextMenu {
                         newNode.maxSize = this.currentNode.bodyValue;
                     }
                     orbitalFeatures.addChild(newNode);
+                    // Auto-name the moon using astronomical convention
+                    this.renameOrbitalFeatures(this.currentNode);
                 } else {
                     // For Orbital Features node, create a moon planet
                     const newNode = createNode(NodeTypes.Planet);
@@ -343,6 +345,10 @@ class ContextMenu {
                         newNode.maxSize = this.currentNode.parent.bodyValue;
                     }
                     this.currentNode.addChild(newNode);
+                    // Auto-name the moon using astronomical convention
+                    if (this.currentNode.parent) {
+                        this.renameOrbitalFeatures(this.currentNode.parent);
+                    }
                 }
                 window.treeView.refresh();
                 markDirty();
@@ -356,6 +362,8 @@ class ContextMenu {
                     const newNode = createNode(NodeTypes.LesserMoon);
                     newNode.nodeName = 'Lesser Moon';
                     orbitalFeatures.addChild(newNode);
+                    // Auto-name the moon using astronomical convention
+                    this.renameOrbitalFeatures(this.currentNode);
                 } else {
                     this.addChildNode(NodeTypes.LesserMoon, 'Lesser Moon');
                 }
@@ -371,6 +379,8 @@ class ContextMenu {
                     const newNode = createNode(NodeTypes.Asteroid);
                     newNode.nodeName = 'Asteroid';
                     orbitalFeatures.addChild(newNode);
+                    // Auto-name the asteroid using astronomical convention
+                    this.renameOrbitalFeatures(this.currentNode);
                 } else {
                     this.addChildNode(NodeTypes.Asteroid, 'Asteroid');
                 }
@@ -445,6 +455,19 @@ class ContextMenu {
         const orbitalFeatures = createNode(NodeTypes.OrbitalFeatures);
         planetOrGasGiant.addChild(orbitalFeatures);
         return orbitalFeatures;
+    }
+    
+    renameOrbitalFeatures(planetOrGasGiant) {
+        // Call the appropriate naming method based on node type
+        if (planetOrGasGiant.type === NodeTypes.Planet) {
+            if (typeof planetOrGasGiant._assignNamesToOrbitalFeatures === 'function') {
+                planetOrGasGiant._assignNamesToOrbitalFeatures();
+            }
+        } else if (planetOrGasGiant.type === NodeTypes.GasGiant) {
+            if (typeof planetOrGasGiant.assignNamesForOrbitalFeatures === 'function') {
+                planetOrGasGiant.assignNamesForOrbitalFeatures();
+            }
+        }
     }
 
     canGenerate(node) {

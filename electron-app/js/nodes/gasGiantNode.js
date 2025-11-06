@@ -116,7 +116,71 @@ class GasGiantNode extends NodeBase {
         }
     }
 
-    assignNamesForOrbitalFeatures() { /* naming centralized in SystemNode.assignSequentialBodyNames */ }
+    assignNamesForOrbitalFeatures() {
+        // Assign names to moons using astronomical naming convention
+        if (!this.orbitalFeaturesNode) return;
+        
+        // Determine if this gas giant has a unique name (not astronomical naming)
+        const hasUniqueName = this._hasUniquePlanetName();
+        
+        let count = 1;
+        for (const child of this.orbitalFeaturesNode.children) {
+            if (child.type === NodeTypes.Planet || child.type === NodeTypes.LesserMoon || child.type === NodeTypes.Asteroid) {
+                // Use astronomical naming convention:
+                // - Unique planet names use Arabic numerals (sci-fi convention)
+                // - Astronomical planet names use Roman numerals
+                if (hasUniqueName) {
+                    child.nodeName = `${this.nodeName}-${count}`;
+                } else {
+                    child.nodeName = `${this.nodeName}-${window.CommonData.roman(count)}`;
+                }
+                // Recurse for nested moons (if moon is a planet with its own moons)
+                if (child.type === NodeTypes.Planet && typeof child._assignNamesToOrbitalFeatures === 'function') {
+                    child._assignNamesToOrbitalFeatures();
+                }
+                count++;
+            }
+        }
+    }
+    
+    _hasUniquePlanetName() {
+        // Check if this gas giant's name follows astronomical naming (SystemName + single letter)
+        // If it doesn't match that pattern, it's a unique name
+        const name = this.nodeName;
+        
+        // Get the system node to check the system name
+        let systemNode = this._getSystemNode();
+        if (!systemNode) {
+            // If we can't find the system node, assume unique name
+            return true;
+        }
+        
+        const systemName = systemNode.nodeName;
+        
+        // Check if name is exactly "SystemName [single letter]"
+        // Pattern: starts with system name, followed by space and single lowercase letter
+        const astronomicalPattern = new RegExp(`^${this._escapeRegex(systemName)} [a-z]$`);
+        
+        // If it matches astronomical naming, it's NOT a unique name
+        return !astronomicalPattern.test(name);
+    }
+    
+    _getSystemNode() {
+        // Traverse up the tree to find the system node
+        let node = this.parent;
+        while (node) {
+            if (node.type === NodeTypes.System) {
+                return node;
+            }
+            node = node.parent;
+        }
+        return null;
+    }
+    
+    _escapeRegex(str) {
+        // Escape special regex characters in the system name
+        return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    }
 
     updateDescriptionParity() {
         // Include explicit Type line for parity clarity (important once renamed)
