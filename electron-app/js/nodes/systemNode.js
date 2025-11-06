@@ -280,7 +280,7 @@ class SystemNode extends NodeBase {
                 if (taken.size === max) break; // all chosen
                 // continue loop to attempt another (next attempt may stop if duplicate rolled)
             } else {
-                // Duplicate rolled => stop (mirrors C# returning 0 which terminates do/while)
+                // Duplicate roll encountered, terminate selection process (matches C# behavior)
                 break;
             }
         }
@@ -940,6 +940,9 @@ class SystemNode extends NodeBase {
     insertPlanet(position, zone, forceInhabitable = false) {
         const zoneNode = this.getZoneNode(zone);
         if (zoneNode) {
+            // Validate position is within valid bounds
+            const validPosition = Math.max(0, Math.min(position, zoneNode.children.length));
+            
             const planet = createNode(NodeTypes.Planet);
             planet.systemCreationRules = this.systemCreationRules;
             planet.zone = zone;
@@ -948,7 +951,7 @@ class SystemNode extends NodeBase {
             }
             planet.generate();
             // Insert at specific position instead of appending
-            zoneNode.children.splice(position, 0, planet);
+            zoneNode.children.splice(validPosition, 0, planet);
             planet.parent = zoneNode;
             return planet;
         }
