@@ -131,11 +131,20 @@ function getNewId() {
 function markDirty() {
     window.APP_STATE.isDirty = true;
     updateWindowTitle();
+    updateToolbarButtonStates();
 }
 
 function markClean() {
     window.APP_STATE.isDirty = false;
     updateWindowTitle();
+    updateToolbarButtonStates();
+}
+
+function updateToolbarButtonStates() {
+    // Update toolbar button states if toolbar is initialized
+    if (window.toolbar && typeof window.toolbar.updateWorkspaceButtonStates === 'function') {
+        window.toolbar.updateWorkspaceButtonStates();
+    }
 }
 
 function updateWindowTitle() {
