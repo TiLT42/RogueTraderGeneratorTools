@@ -276,29 +276,38 @@ class Modals {
     }
 
     showAbout() {
-        this.title.textContent = 'About Rogue Trader Generator Tools';
+        this.title.textContent = '';
         this.body.innerHTML = `
             <div style="text-align: center;">
                 <h3>Rogue Trader Generator Tools</h3>
-                <p>Electron Version 2.0</p>
+                <p>Version 2.0</p>
                 <p>A tool for generating systems, ships, xenos, and treasures for the Rogue Trader RPG.</p>
+                <p>Developed by Espen Gätzschmann.</p>
                 <br>
-                <p><strong>Content from:</strong></p>
-                <ul style="text-align: left; display: inline-block;">
-                    <li>Rogue Trader Core Rulebook</li>
-                    <li>Stars of Inequity</li>
-                    <li>The Koronus Bestiary</li>
-                    <li>Into the Storm</li>
-                    <li>Battlefleet Koronus</li>
-                    <li>The Soul Reaver</li>
-                </ul>
+                <p style="font-size: 11px; color: var(--text-muted); font-style: italic;">
+                    This tool is not affiliated with, endorsed by, or sponsored by Games Workshop Ltd., Fantasy Flight Games, or Cubicle 7 Entertainment Ltd. 
+                    Rogue Trader is a trademark of Games Workshop Ltd. This tool reproduces minimal content from the published books 
+                    and does not replace the original source material.
+                </p>
                 <br>
-                <p><em>This tool is not affiliated with Games Workshop or Fantasy Flight Games.</em></p>
+                <p style="font-size: 13px; color: var(--text-muted); font-style: italic;">
+                    This program is free software licensed under the GNU General Public License v3.0<br>
+                    This program comes with ABSOLUTELY NO WARRANTY<br>
+                    You are welcome to redistribute it under certain conditions
+                </p>
+                <p style="font-size: 12px;">
+                    <a href="https://www.gnu.org/licenses/gpl-3.0.html" target="_blank" rel="noopener" style="color: var(--accent-primary);">View License</a> | 
+                    <a href="https://github.com/TiLT42/RogueTraderGeneratorTools" target="_blank" rel="noopener" style="color: var(--accent-primary);">Source Code</a>
+                </p>
                 <br>
-                <p style="font-size: 12px; color: var(--text-muted);">
+                <p style="font-size: 11px; color: var(--text-muted);">
                     <strong>Icons:</strong> <a href="https://tabler.io/icons" target="_blank" style="color: var(--accent-primary);">Tabler Icons</a> 
                     by Paweł Kuna - MIT License<br>
                     Copyright (c) 2020-2024 Paweł Kuna
+                </p>
+                <br>
+                <p style="font-size: 11px; color: var(--text-muted);">
+                    Copyright © 2025 Espen Gätzschmann
                 </p>
             </div>
         `;
