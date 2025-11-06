@@ -4,6 +4,7 @@
 console.log('=== Astronomical Naming Logic Test ===\n');
 
 // Test helper function: convert index to lowercase letter
+// Note: Valid range is 1-25 (b-z). Index 26+ will produce non-letter characters.
 function indexToLetter(index) {
     return String.fromCharCode(97 + index); // 97 is 'a', so 1->b, 2->c, etc.
 }

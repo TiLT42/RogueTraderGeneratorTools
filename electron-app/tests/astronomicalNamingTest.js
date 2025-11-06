@@ -177,7 +177,8 @@ for (let testNum = 1; testNum <= 3; testNum++) {
                     }
                     
                     // Check if moon uses Roman numerals (for non-unique parent names) or Arabic (for unique names)
-                    // Roman numeral pattern: contains I, V, X
+                    // Note: This is a permissive check for Roman-like characters (I, V, X).
+                    // Proper Roman numeral validation happens in the roman() function itself.
                     const hasRomanNumeral = /[IVX]+$/.test(sat.nodeName.split('-').pop());
                     const hasArabicNumber = /\d+$/.test(sat.nodeName.split('-').pop());
                     
