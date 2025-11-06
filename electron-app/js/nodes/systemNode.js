@@ -792,10 +792,16 @@ class SystemNode extends NodeBase {
     assignSequentialBodyNames() {
         // Centralized hierarchical naming for planets, gas giants, and their satellites.
         // Two modes:
-        //   - Sequential (legacy): SystemName N and SystemName N-M for satellites.
-        //   - Evocative: generator-produced primary names; satellites get their own generated names or derived names.
+        //   - Astronomical: SystemName + lowercase letter (b, c, d...) for planets; Roman numerals for moons
+        //   - Evocative: generator-produced primary names; satellites use Roman numerals or Arabic numbers
 
         const evocativeMode = !!this.generateUniquePlanetNames;
+
+        // Helper to convert index to lowercase letter (1=b, 2=c, 3=d, etc.)
+        // Starts at 'b' because 'a' is traditionally reserved for the star itself
+        const indexToLetter = (index) => {
+            return String.fromCharCode(97 + index); // 97 is 'a', so 1->b, 2->c, etc.
+        };
 
         // Collect primaries in zone order
         const primaries = [];
@@ -812,13 +818,13 @@ class SystemNode extends NodeBase {
                     if (type === NodeTypes.GasGiant && typeof zone?.generateGasGiantName === 'function') candidate = zone.generateGasGiantName();
                     else if (typeof zone?.generatePlanetName === 'function') candidate = zone.generatePlanetName();
                 } catch (e) { /* ignore */ }
-                if (!candidate) candidate = `${this.nodeName} ${seqIndex}`; // fallback
+                if (!candidate) candidate = `${this.nodeName} ${indexToLetter(seqIndex)}`; // fallback uses astronomical naming
                 if (!usedNames.has(candidate)) { usedNames.add(candidate); return candidate; }
             }
-            // Final fallback ensures a unique string
-            let fallback = `${this.nodeName} ${seqIndex}`;
+            // Final fallback ensures a unique string using astronomical naming
+            let fallback = `${this.nodeName} ${indexToLetter(seqIndex)}`;
             let counter = 1;
-            while (usedNames.has(fallback)) { fallback = `${this.nodeName} ${seqIndex}-${counter++}`; }
+            while (usedNames.has(fallback)) { fallback = `${this.nodeName} ${indexToLetter(seqIndex)}-${counter++}`; }
             usedNames.add(fallback);
             return fallback;
         };
@@ -828,10 +834,15 @@ class SystemNode extends NodeBase {
             for (const child of zone.children) {
                 if (child.type === NodeTypes.Planet || child.type === NodeTypes.GasGiant) {
                     child._primarySequenceNumber = seqIndex;
+                    child._hasUniqueName = false; // Track if this planet has a unique evocative name
                     if (evocativeMode) {
-                        child.nodeName = getGeneratedName(zone, child.type);
+                        const generatedName = getGeneratedName(zone, child.type);
+                        child.nodeName = generatedName;
+                        // Check if this is a unique evocative name (not just a fallback)
+                        child._hasUniqueName = !generatedName.includes(indexToLetter(seqIndex));
                     } else {
-                        child.nodeName = `${this.nodeName} ${seqIndex}`;
+                        // Use astronomical naming: SystemName + lowercase letter (b, c, d...)
+                        child.nodeName = `${this.nodeName} ${indexToLetter(seqIndex)}`;
                     }
                     primaries.push(child);
                     seqIndex++;
@@ -846,8 +857,17 @@ class SystemNode extends NodeBase {
             for (const sat of primary.orbitalFeaturesNode.children) {
                 const isSatelliteBody = (sat.type === NodeTypes.Planet || sat.type === NodeTypes.LesserMoon || sat.type === NodeTypes.Asteroid);
                 if (isSatelliteBody) {
-                    // Always use sequential scheme for satellites, even in evocative mode, to retain structural clarity.
-                    sat.nodeName = `${this.nodeName} ${primary._primarySequenceNumber}-${subIndex}`;
+                    // Astronomical naming for moons:
+                    // - If parent has unique name: ParentName-Roman (e.g., "Tirane-II")
+                    // - If parent has astronomical name: ParentName-Roman (e.g., "Kepler-22 b-I")
+                    // Use Roman numerals (I, II, III, etc.) for all moons
+                    if (primary._hasUniqueName) {
+                        // Unique planet names use Arabic numerals for sci-fi convention
+                        sat.nodeName = `${primary.nodeName}-${subIndex}`;
+                    } else {
+                        // Astronomical names use Roman numerals
+                        sat.nodeName = `${primary.nodeName}-${window.CommonData.roman(subIndex)}`;
+                    }
                     subIndex++;
                 }
                 if (sat.orbitalFeaturesNode && sat.type === NodeTypes.Planet) nameSatellites(sat);
@@ -856,7 +876,10 @@ class SystemNode extends NodeBase {
         for (const p of primaries) nameSatellites(p);
 
         // Cleanup temporary markers
-        for (const p of primaries) delete p._primarySequenceNumber;
+        for (const p of primaries) {
+            delete p._primarySequenceNumber;
+            delete p._hasUniqueName;
+        }
     }
 
     updateDescription() {
