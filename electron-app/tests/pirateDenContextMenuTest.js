@@ -2,14 +2,21 @@
 require('./runParity.js'); // loads environment
 
 // Load additional dependencies needed for this test
+let dependenciesLoaded = true;
 try {
     require('../js/nodes/shipNode.js');
     require('../js/nodes/pirateShipsNode.js');
 } catch(e) {
-    console.warn('Warning loading dependencies:', e.message);
+    console.error('Failed to load required dependencies:', e.message);
+    dependenciesLoaded = false;
 }
 
 console.log('\n=== Pirate Den Context Menu Tests ===\n');
+
+if (!dependenciesLoaded) {
+    console.log('⚠ Skipping all tests - required dependencies could not be loaded\n');
+    process.exit(1);
+}
 
 // Test 1: System node has "Add Pirate Den" menu item
 console.log('Test 1: System node "Add Pirate Den" menu item');

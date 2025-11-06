@@ -78,14 +78,6 @@ class PirateShipsNode extends NodeBase {
         this.description = desc;
     }
 
-    getContextMenuItems() {
-        return [
-            { label: 'Add Pirate Ship', action: 'add-pirate-ship' },
-            { type: 'separator' },
-            { label: 'Edit Description', action: 'edit-description' }
-        ];
-    }
-
     toJSON() {
         const json = super.toJSON();
         json.containsWayfarerStation = this.containsWayfarerStation;
