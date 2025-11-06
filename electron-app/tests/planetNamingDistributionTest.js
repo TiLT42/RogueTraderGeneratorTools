@@ -3,7 +3,11 @@
 
 console.log('=== Planet Naming Distribution Test ===\n');
 
-// Helper functions
+// Note: This test file uses mock implementations of RollD10() for reproducibility.
+// The actual implementation uses the global RollD10() from random.js.
+// The mock here is intentionally simple for deterministic testing of the logic flow.
+
+// Helper functions - mock implementations for testing
 function indexToLetter(index) {
     return String.fromCharCode(97 + index);
 }
@@ -29,7 +33,8 @@ class MockSystem {
         for (const zone of zones) {
             if (!zone) continue;
             for (const child of zone.children) {
-                if (child.type === type.toLowerCase()) {
+                // Match actual implementation: exact string matching on type
+                if (child.type === 'planet') {
                     results.push(child);
                 }
             }

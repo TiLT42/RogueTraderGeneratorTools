@@ -831,7 +831,7 @@ class SystemNode extends NodeBase {
         if (this.generateUniquePlanetNames) {
             // 50% chance for each planet to get a unique name
             // This creates variety - some named, some not
-            return RollD10() >= 6; // 50% chance (6-10 on d10)
+            return RollD10() >= 6; // 50% chance (d10 rolls 1-10, so 6-10 is 5 outcomes = 50%)
         }
         
         // 4. Default: use astronomical naming (SystemName + letter)
