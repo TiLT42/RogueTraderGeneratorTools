@@ -65,7 +65,10 @@ class NativeSpeciesNode extends NodeBase {
             for (const childData of data.children) {
                 const child = createNode(childData.type);
                 const restoredChild = child.constructor.fromJSON ? child.constructor.fromJSON(childData) : NodeBase.fromJSON(childData);
-                if (this.systemCreationRules && restoredChild) restoredChild.systemCreationRules = this.systemCreationRules;
+                // Only set systemCreationRules if it was actually in the saved data
+                if (data.systemCreationRules && restoredChild && childData.systemCreationRules !== undefined) {
+                    restoredChild.systemCreationRules = childData.systemCreationRules;
+                }
                 node.addChild(restoredChild);
             }
         }

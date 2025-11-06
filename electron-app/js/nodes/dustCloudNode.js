@@ -33,7 +33,13 @@ class DustCloudNode extends NodeBase {
         const node = new DustCloudNode(data.id);
         Object.assign(node, {
             nodeName: data.nodeName || 'Dust Cloud',
-            description: data.description || ''
+            description: data.description || '',
+            customDescription: data.customDescription || '',
+            pageReference: data.pageReference || '',
+            isGenerated: data.isGenerated || false,
+            fontWeight: data.fontWeight || 'bold',
+            fontStyle: data.fontStyle || 'normal',
+            fontForeground: data.fontForeground || '#000000'
         });
         // Regenerate static description if missing or user wants refresh
         if (!node.description) node.updateDescription();

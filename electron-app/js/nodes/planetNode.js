@@ -1399,6 +1399,8 @@ class PlanetNode extends NodeBase {
             }
         }
         
+        // Restore environment data (even if null)
+        node.environment = data.environment || null;
         if (data.environment) {
             // Rebuild or use stored references
             node._environmentReferences = [];
