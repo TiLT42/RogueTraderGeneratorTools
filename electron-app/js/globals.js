@@ -142,7 +142,7 @@ function markClean() {
 
 function updateToolbarButtonStates() {
     // Update toolbar button states if toolbar is initialized
-    if (window.toolbar && typeof window.toolbar.updateWorkspaceButtonStates === 'function') {
+    if (window.toolbar && window.toolbar.updateWorkspaceButtonStates) {
         window.toolbar.updateWorkspaceButtonStates();
     }
 }

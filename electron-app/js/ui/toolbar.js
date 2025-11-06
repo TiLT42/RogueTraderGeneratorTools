@@ -214,7 +214,7 @@ class Toolbar {
 
     updateWorkspaceButtonStates() {
         // Update button enabled/disabled states based on workspace state
-        const hasContent = window.APP_STATE.rootNodes && window.APP_STATE.rootNodes.length > 0;
+        const hasContent = window.APP_STATE.rootNodes.length > 0;
         const isDirty = window.APP_STATE.isDirty;
         
         const saveBtn = document.getElementById('btn-save');
