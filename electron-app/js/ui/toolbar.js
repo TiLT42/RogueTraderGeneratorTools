@@ -211,4 +211,29 @@ class Toolbar {
             xenosBtn.disabled = !hasXenosSource;
         }
     }
+
+    updateWorkspaceButtonStates() {
+        // Update button enabled/disabled states based on workspace state
+        const hasContent = window.APP_STATE.rootNodes.length > 0;
+        const isDirty = window.APP_STATE.isDirty;
+        
+        const saveBtn = document.getElementById('btn-save');
+        const saveAsBtn = document.getElementById('btn-save-as');
+        const exportBtn = document.getElementById('btn-export');
+
+        // Save button: disabled if tree is empty OR workspace is not dirty
+        if (saveBtn) {
+            saveBtn.disabled = !hasContent || !isDirty;
+        }
+
+        // Save As button: disabled if tree is empty
+        if (saveAsBtn) {
+            saveAsBtn.disabled = !hasContent;
+        }
+
+        // Export button: disabled if tree is empty
+        if (exportBtn) {
+            exportBtn.disabled = !hasContent;
+        }
+    }
 }
