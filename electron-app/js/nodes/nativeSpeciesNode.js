@@ -64,7 +64,10 @@ class NativeSpeciesNode extends NodeBase {
         if (data.children) {
             for (const childData of data.children) {
                 const restoredChild = window.restoreChildNode(childData);
-                // Only set systemCreationRules if it was actually in the saved data
+                // Only propagate systemCreationRules from parent to child if:
+                // 1. Parent has systemCreationRules, AND
+                // 2. Child explicitly had systemCreationRules in saved data (even if null)
+                // This prevents adding the field to children that never had it
                 if (data.systemCreationRules && restoredChild && childData.systemCreationRules !== undefined) {
                     restoredChild.systemCreationRules = childData.systemCreationRules;
                 }

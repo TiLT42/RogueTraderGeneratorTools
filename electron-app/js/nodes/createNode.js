@@ -70,6 +70,10 @@ window.createNode = function(type, id = null, ...args) {
             // args[0] = worldType, args[1] = isPrimitiveXenos
             return new NodeClass(args[0] || 'TemperateWorld', args[1] || false, id);
         default:
-            return new NodeClass(type === 'base' ? type : id, ...args);
+            // Most node constructors take (id, ...args), but NodeBase takes (type, id)
+            if (NodeClass === NodeBase) {
+                return new NodeClass(type, id, ...args);
+            }
+            return new NodeClass(id, ...args);
     }
 };
