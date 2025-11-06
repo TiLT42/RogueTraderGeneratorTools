@@ -790,18 +790,25 @@ class SystemNode extends NodeBase {
     }
 
     /**
-     * Determines if a planet should receive a unique evocative name based on system context.
+     * Determines if a planet or moon should receive a unique evocative name based on system context.
      * This creates a more nuanced distribution than the simple all-or-nothing approach.
      * 
-     * @param {Object} planet - The planet/gas giant node to evaluate
-     * @returns {boolean} - True if the planet should get a unique name
+     * @param {Object} body - The planet/gas giant/moon node to evaluate
+     * @returns {boolean} - True if the body should get a unique name
      */
-    shouldPlanetHaveUniqueName(planet) {
+    shouldPlanetHaveUniqueName(body) {
         // 1. Check for Starfarers feature with human inhabitants
         // These systems show massive human inhabitation - all major bodies get unique names
         if (this.systemFeatures.includes('Starfarers')) {
             // Check if starfarers are human (default assumption is human unless explicitly set otherwise)
-            const allPlanets = this.getAllDescendantNodesOfType('Planet');
+            // Manually collect all planets to avoid dependency on getAllDescendantNodesOfType
+            const allPlanets = [];
+            const collectPlanets = (node) => {
+                if (node.type === NodeTypes.Planet) allPlanets.push(node);
+                if (node.children) node.children.forEach(collectPlanets);
+            };
+            collectPlanets(this);
+            
             const hasHumanStarfarers = allPlanets.some(p => 
                 p.inhabitants === 'Human' && p.isInhabitantHomeWorld
             );
@@ -810,9 +817,9 @@ class SystemNode extends NodeBase {
             }
         }
         
-        // 2. Check if this specific planet has advanced human inhabitants
-        // Planets with sufficiently advanced human colonies get unique names
-        if (planet.inhabitants === 'Human' && planet.inhabitantDevelopment) {
+        // 2. Check if this specific body has advanced human inhabitants
+        // Planets and moons with sufficiently advanced human colonies get unique names
+        if (body.inhabitants === 'Human' && body.inhabitantDevelopment) {
             // Advanced enough to have contacted the Imperium or established presence
             const advancedLevels = [
                 'Voidfarers',
@@ -820,7 +827,7 @@ class SystemNode extends NodeBase {
                 'Basic Industry',
                 'Pre-Industrial'  // Even feudal worlds might have names if they had Imperial contact
             ];
-            if (advancedLevels.includes(planet.inhabitantDevelopment)) {
+            if (advancedLevels.includes(body.inhabitantDevelopment)) {
                 return true;
             }
         }
@@ -915,16 +922,26 @@ class SystemNode extends NodeBase {
             for (const sat of primary.orbitalFeaturesNode.children) {
                 const isSatelliteBody = (sat.type === NodeTypes.Planet || sat.type === NodeTypes.LesserMoon || sat.type === NodeTypes.Asteroid);
                 if (isSatelliteBody) {
-                    // Astronomical naming for moons:
-                    // - If parent has unique name: ParentName-Roman (e.g., "Tirane-II")
-                    // - If parent has astronomical name: ParentName-Roman (e.g., "Kepler-22 b-I")
-                    // Use Roman numerals (I, II, III, etc.) for all moons
-                    if (primary._hasUniqueName) {
-                        // Unique planet names use Arabic numerals for sci-fi convention
-                        sat.nodeName = `${primary.nodeName}-${subIndex}`;
+                    // Check if this moon should get a unique name (moons with major human presence)
+                    const moonShouldBeUnique = this.shouldPlanetHaveUniqueName(sat);
+                    
+                    if (moonShouldBeUnique) {
+                        // Moon has major human presence - give it a unique name
+                        const generatedName = getGeneratedName(primary.parent || this.primaryBiosphereZone, sat.type);
+                        sat.nodeName = generatedName;
+                        sat._hasUniqueName = true;
                     } else {
-                        // Astronomical names use Roman numerals
-                        sat.nodeName = `${primary.nodeName}-${window.CommonData.roman(subIndex)}`;
+                        // Standard moon naming based on parent
+                        // - If parent has unique name: ParentName-Arabic (e.g., "Tirane-1")
+                        // - If parent has astronomical name: ParentName-Roman (e.g., "Kepler-22 b-I")
+                        if (primary._hasUniqueName) {
+                            // Unique planet names use Arabic numerals for sci-fi convention
+                            sat.nodeName = `${primary.nodeName}-${subIndex}`;
+                        } else {
+                            // Astronomical names use Roman numerals
+                            sat.nodeName = `${primary.nodeName}-${window.CommonData.roman(subIndex)}`;
+                        }
+                        sat._hasUniqueName = false;
                     }
                     subIndex++;
                 }
@@ -933,11 +950,15 @@ class SystemNode extends NodeBase {
         };
         for (const p of primaries) nameSatellites(p);
 
-        // Cleanup temporary markers
-        for (const p of primaries) {
-            delete p._primarySequenceNumber;
-            delete p._hasUniqueName;
-        }
+        // Cleanup temporary markers from all bodies (primaries and their satellites)
+        const cleanupMarkers = (node) => {
+            delete node._primarySequenceNumber;
+            delete node._hasUniqueName;
+            if (node.orbitalFeaturesNode && node.orbitalFeaturesNode.children) {
+                node.orbitalFeaturesNode.children.forEach(cleanupMarkers);
+            }
+        };
+        for (const p of primaries) cleanupMarkers(p);
     }
 
     updateDescription() {

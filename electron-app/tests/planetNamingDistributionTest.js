@@ -27,6 +27,15 @@ class MockSystem {
         this.outerReachesZone = null;
     }
     
+    get children() {
+        // Return zones as children for recursive traversal
+        const zones = [];
+        if (this.innerCauldronZone) zones.push(this.innerCauldronZone);
+        if (this.primaryBiosphereZone) zones.push(this.primaryBiosphereZone);
+        if (this.outerReachesZone) zones.push(this.outerReachesZone);
+        return zones;
+    }
+    
     getAllDescendantNodesOfType(type) {
         const results = [];
         const zones = [this.innerCauldronZone, this.primaryBiosphereZone, this.outerReachesZone];
@@ -42,10 +51,17 @@ class MockSystem {
         return results;
     }
     
-    shouldPlanetHaveUniqueName(planet) {
-        // Implementation matching the real code
+    shouldPlanetHaveUniqueName(body) {
+        // Implementation matching the real code (updated to not use getAllDescendantNodesOfType)
         if (this.systemFeatures.includes('Starfarers')) {
-            const allPlanets = this.getAllDescendantNodesOfType('Planet');
+            // Manually collect all planets
+            const allPlanets = [];
+            const collectPlanets = (node) => {
+                if (node.type === 'planet') allPlanets.push(node);
+                if (node.children) node.children.forEach(collectPlanets);
+            };
+            collectPlanets(this);
+            
             const hasHumanStarfarers = allPlanets.some(p => 
                 p.inhabitants === 'Human' && p.isInhabitantHomeWorld
             );
@@ -54,14 +70,14 @@ class MockSystem {
             }
         }
         
-        if (planet.inhabitants === 'Human' && planet.inhabitantDevelopment) {
+        if (body.inhabitants === 'Human' && body.inhabitantDevelopment) {
             const advancedLevels = [
                 'Voidfarers',
                 'Advanced Industry', 
                 'Basic Industry',
                 'Pre-Industrial'
             ];
-            if (advancedLevels.includes(planet.inhabitantDevelopment)) {
+            if (advancedLevels.includes(body.inhabitantDevelopment)) {
                 return true;
             }
         }
@@ -267,6 +283,35 @@ console.log('Test 6: Pre-Industrial (feudal) worlds should get unique names');
         console.log('  ✓ Test 6 PASSED\n');
     } else {
         console.log('  ✗ Test 6 FAILED\n');
+    }
+}
+
+// Test 7: Moons with major human presence should get unique names
+console.log('Test 7: Moons with major human presence should get unique names');
+{
+    const system = new MockSystem([], false);
+    system.primaryBiosphereZone = new MockZone('Primary Biosphere');
+    
+    const moonWithVoidfarers = new MockPlanet('Human', 'Voidfarers');
+    const moonWithColony = new MockPlanet('Human', 'Colony');
+    const emptyMoon = new MockPlanet('None', '');
+    
+    system.primaryBiosphereZone.children = [moonWithVoidfarers, moonWithColony, emptyMoon];
+    
+    const results = {
+        voidfarersMoon: system.shouldPlanetHaveUniqueName(moonWithVoidfarers),
+        colonyMoon: system.shouldPlanetHaveUniqueName(moonWithColony),
+        emptyMoon: system.shouldPlanetHaveUniqueName(emptyMoon)
+    };
+    
+    console.log(`  Moon with Voidfarers: ${results.voidfarersMoon} (expected: true)`);
+    console.log(`  Moon with Colony: ${results.colonyMoon} (expected: false)`);
+    console.log(`  Empty moon: ${results.emptyMoon} (expected: false)`);
+    
+    if (results.voidfarersMoon && !results.colonyMoon && !results.emptyMoon) {
+        console.log('  ✓ Test 7 PASSED\n');
+    } else {
+        console.log('  ✗ Test 7 FAILED\n');
     }
 }
 
