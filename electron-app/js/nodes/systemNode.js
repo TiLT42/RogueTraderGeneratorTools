@@ -838,8 +838,10 @@ class SystemNode extends NodeBase {
                     if (evocativeMode) {
                         const generatedName = getGeneratedName(zone, child.type);
                         child.nodeName = generatedName;
-                        // Check if this is a unique evocative name (not just a fallback)
-                        child._hasUniqueName = !generatedName.includes(indexToLetter(seqIndex));
+                        // Check if this is a unique evocative name (not an astronomical fallback)
+                        // Astronomical pattern is: "SystemName letter" (e.g., "Kappa Moratrosyx b")
+                        const astronomicalPattern = `${this.nodeName} ${indexToLetter(seqIndex)}`;
+                        child._hasUniqueName = !generatedName.startsWith(astronomicalPattern);
                     } else {
                         // Use astronomical naming: SystemName + lowercase letter (b, c, d...)
                         child.nodeName = `${this.nodeName} ${indexToLetter(seqIndex)}`;
