@@ -719,8 +719,8 @@ body {
 
 .modal-body {
     padding: 20px;
-    flex: 1;
     overflow-y: auto;
+    height: 500px;
 }
 
 .modal-footer {
