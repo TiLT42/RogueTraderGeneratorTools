@@ -114,6 +114,30 @@ class PlanetNode extends NodeBase {
         super.generate();
         this.pageReference = createPageReference(16);
 
+        // Parity: Determine effectiveSystemZone from parent (WPF lines 298-317)
+        // This is crucial for Haven feature and climate modifiers
+        let zoneNode = this.parent;
+        while (zoneNode && zoneNode.type !== NodeTypes.Zone) {
+            zoneNode = zoneNode.parent;
+        }
+        if (zoneNode) {
+            this.effectiveSystemZone = zoneNode.zone || 'PrimaryBiosphere';
+            // If effectiveSystemZoneCloserToSun is set, shift zone inward
+            if (this.effectiveSystemZoneCloserToSun) {
+                switch (this.effectiveSystemZone) {
+                    case 'InnerCauldron':
+                        // Already innermost, no change
+                        break;
+                    case 'PrimaryBiosphere':
+                        this.effectiveSystemZone = 'InnerCauldron';
+                        break;
+                    case 'OuterReaches':
+                        this.effectiveSystemZone = 'PrimaryBiosphere';
+                        break;
+                }
+            }
+        }
+
         // 1. Body & derived size
         this.generateBodyParity();
         // 2. Gravity (depends on body modifiers)
@@ -284,8 +308,10 @@ class PlanetNode extends NodeBase {
         // System creation rule: HavenThickerAtmospheresInPrimaryBiosphere could add +1 & +2 comps; placeholder
         let modifier = this.atmosphericPresenceModifier;
         // Haven feature: thicker atmospheres in Primary Biosphere (C# applies +1 to roll making heavier atmospheres more likely)
-        if (this.systemCreationRules?.havenThickerAtmospheresInPrimaryBiosphere && this.zone === 'PrimaryBiosphere') {
-            modifier += 1; // parity assumption: small shift toward heavier categories
+        // CRITICAL: Must use effectiveSystemZone (not zone) to match WPF line 445
+        if (this.systemCreationRules?.havenThickerAtmospheresInPrimaryBiosphere && this.effectiveSystemZone === 'PrimaryBiosphere') {
+            modifier += 1; // presence modifier
+            this.atmosphericCompositionModifier += 2; // composition modifier (applied in next method)
         }
         let roll = RollD10() + modifier;
         if (roll <= 1 && !this.forceInhabitable) {
@@ -333,8 +359,9 @@ class PlanetNode extends NodeBase {
     generateClimateParity() {
         if (this.hasAtmosphere) {
             let climateModifier = 0;
-            if (this.zone === 'InnerCauldron') climateModifier -= 6;
-            else if (this.zone === 'OuterReaches') climateModifier += 6;
+            // CRITICAL: Must use effectiveSystemZone (not zone) to match WPF lines 524-526
+            if (this.effectiveSystemZone === 'InnerCauldron') climateModifier -= 6;
+            else if (this.effectiveSystemZone === 'OuterReaches') climateModifier += 6;
             let roll = RollD10() + climateModifier;
             if (roll <= 0 && !this.forceInhabitable) {
                 this.climate = 'Burning World';
@@ -360,10 +387,11 @@ class PlanetNode extends NodeBase {
             }
         } else {
             // No atmosphere fallback
-            if (this.zone === 'InnerCauldron') {
+            // CRITICAL: Must use effectiveSystemZone (not zone) to match WPF lines 563-580
+            if (this.effectiveSystemZone === 'InnerCauldron') {
                 this.climate = 'Burning World';
                 this.habitabilityModifier -= 7;
-            } else if (this.zone === 'OuterReaches') {
+            } else if (this.effectiveSystemZone === 'OuterReaches') {
                 this.climate = 'Ice World';
                 this.habitabilityModifier -= 7;
             } else if (RollD10() <= 5) {
