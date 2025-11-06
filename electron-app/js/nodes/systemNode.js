@@ -789,13 +789,65 @@ class SystemNode extends NodeBase {
         selected.forEach(i => { planets[i].warpStorm = true; planets[i].updateDescription?.(); });
     }
 
+    /**
+     * Determines if a planet should receive a unique evocative name based on system context.
+     * This creates a more nuanced distribution than the simple all-or-nothing approach.
+     * 
+     * @param {Object} planet - The planet/gas giant node to evaluate
+     * @returns {boolean} - True if the planet should get a unique name
+     */
+    shouldPlanetHaveUniqueName(planet) {
+        // 1. Check for Starfarers feature with human inhabitants
+        // These systems show massive human inhabitation - all major bodies get unique names
+        if (this.systemFeatures.includes('Starfarers')) {
+            // Check if starfarers are human (default assumption is human unless explicitly set otherwise)
+            const allPlanets = this.getAllDescendantNodesOfType('Planet');
+            const hasHumanStarfarers = allPlanets.some(p => 
+                p.inhabitants === 'Human' && p.isInhabitantHomeWorld
+            );
+            if (hasHumanStarfarers) {
+                return true; // All major bodies get unique names in human starfarer systems
+            }
+        }
+        
+        // 2. Check if this specific planet has advanced human inhabitants
+        // Planets with sufficiently advanced human colonies get unique names
+        if (planet.inhabitants === 'Human' && planet.inhabitantDevelopment) {
+            // Advanced enough to have contacted the Imperium or established presence
+            const advancedLevels = [
+                'Voidfarers',
+                'Advanced Industry', 
+                'Basic Industry',
+                'Pre-Industrial'  // Even feudal worlds might have names if they had Imperial contact
+            ];
+            if (advancedLevels.includes(planet.inhabitantDevelopment)) {
+                return true;
+            }
+        }
+        
+        // 3. For systems with evocative names but no human presence:
+        // Randomly assign unique names to some planets (but not all)
+        // This represents explorers leaving their mark without colonizing
+        if (this.generateUniquePlanetNames) {
+            // 50% chance for each planet to get a unique name
+            // This creates variety - some named, some not
+            return RollD10() >= 6; // 50% chance (6-10 on d10)
+        }
+        
+        // 4. Default: use astronomical naming (SystemName + letter)
+        return false;
+    }
+
     assignSequentialBodyNames() {
         // Centralized hierarchical naming for planets, gas giants, and their satellites.
-        // Two modes:
-        //   - Astronomical: SystemName + lowercase letter (b, c, d...) for planets; Roman numerals for moons
-        //   - Evocative: generator-produced primary names; satellites use Roman numerals or Arabic numbers
+        // Now supports per-planet naming decisions based on system context and inhabitants.
+        // Three modes:
+        //   - Full astronomical: All planets use SystemName + letter (b, c, d...)
+        //   - Full evocative: All planets get unique names (Starfarers with humans)
+        //   - Mixed: Some planets get unique names, others use astronomical (most systems)
 
-        const evocativeMode = !!this.generateUniquePlanetNames;
+        // Legacy flag still used as a baseline indicator
+        const baselineEvocativeMode = !!this.generateUniquePlanetNames;
 
         // Helper to convert index to lowercase letter (1=b, 2=c, 3=d, etc.)
         // Starts at 'b' because 'a' is traditionally reserved for the star itself
@@ -835,7 +887,11 @@ class SystemNode extends NodeBase {
                 if (child.type === NodeTypes.Planet || child.type === NodeTypes.GasGiant) {
                     child._primarySequenceNumber = seqIndex;
                     child._hasUniqueName = false; // Track if this planet has a unique evocative name
-                    if (evocativeMode) {
+                    
+                    // Determine if THIS specific planet should get a unique name
+                    const shouldBeUnique = this.shouldPlanetHaveUniqueName(child);
+                    
+                    if (shouldBeUnique) {
                         const generatedName = getGeneratedName(zone, child.type);
                         child.nodeName = generatedName;
                         // Check if this is a unique evocative name (not an astronomical fallback)
