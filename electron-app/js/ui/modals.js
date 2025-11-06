@@ -91,120 +91,155 @@ class Modals {
     showSettings() {
         this.title.textContent = 'Settings';
         this.body.innerHTML = `
-            <div class="settings-section">
-                <h3 class="settings-section-title">Appearance</h3>
-                
-                <label class="toggle-switch">
-                    <input type="checkbox" id="dark-mode-toggle" ${window.APP_STATE.settings.darkMode ? 'checked' : ''}>
-                    <div class="toggle-switch-control">
-                        <div class="toggle-switch-slider"></div>
-                    </div>
-                    <div class="toggle-switch-label">
-                        <strong>Dark Mode</strong>
-                        <span>Switch between light and dark theme for the application interface</span>
-                    </div>
-                </label>
+            <div class="settings-tabs">
+                <button class="settings-tab active" data-tab="books">Books</button>
+                <button class="settings-tab" data-tab="xenos">Xenos</button>
+                <button class="settings-tab" data-tab="appearance">Appearance</button>
             </div>
             
-            <div class="settings-section">
-                <h3 class="settings-section-title">Enabled Books</h3>
-                <div class="settings-intro">
-                    For the generator to know what books to use, you must first let it know which ones you own. 
-                    Be aware that you need to have these books available for the generated results to make sense, since their rules are not reproduced here.
-                </div>
-                
-                <div class="settings-book-item">
-                    <label class="settings-book-label">
-                        <input type="checkbox" id="book-core" checked disabled>
-                        <strong>Rogue Trader Core Rulebook</strong>
-                    </label>
-                    <div class="settings-book-description">
-                        This book is required and can't be unselected. The generator will frequently refer to the core rules.
+            <div class="settings-tab-content active" data-tab-content="books">
+                <div class="settings-section">
+                    <h3 class="settings-section-title">Enabled Books</h3>
+                    <div class="settings-intro">
+                        For the generator to know what books to use, you must first let it know which ones you own. 
+                        Be aware that you need to have these books available for the generated results to make sense, since their rules are not reproduced here.
                     </div>
-                </div>
-
-                <div class="settings-book-item">
-                    <label class="settings-book-label">
-                        <input type="checkbox" id="book-stars" ${window.APP_STATE.settings.enabledBooks.StarsOfInequity ? 'checked' : ''}>
-                        <strong>Stars of Inequity</strong>
-                    </label>
-                    <div class="settings-book-description">
-                        Allows you to generate star systems, as well as xenos and treasures. This book is required to access the vast majority of features in this application.
+                    
+                    <div class="settings-book-item">
+                        <label class="settings-book-label">
+                            <input type="checkbox" id="book-core" checked disabled>
+                            <strong>Rogue Trader Core Rulebook</strong>
+                        </label>
+                        <div class="settings-book-description">
+                            This book is required and can't be unselected. The generator will frequently refer to the core rules.
+                        </div>
                     </div>
-                </div>
 
-                <div class="settings-book-item">
-                    <label class="settings-book-label">
-                        <input type="checkbox" id="book-bestiary" ${window.APP_STATE.settings.enabledBooks.TheKoronusBestiary ? 'checked' : ''}>
-                        <strong>The Koronus Bestiary</strong>
-                    </label>
-                    <div class="settings-book-description">
-                        Adds an alternate, more detailed method of generating Xenos, as well as a generator for primitive species.
+                    <div class="settings-book-item">
+                        <label class="settings-book-label">
+                            <input type="checkbox" id="book-stars" ${window.APP_STATE.settings.enabledBooks.StarsOfInequity ? 'checked' : ''}>
+                            <strong>Stars of Inequity</strong>
+                        </label>
+                        <div class="settings-book-description">
+                            Allows you to generate star systems, as well as xenos and treasures. This book is required to access the vast majority of features in this application.
+                        </div>
                     </div>
-                </div>
 
-                <div class="settings-book-item">
-                    <label class="settings-book-label">
-                        <input type="checkbox" id="book-storm" ${window.APP_STATE.settings.enabledBooks.IntoTheStorm ? 'checked' : ''}>
-                        <strong>Into the Storm</strong>
-                    </label>
-                    <div class="settings-book-description">
-                        Adds additional hulls and components for starship generation.
+                    <div class="settings-book-item">
+                        <label class="settings-book-label">
+                            <input type="checkbox" id="book-bestiary" ${window.APP_STATE.settings.enabledBooks.TheKoronusBestiary ? 'checked' : ''}>
+                            <strong>The Koronus Bestiary</strong>
+                        </label>
+                        <div class="settings-book-description">
+                            Adds an alternate, more detailed method of generating Xenos, as well as a generator for primitive species.
+                        </div>
                     </div>
-                </div>
 
-                <div class="settings-book-item">
-                    <label class="settings-book-label">
-                        <input type="checkbox" id="book-battlefleet" ${window.APP_STATE.settings.enabledBooks.BattlefleetKoronus ? 'checked' : ''}>
-                        <strong>Battlefleet Koronus</strong>
-                    </label>
-                    <div class="settings-book-description">
-                        Enables the generation of Xenos and Chaos ships, which are used for both pirate fleets and starship graveyards.
+                    <div class="settings-book-item">
+                        <label class="settings-book-label">
+                            <input type="checkbox" id="book-storm" ${window.APP_STATE.settings.enabledBooks.IntoTheStorm ? 'checked' : ''}>
+                            <strong>Into the Storm</strong>
+                        </label>
+                        <div class="settings-book-description">
+                            Adds additional hulls and components for starship generation.
+                        </div>
                     </div>
-                </div>
 
-                <div class="settings-book-item">
-                    <label class="settings-book-label">
-                        <input type="checkbox" id="book-reaver" ${window.APP_STATE.settings.enabledBooks.TheSoulReaver ? 'checked' : ''}>
-                        <strong>The Soul Reaver</strong>
-                    </label>
-                    <div class="settings-book-description">
-                        Adds Dark Eldar to the selection of races that can be encountered in space. Requires Battlefleet Koronus.
+                    <div class="settings-book-item">
+                        <label class="settings-book-label">
+                            <input type="checkbox" id="book-battlefleet" ${window.APP_STATE.settings.enabledBooks.BattlefleetKoronus ? 'checked' : ''}>
+                            <strong>Battlefleet Koronus</strong>
+                        </label>
+                        <div class="settings-book-description">
+                            Enables the generation of Xenos and Chaos ships, which are used for both pirate fleets and starship graveyards.
+                        </div>
+                    </div>
+
+                    <div class="settings-book-item">
+                        <label class="settings-book-label">
+                            <input type="checkbox" id="book-reaver" ${window.APP_STATE.settings.enabledBooks.TheSoulReaver ? 'checked' : ''}>
+                            <strong>The Soul Reaver</strong>
+                        </label>
+                        <div class="settings-book-description">
+                            Adds Dark Eldar to the selection of races that can be encountered in space. Requires Battlefleet Koronus.
+                        </div>
                     </div>
                 </div>
             </div>
+            
+            <div class="settings-tab-content" data-tab-content="xenos">
+                <div class="settings-section">
+                    <h3 class="settings-section-title">Xenos Generator Sources</h3>
+                    <div class="settings-intro">
+                        If you wish to use the Xenos generator, you must also select which sources to use. If you select both, 
+                        the generator will use both sources at random, providing the largest possible selection of results. 
+                        Selecting both sources (if available) is strongly recommended for variety. Selecting none of them 
+                        will disable the Xenos generator.
+                    </div>
 
-            <div class="settings-section">
-                <h3 class="settings-section-title">Xenos Generator Sources</h3>
-                <div class="settings-intro">
-                    If you wish to use the Xenos generator, you must also select which sources to use. If you select both, 
-                    the generator will use both sources at random, providing the largest possible selection of results. 
-                    Selecting both sources (if available) is strongly recommended for variety. Selecting none of them 
-                    will disable the Xenos generator.
-                </div>
+                    <div class="settings-book-item">
+                        <label class="settings-book-label">
+                            <input type="checkbox" id="xenos-stars" ${window.APP_STATE.settings.xenosGeneratorSources.StarsOfInequity ? 'checked' : ''}>
+                            <strong>Stars of Inequity</strong>
+                        </label>
+                        <div class="settings-book-description">
+                            The generator will use the Xenos archetypes from this book. These are limited in how much they can vary, 
+                            but they have a strong identity that makes them memorable.
+                        </div>
+                    </div>
 
-                <div class="settings-book-item">
-                    <label class="settings-book-label">
-                        <input type="checkbox" id="xenos-stars" ${window.APP_STATE.settings.xenosGeneratorSources.StarsOfInequity ? 'checked' : ''}>
-                        <strong>Stars of Inequity</strong>
-                    </label>
-                    <div class="settings-book-description">
-                        The generator will use the Xenos archetypes from this book. These are limited in how much they can vary, 
-                        but they have a strong identity that makes them memorable.
+                    <div class="settings-book-item">
+                        <label class="settings-book-label">
+                            <input type="checkbox" id="xenos-bestiary" ${window.APP_STATE.settings.xenosGeneratorSources.TheKoronusBestiary ? 'checked' : ''}>
+                            <strong>The Koronus Bestiary</strong>
+                        </label>
+                        <div class="settings-book-description">
+                            The generator will use both the Flora and Fauna generators from this book. This can produce a vast assortment of creatures.
+                        </div>
                     </div>
                 </div>
-
-                <div class="settings-book-item">
-                    <label class="settings-book-label">
-                        <input type="checkbox" id="xenos-bestiary" ${window.APP_STATE.settings.xenosGeneratorSources.TheKoronusBestiary ? 'checked' : ''}>
-                        <strong>The Koronus Bestiary</strong>
+            </div>
+            
+            <div class="settings-tab-content" data-tab-content="appearance">
+                <div class="settings-section">
+                    <h3 class="settings-section-title">Appearance</h3>
+                    
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="dark-mode-toggle" ${window.APP_STATE.settings.darkMode ? 'checked' : ''}>
+                        <div class="toggle-switch-control">
+                            <div class="toggle-switch-slider"></div>
+                        </div>
+                        <div class="toggle-switch-label">
+                            <strong>Dark Mode</strong>
+                            <span>Switch between light and dark theme for the application interface</span>
+                        </div>
                     </label>
-                    <div class="settings-book-description">
-                        The generator will use both the Flora and Fauna generators from this book. This can produce a vast assortment of creatures.
-                    </div>
                 </div>
             </div>
         `;
+
+        // Set up tab switching
+        setTimeout(() => {
+            const tabs = this.body.querySelectorAll('.settings-tab');
+            const tabContents = this.body.querySelectorAll('.settings-tab-content');
+
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const targetTab = tab.getAttribute('data-tab');
+
+                    // Remove active class from all tabs and contents
+                    tabs.forEach(t => t.classList.remove('active'));
+                    tabContents.forEach(content => content.classList.remove('active'));
+
+                    // Add active class to clicked tab and corresponding content
+                    tab.classList.add('active');
+                    const targetContent = this.body.querySelector(`[data-tab-content="${targetTab}"]`);
+                    if (targetContent) {
+                        targetContent.classList.add('active');
+                    }
+                });
+            });
+        }, 0);
 
         this.okButton.textContent = 'Save';
         this.okButton.onclick = () => {

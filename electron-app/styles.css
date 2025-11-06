@@ -719,8 +719,8 @@ body {
 
 .modal-body {
     padding: 20px;
-    flex: 1;
     overflow-y: auto;
+    height: 810px;
 }
 
 .modal-footer {
@@ -1098,4 +1098,45 @@ body {
     font-size: 13px;
     color: var(--text-muted);
     line-height: 1.5;
+}
+
+/* Tab navigation styles for settings modal */
+.settings-tabs {
+    display: flex;
+    border-bottom: 2px solid var(--border-primary);
+    margin: -20px -20px 20px -20px;
+    padding: 0 20px;
+    background-color: var(--bg-secondary);
+}
+
+.settings-tab {
+    padding: 12px 20px;
+    cursor: pointer;
+    border: none;
+    background: none;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-muted);
+    border-bottom: 3px solid transparent;
+    margin-bottom: -2px;
+    transition: all 0.2s;
+    position: relative;
+}
+
+.settings-tab:hover {
+    color: var(--text-secondary);
+    background-color: var(--bg-hover);
+}
+
+.settings-tab.active {
+    color: var(--accent-primary);
+    border-bottom-color: var(--accent-primary);
+}
+
+.settings-tab-content {
+    display: none;
+}
+
+.settings-tab-content.active {
+    display: block;
 }
