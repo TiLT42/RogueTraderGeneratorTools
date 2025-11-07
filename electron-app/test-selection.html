@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Selection Test - Verify CSS</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+        .test-container {
+            background: white;
+            padding: 15px;
+            border: 1px solid #ddd;
+            margin-top: 20px;
+            max-width: 500px;
+            border-radius: 4px;
+        }
+        .info-box {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f0f0f0;
+            border-left: 3px solid #0078d4;
+            border-radius: 4px;
+        }
+        .info-box h3 {
+            margin-top: 0;
+        }
+        .diagnostic {
+            margin-top: 20px;
+            padding: 10px;
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .success {
+            color: #28a745;
+            font-weight: bold;
+        }
+        .error {
+            color: #dc3545;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>Tree View Selection Test</h1>
+    <p>This test verifies that the CSS changes are working correctly.</p>
+    <p>Click on any item below - it should show a blue background AND a bright blue left border.</p>
+    
+    <div class="test-container">
+        <ul id="node-tree" style="list-style: none; padding: 0; margin: 0;">
+            <li class="tree-node">
+                <div class="tree-node-content" data-node-id="1">
+                    <span class="tree-node-icon">🌟</span>
+                    <span class="tree-node-text">System: Test System</span>
+                </div>
+            </li>
+            <li class="tree-node">
+                <div class="tree-node-content selected" data-node-id="2">
+                    <span class="tree-node-icon">🌍</span>
+                    <span class="tree-node-text">Planet: This should be highlighted</span>
+                </div>
+            </li>
+            <li class="tree-node">
+                <div class="tree-node-content" data-node-id="3">
+                    <span class="tree-node-icon">🪐</span>
+                    <span class="tree-node-text">Gas Giant: Test</span>
+                </div>
+            </li>
+        </ul>
+    </div>
+    
+    <div class="info-box">
+        <h3>Expected appearance:</h3>
+        <p>The middle item ("Planet: This should be highlighted") should have:</p>
+        <ul>
+            <li>✅ Blue background (#0078d4)</li>
+            <li>✅ White text</li>
+            <li>✅ Bright blue LEFT border (3px, #3498db)</li>
+        </ul>
+    </div>
+    
+    <div class="diagnostic" id="diagnostic">
+        Running diagnostic checks...
+    </div>
+    
+    <div class="info-box">
+        <h3>If you don't see the selection highlight:</h3>
+        <ol>
+            <li><strong>Force Reload:</strong> View → Force Reload (or Ctrl+Shift+R / Cmd+Shift+R)</li>
+            <li><strong>Restart:</strong> Close and restart the application completely</li>
+            <li><strong>Clear Cache:</strong> Try deleting Electron's cache folder</li>
+            <li><strong>Rebuild:</strong> Run <code>npm install</code> in electron-app folder</li>
+        </ol>
+    </div>
+    
+    <script>
+        // Diagnostic checks
+        function runDiagnostics() {
+            const diagnosticDiv = document.getElementById('diagnostic');
+            let results = '<strong>Diagnostic Results:</strong><br><br>';
+            
+            // Check if styles.css is loaded
+            const stylesheets = Array.from(document.styleSheets);
+            const hasStylesheet = stylesheets.some(sheet => {
+                try {
+                    return sheet.href && sheet.href.includes('styles.css');
+                } catch(e) {
+                    return false;
+                }
+            });
+            
+            if (hasStylesheet) {
+                results += '<span class="success">✓ styles.css is loaded</span><br>';
+            } else {
+                results += '<span class="error">✗ styles.css NOT loaded</span><br>';
+            }
+            
+            // Check if selected element exists
+            const selectedElement = document.querySelector('.tree-node-content.selected');
+            if (selectedElement) {
+                results += '<span class="success">✓ .selected element found</span><br>';
+                
+                // Check computed styles
+                const styles = window.getComputedStyle(selectedElement);
+                const bgColor = styles.backgroundColor;
+                const borderLeft = styles.borderLeftWidth;
+                const borderColor = styles.borderLeftColor;
+                
+                results += `<br>Computed Styles:<br>`;
+                results += `- Background: ${bgColor}<br>`;
+                results += `- Border Left Width: ${borderLeft}<br>`;
+                results += `- Border Left Color: ${borderColor}<br>`;
+                
+                if (parseInt(borderLeft) >= 3) {
+                    results += '<br><span class="success">✓ Border left is applied (${borderLeft})</span><br>';
+                } else {
+                    results += '<br><span class="error">✗ Border left is NOT applied correctly</span><br>';
+                }
+            } else {
+                results += '<span class="error">✗ No .selected element found</span><br>';
+            }
+            
+            // Check CSS variables
+            const root = document.documentElement;
+            const accentSecondary = getComputedStyle(root).getPropertyValue('--accent-secondary');
+            const bgSelected = getComputedStyle(root).getPropertyValue('--bg-selected');
+            
+            results += `<br>CSS Variables:<br>`;
+            results += `- --accent-secondary: ${accentSecondary || 'NOT DEFINED'}<br>`;
+            results += `- --bg-selected: ${bgSelected || 'NOT DEFINED'}<br>`;
+            
+            diagnosticDiv.innerHTML = results;
+        }
+        
+        // Run diagnostics after page load
+        window.addEventListener('load', () => {
+            setTimeout(runDiagnostics, 100);
+        });
+        
+        // Make items clickable
+        document.querySelectorAll('.tree-node-content').forEach(item => {
+            item.addEventListener('click', function() {
+                // Remove selected from all
+                document.querySelectorAll('.tree-node-content').forEach(el => {
+                    el.classList.remove('selected');
+                });
+                // Add to clicked item
+                this.classList.add('selected');
+                
+                // Re-run diagnostics
+                setTimeout(runDiagnostics, 50);
+            });
+        });
+    </script>
+</body>
+</html>
