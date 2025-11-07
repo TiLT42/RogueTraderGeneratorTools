@@ -225,26 +225,6 @@ class ZoneNode extends NodeBase {
         });
     }
 
-    getContextMenuItems() {
-        const items = [
-            { label: 'Add Planet', action: 'add-planet' },
-            { label: 'Add Gas Giant', action: 'add-gas-giant' },
-            { label: 'Add Asteroid Belt', action: 'add-asteroid-belt' },
-            { label: 'Add Asteroid Cluster', action: 'add-asteroid-cluster' },
-            { label: 'Add Derelict Station', action: 'add-derelict-station' },
-            { label: 'Add Dust Cloud', action: 'add-dust-cloud' },
-            { label: 'Add Solar Flares', action: 'add-solar-flares' },
-            { label: 'Add Radiation Bursts', action: 'add-radiation-bursts' },
-            { label: 'Add Starship Graveyard', action: 'add-starship-graveyard' },
-            { type: 'separator' },
-            { label: 'Regenerate Zone Content', action: 'generate' },
-            { type: 'separator' },
-            { label: 'Edit Description', action: 'edit-description' }
-        ];
-        
-        return items;
-    }
-
     toJSON() {
         const json = super.toJSON();
         json.zone = this.zone;

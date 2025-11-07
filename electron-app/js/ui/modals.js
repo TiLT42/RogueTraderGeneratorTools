@@ -42,10 +42,10 @@ class Modals {
     }
 
     showEditDescription(node) {
-        this.title.textContent = `Edit Description - ${node.nodeName}`;
+        this.title.textContent = `Edit Notes - ${node.nodeName}`;
         this.body.innerHTML = `
             <div class="form-group">
-                <label for="custom-description">Custom Description:</label>
+                <label for="custom-description">Custom Notes:</label>
                 <textarea id="custom-description" rows="6">${node.customDescription || ''}</textarea>
             </div>
         `;

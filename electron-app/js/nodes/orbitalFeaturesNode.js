@@ -21,12 +21,7 @@ class OrbitalFeaturesNode extends NodeBase {
         // Minimal description or leave empty for just the header
         this.description = '';
     }
-
-    // Simplified context menu: only allow description edit (other add operations occur through planet generation parity)
-    getContextMenuItems() {
-        return [ { label: 'Edit Description', action: 'edit-description' } ];
-    }
-
+   
     toJSON() {
         return super.toJSON();
     }
