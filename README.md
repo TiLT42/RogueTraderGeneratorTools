@@ -16,3 +16,5 @@ You may freely configure the generator to use only the books you wish to include
 To download the latest version of the generator, please navigate to the releases page found at https://github.com/TiLT42/RogueTraderGeneratorTools/releases/
 
 If you wish to add your own modifications to the generator, feel free to fork the repository and submit pull requests.
+
+Please note: The original WPF application (any version before v2.0.0) is no longer maintained or supported. Please download the latest version instead.
