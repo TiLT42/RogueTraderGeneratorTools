@@ -156,12 +156,31 @@ class NodeBase {
             description: this.description
         };
         
-        // Rename customDescription to customNotes for better clarity
+        // Add customNotes with HTML formatting for export
         if (this.customDescription) {
             data.customNotes = this.customDescription;
+            // Also add plain text version for apps that don't support HTML
+            data.customNotesPlainText = this.stripHTMLTags(this.customDescription);
         }
         
         return data;
+    }
+    
+    // Helper method to strip HTML tags and get plain text
+    stripHTMLTags(html) {
+        if (!html) return '';
+        
+        // Create a temporary div to parse HTML
+        const temp = document.createElement('div');
+        temp.innerHTML = html;
+        
+        // Get text content (browsers handle this efficiently)
+        let text = temp.textContent || temp.innerText || '';
+        
+        // Clean up whitespace
+        text = text.replace(/\s+/g, ' ').trim();
+        
+        return text;
     }
     
     // Helper method for subclasses to add children at the end

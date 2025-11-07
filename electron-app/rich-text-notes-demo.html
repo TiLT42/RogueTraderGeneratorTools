@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rich Text Notes Editor - Demo</title>
+    <style>
+        :root {
+            --bg-primary: #ffffff;
+            --bg-secondary: #fafafa;
+            --bg-tertiary: #f5f5f5;
+            --bg-hover: #e8e8e8;
+            --bg-selected: #e8f4fd;
+            --text-primary: #1a1a1a;
+            --text-secondary: #333;
+            --text-disabled: #999;
+            --border-primary: #e0e0e0;
+            --border-secondary: #ddd;
+            --accent-primary: #0078d4;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 40px;
+            background-color: #f0f0f0;
+        }
+
+        .demo-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--text-primary);
+            margin-bottom: 10px;
+        }
+
+        .description {
+            text-align: center;
+            color: var(--text-secondary);
+            margin-bottom: 30px;
+        }
+
+        .modal {
+            background-color: var(--bg-primary);
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .modal-header {
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border-secondary);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .modal-header h3 {
+            margin: 0;
+            font-size: 18px;
+            color: var(--text-secondary);
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        .rich-text-toolbar {
+            display: flex;
+            gap: 4px;
+            padding: 8px;
+            background-color: var(--bg-tertiary);
+            border: 1px solid var(--border-secondary);
+            border-bottom: none;
+            border-radius: 4px 4px 0 0;
+            align-items: center;
+        }
+
+        .toolbar-btn-rt {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border-primary);
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            color: var(--text-primary);
+            transition: all 0.2s ease;
+        }
+
+        .toolbar-btn-rt:hover {
+            background-color: var(--bg-hover);
+            border-color: var(--accent-primary);
+        }
+
+        .toolbar-separator-rt {
+            width: 1px;
+            height: 24px;
+            background-color: var(--border-secondary);
+            margin: 0 4px;
+        }
+
+        .rich-text-editor {
+            width: 100%;
+            min-height: 200px;
+            padding: 12px;
+            border: 1px solid var(--border-secondary);
+            border-radius: 0 0 4px 4px;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            overflow-y: auto;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .rich-text-editor h3 {
+            font-size: 18px;
+            font-weight: 600;
+            margin: 16px 0 8px 0;
+            color: var(--text-secondary);
+        }
+
+        .rich-text-editor p {
+            margin: 8px 0;
+        }
+
+        .rich-text-editor ul,
+        .rich-text-editor ol {
+            margin: 8px 0;
+            padding-left: 24px;
+        }
+
+        .rich-text-editor li {
+            margin: 4px 0;
+        }
+
+        .modal-footer {
+            padding: 15px 20px;
+            border-top: 1px solid var(--border-secondary);
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: 1px solid var(--border-secondary);
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .btn-primary {
+            background-color: var(--accent-primary);
+            color: white;
+            border-color: var(--accent-primary);
+        }
+
+        .btn-secondary {
+            background-color: var(--bg-tertiary);
+            color: var(--text-secondary);
+        }
+
+        .features {
+            margin-top: 30px;
+            padding: 20px;
+            background: var(--bg-tertiary);
+            border-radius: 4px;
+        }
+
+        .features h2 {
+            color: var(--text-primary);
+            margin-bottom: 15px;
+        }
+
+        .features ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .features li {
+            padding: 8px 0;
+            color: var(--text-secondary);
+        }
+
+        .features li:before {
+            content: "✓ ";
+            color: #27ae60;
+            font-weight: bold;
+            margin-right: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-container">
+        <h1>Rich Text Notes Editor</h1>
+        <p class="description">New feature for adding formatted notes to any node in Rogue Trader Generator Tools</p>
+
+        <div class="modal">
+            <div class="modal-header">
+                <h3>Edit Notes - Winterscale's Realm</h3>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="custom-description">Custom Notes:</label>
+                    <div class="rich-text-toolbar">
+                        <button type="button" class="toolbar-btn-rt" title="Heading">
+                            <strong>H</strong>
+                        </button>
+                        <button type="button" class="toolbar-btn-rt" title="Bold (Ctrl+B)">
+                            <strong>B</strong>
+                        </button>
+                        <button type="button" class="toolbar-btn-rt" title="Italic (Ctrl+I)">
+                            <em>I</em>
+                        </button>
+                        <button type="button" class="toolbar-btn-rt" title="Underline (Ctrl+U)">
+                            <u>U</u>
+                        </button>
+                        <div class="toolbar-separator-rt"></div>
+                        <button type="button" class="toolbar-btn-rt" title="Bullet List">
+                            ≡
+                        </button>
+                        <button type="button" class="toolbar-btn-rt" title="Numbered List">
+                            ⋮
+                        </button>
+                    </div>
+                    <div class="rich-text-editor" contenteditable="true">
+                        <h3>Important Mission Notes</h3>
+                        <p>This system contains <strong>valuable archeotech caches</strong> and several <em>potentially habitable</em> worlds.</p>
+                        <p>Primary objectives:</p>
+                        <ol>
+                            <li><strong>Secure</strong> the primary installation</li>
+                            <li><em>Investigate</em> the alien ruins on the third planet</li>
+                            <li><u>Report</u> all findings to Command</li>
+                        </ol>
+                        <p>Hazards to note:</p>
+                        <ul>
+                            <li>Hostile xenos presence confirmed</li>
+                            <li>Warp anomalies in outer system</li>
+                            <li>Potential ork raiders</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary">Save</button>
+                <button class="btn btn-secondary">Cancel</button>
+            </div>
+        </div>
+
+        <div class="features">
+            <h2>Key Features</h2>
+            <ul>
+                <li><strong>Formatting Toolbar:</strong> Easy-to-use buttons for all formatting options</li>
+                <li><strong>Keyboard Shortcuts:</strong> Ctrl+B (Bold), Ctrl+I (Italic), Ctrl+U (Underline)</li>
+                <li><strong>HTML Sanitization:</strong> Automatically strips dangerous tags for security</li>
+                <li><strong>Rich Export:</strong> Formatting preserved in RTF, PDF, and JSON exports</li>
+                <li><strong>Plain Text Fallback:</strong> JSON exports include both HTML and plain text versions</li>
+                <li><strong>Workspace Compatible:</strong> Formatting saved and loaded with workspace files</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>
