@@ -365,7 +365,14 @@ class ContextMenu {
                     // Auto-name the moon using astronomical convention
                     this.renameOrbitalFeatures(this.currentNode);
                 } else {
-                    this.addChildNode(NodeTypes.LesserMoon, 'Lesser Moon');
+                    // For Orbital Features node, create a lesser moon
+                    const newNode = createNode(NodeTypes.LesserMoon);
+                    newNode.nodeName = 'Lesser Moon';
+                    this.currentNode.addChild(newNode);
+                    // Auto-name the moon using astronomical convention
+                    if (this.currentNode.parent) {
+                        this.renameOrbitalFeatures(this.currentNode.parent);
+                    }
                 }
                 window.treeView.refresh();
                 markDirty();
@@ -382,7 +389,14 @@ class ContextMenu {
                     // Auto-name the asteroid using astronomical convention
                     this.renameOrbitalFeatures(this.currentNode);
                 } else {
-                    this.addChildNode(NodeTypes.Asteroid, 'Asteroid');
+                    // For Orbital Features node, create an asteroid
+                    const newNode = createNode(NodeTypes.Asteroid);
+                    newNode.nodeName = 'Asteroid';
+                    this.currentNode.addChild(newNode);
+                    // Auto-name the asteroid using astronomical convention
+                    if (this.currentNode.parent) {
+                        this.renameOrbitalFeatures(this.currentNode.parent);
+                    }
                 }
                 window.treeView.refresh();
                 markDirty();

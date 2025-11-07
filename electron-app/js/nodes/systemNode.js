@@ -1096,6 +1096,8 @@ class SystemNode extends NodeBase {
             }
             planet.generate();
             zoneNode.addChild(planet);
+            // Regenerate names for all planets/gas giants after adding manually
+            this.assignSequentialBodyNames();
             return planet;
         }
         return null;
@@ -1117,6 +1119,8 @@ class SystemNode extends NodeBase {
             // Insert at specific position instead of appending
             zoneNode.children.splice(validPosition, 0, planet);
             planet.parent = zoneNode;
+            // Regenerate names for all planets/gas giants after adding manually
+            this.assignSequentialBodyNames();
             return planet;
         }
         return null;
