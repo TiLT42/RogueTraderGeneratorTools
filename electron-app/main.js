@@ -47,10 +47,18 @@ function createWindow() {
 
     // Open external links in default browser instead of Electron window
     mainWindow.webContents.setWindowOpenHandler(({ url }) => {
-        // Open external URLs in the default browser
-        if (url.startsWith('http://') || url.startsWith('https://')) {
-            shell.openExternal(url);
-            return { action: 'deny' }; // Prevent opening in Electron
+        // Validate and open external URLs in the default browser
+        try {
+            const parsedUrl = new URL(url);
+            if (parsedUrl.protocol === 'http:' || parsedUrl.protocol === 'https:') {
+                shell.openExternal(url).catch(err => {
+                    console.error('Failed to open external URL:', url, err);
+                });
+                return { action: 'deny' }; // Prevent opening in Electron
+            }
+        } catch (err) {
+            console.error('Invalid URL format:', url, err);
+            return { action: 'deny' }; // Deny malformed URLs
         }
         return { action: 'allow' }; // Allow other protocols if needed
     });
