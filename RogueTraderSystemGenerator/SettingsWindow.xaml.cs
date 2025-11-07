@@ -32,24 +32,13 @@ namespace RogueTraderSystemGenerator
         private void HandleToggledCheckbox()
         {
             _isHandlingCheckedToggle = true;
-            if (StarsOfInequityCheckBox.IsChecked == true)
-            {
-                XenosGeneratorSoiCheckBox.IsEnabled = true;
-            }
-            else
-            {
-                XenosGeneratorSoiCheckBox.IsEnabled = false;
-                XenosGeneratorSoiCheckBox.IsChecked = false;
-            }
-            if(TheKoronusBestiaryCheckBox.IsChecked == true)
-            {
-                XenosGeneratorKbCheckBox.IsEnabled = true;
-            }
-            else
-            {
-                XenosGeneratorKbCheckBox.IsEnabled = false;
-                XenosGeneratorKbCheckBox.IsChecked = false;
-            }
+            
+            XenosGeneratorSoiCheckBox.IsEnabled = StarsOfInequityCheckBox.IsChecked == true;
+            XenosGeneratorSoiCheckBox.IsChecked = StarsOfInequityCheckBox.IsChecked == true;
+            
+            XenosGeneratorKbCheckBox.IsEnabled = TheKoronusBestiaryCheckBox.IsChecked == true;
+            XenosGeneratorKbCheckBox.IsChecked = TheKoronusBestiaryCheckBox.IsChecked == true;
+            
             _isHandlingCheckedToggle = false;
         }
 
