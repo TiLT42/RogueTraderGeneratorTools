@@ -299,14 +299,35 @@ class PlanetNode extends NodeBase {
         let count = 1;
         for (const child of this.orbitalFeaturesNode.children) {
             if (child.type === NodeTypes.Planet || child.type === NodeTypes.LesserMoon || child.type === NodeTypes.Asteroid) {
+                // Skip nodes that have been manually renamed by the user
+                if (child.hasCustomName) {
+                    count++;
+                    continue;
+                }
+                
+                // Skip nodes that already have a unique (non-sequential) name
+                // Sequential patterns: "ParentName-I", "ParentName-1", etc.
+                // Check if it matches ANY sequential pattern (current parent OR old default names)
+                const matchesSequentialPattern = /^.+-([IVX]+|\d+)$/.test(child.nodeName);
+                const isCurrentParentSequential = child.nodeName.startsWith(this.nodeName + '-') && matchesSequentialPattern;
+                const isOldDefaultSequential = (child.nodeName.startsWith('Planet-') || child.nodeName.startsWith('Gas Giant-')) && matchesSequentialPattern;
+                const hasSequentialName = isCurrentParentSequential || isOldDefaultSequential;
+                
+                if (!hasSequentialName && child.nodeName !== 'Planet' && child.nodeName !== 'Gas Giant' && child.nodeName !== 'Lesser Moon' && child.nodeName !== 'Large Asteroid') {
+                    // This satellite has a unique name, preserve it
+                    count++;
+                    continue;
+                }
+                
                 // Use astronomical naming convention:
                 // - Unique planet names use Arabic numerals (sci-fi convention)
                 // - Astronomical planet names use Roman numerals
-                if (hasUniqueName) {
+                if (hasUniqueName || this.hasCustomName) {
                     child.nodeName = `${this.nodeName}-${count}`;
                 } else {
                     child.nodeName = `${this.nodeName}-${window.CommonData.roman(count)}`;
                 }
+                
                 // Recurse for nested moons
                 if (child.type === NodeTypes.Planet && typeof child._assignNamesToOrbitalFeatures === 'function') {
                     child._assignNamesToOrbitalFeatures();
@@ -1412,6 +1433,7 @@ class PlanetNode extends NodeBase {
             customDescription: data.customDescription || '',
             pageReference: data.pageReference || '',
             isGenerated: data.isGenerated || false,
+            hasCustomName: data.hasCustomName || false,
             fontWeight: data.fontWeight || 'normal',
             fontStyle: data.fontStyle || 'normal',
             fontForeground: data.fontForeground || '#2ecc71'

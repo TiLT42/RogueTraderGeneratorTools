@@ -29,7 +29,10 @@ class AsteroidNode extends NodeBase {
     static fromJSON(data) {
         const node = new AsteroidNode(data.id);
         Object.assign(node, data);
-        node.nodeName = 'Large Asteroid'; // enforce parity name
+        // Only set default name if not custom-named
+        if (!data.hasCustomName) {
+            node.nodeName = 'Large Asteroid'; // enforce parity name
+        }
         node.updateDescription();
         return node;
     }

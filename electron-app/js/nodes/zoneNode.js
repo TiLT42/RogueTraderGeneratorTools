@@ -199,6 +199,12 @@ class ZoneNode extends NodeBase {
         // After adding hazard phenomena, recompute counts for parity with WPF (which tallies instances in SystemNode logic)
         if (nodeType === NodeTypes.SolarFlares) this.updateSolarFlareCounts();
         if (nodeType === NodeTypes.RadiationBursts) this.updateRadiationBurstCounts();
+        // After adding planets or gas giants, regenerate names for all bodies in the system
+        if (nodeType === NodeTypes.Planet || nodeType === NodeTypes.GasGiant) {
+            if (this.parent && typeof this.parent.assignSequentialBodyNames === 'function') {
+                this.parent.assignSequentialBodyNames();
+            }
+        }
         this.updateDescription(); }
 
     // Parity: count how many Solar Flares nodes exist in this zone and propagate that count to each instance.
