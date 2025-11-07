@@ -1,6 +1,31 @@
 // Context menu management
 
 class ContextMenu {
+    // Static constants for node type restrictions
+    static NON_GENERATING_TYPES = [
+        NodeTypes.Zone,              // Zone containers don't generate
+        NodeTypes.NativeSpecies,     // Container for Xenos children
+        NodeTypes.PrimitiveXenos,    // Container header only
+        NodeTypes.OrbitalFeatures,   // Container for moons/asteroids
+        NodeTypes.Asteroid,          // Static placeholder
+        NodeTypes.DustCloud,         // Static description
+        NodeTypes.GravityRiptide,    // Static description
+        NodeTypes.RadiationBursts,   // Only stores count
+        NodeTypes.SolarFlares        // Only stores count
+    ];
+
+    static NON_RENAMABLE_TYPES = [
+        NodeTypes.Zone,
+        NodeTypes.NativeSpecies,
+        NodeTypes.PrimitiveXenos,
+        NodeTypes.OrbitalFeatures,
+        NodeTypes.PirateShips         // Pirate Den has fixed name
+    ];
+
+    static NON_MOVABLE_TYPES = [
+        NodeTypes.PirateShips         // Pirate Den always at top of system
+    ];
+
     constructor() {
         this.element = document.getElementById('context-menu');
         this.currentNode = null;
@@ -485,38 +510,73 @@ class ContextMenu {
     }
 
     canGenerate(node) {
-        if (node.type === NodeTypes.Zone) return false; // Hide generate for Zone nodes
-        return true; // Others remain regenerable for now
+        // Nodes that don't support generation (containers or static content)
+        return !ContextMenu.NON_GENERATING_TYPES.includes(node.type);
     }
 
     canMoveUp(node) {
-        if (!node.parent) return false;
-        const siblings = node.parent.children;
-        return siblings.indexOf(node) > 0;
+        // Check if this node type can move at all
+        if (ContextMenu.NON_MOVABLE_TYPES.includes(node.type)) {
+            return false;
+        }
+        
+        // If node has a parent, check position in parent's children
+        if (node.parent) {
+            const siblings = node.parent.children;
+            return siblings.indexOf(node) > 0;
+        }
+        
+        // If node is a root node, check position in rootNodes array
+        if (window.APP_STATE && window.APP_STATE.rootNodes) {
+            const rootNodes = window.APP_STATE.rootNodes;
+            const index = rootNodes.indexOf(node);
+            return index > 0;
+        }
+        
+        return false;
     }
 
     canMoveDown(node) {
-        if (!node.parent) return false;
-        const siblings = node.parent.children;
-        return siblings.indexOf(node) < siblings.length - 1;
+        // Check if this node type can move at all
+        if (ContextMenu.NON_MOVABLE_TYPES.includes(node.type)) {
+            return false;
+        }
+        
+        // If node has a parent, check position in parent's children
+        if (node.parent) {
+            const siblings = node.parent.children;
+            return siblings.indexOf(node) < siblings.length - 1;
+        }
+        
+        // If node is a root node, check position in rootNodes array
+        if (window.APP_STATE && window.APP_STATE.rootNodes) {
+            const rootNodes = window.APP_STATE.rootNodes;
+            const index = rootNodes.indexOf(node);
+            return index >= 0 && index < rootNodes.length - 1;
+        }
+        
+        return false;
     }
 
     canMoveToOuterScope(node) {
         return node.parent && node.parent.parent;
     }
 
-    // Basic rename permission: allow for any node that has a name property and is not a Zone placeholder restriction target
+    // Basic rename permission: allow for any node that has a name property and is not a Zone or grouping node
     canRename(node) {
         if (!node) return false;
-        if (node.type === NodeTypes.Zone) return false; // intentionally suppressed per parity requirement
-        return true;
+        
+        // These nodes should not be renamed (zones and grouping containers)
+        return !ContextMenu.NON_RENAMABLE_TYPES.includes(node.type);
     }
 
-    // Basic delete permission: allow if node has a parent (never delete root) and is not a Zone (zones currently immutable in UI parity)
+    // Delete permission: allow for any node except Zone nodes (which are structural)
     canDelete(node) {
         if (!node) return false;
-        if (node.type === NodeTypes.Zone) return false; // per parity scope
-        return !!node.parent;
+        // Zones are structural and should not be deleted
+        if (node.type === NodeTypes.Zone) return false;
+        // All other nodes can be deleted, including root nodes
+        return true;
     }
 }
 
