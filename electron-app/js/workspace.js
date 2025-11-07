@@ -44,8 +44,7 @@ class Workspace {
                 await this.saveToFile(result.filePath);
             }
         } catch (error) {
-            console.error('Error saving workspace:', error);
-            alert('Failed to save workspace: ' + error.message);
+            window.errorHandler.handle('Save Workspace', error);
         }
     }
 
@@ -67,8 +66,7 @@ class Workspace {
                 throw new Error(result.error);
             }
         } catch (error) {
-            console.error('Error saving to file:', error);
-            alert('Failed to save workspace: ' + error.message);
+            window.errorHandler.handle('Save Workspace', error);
         }
     }
 
@@ -92,8 +90,7 @@ class Workspace {
                 await this.loadFromFile(result.filePaths[0]);
             }
         } catch (error) {
-            console.error('Error opening workspace:', error);
-            alert('Failed to open workspace: ' + error.message);
+            window.errorHandler.handle('Open Workspace', error);
         }
     }
 
@@ -137,8 +134,7 @@ class Workspace {
 
             console.log('Workspace loaded successfully');
         } catch (error) {
-            console.error('Error loading workspace:', error);
-            alert('Failed to load workspace: ' + error.message);
+            window.errorHandler.handle('Load Workspace', error);
         }
     }
 
@@ -155,7 +151,7 @@ class Workspace {
                 return this.restoreNodeFallback(nodeData);
             }
         } catch (error) {
-            console.error('Error restoring node:', error);
+            window.errorHandler.handle('Restore Node', error);
             return null;
         }
     }
@@ -187,7 +183,7 @@ class Workspace {
 
             return node;
         } catch (error) {
-            console.error('Error in restoreNodeFallback:', error);
+            window.errorHandler.handle('Restore Node (Fallback)', error);
             return null;
         }
     }
