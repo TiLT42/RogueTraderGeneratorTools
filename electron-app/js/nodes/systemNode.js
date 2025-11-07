@@ -902,6 +902,16 @@ class SystemNode extends NodeBase {
                         continue;
                     }
                     
+                    // Skip nodes that already have a unique (non-astronomical) name
+                    // Check using the node's own method to detect unique names
+                    const hasExistingUniqueName = (typeof child._hasUniquePlanetName === 'function') && child._hasUniquePlanetName();
+                    if (hasExistingUniqueName) {
+                        child._hasUniqueName = true; // Mark for satellite naming logic
+                        primaries.push(child);
+                        seqIndex++;
+                        continue;
+                    }
+                    
                     // Determine if THIS specific planet should get a unique name
                     const shouldBeUnique = this.shouldPlanetHaveUniqueName(child);
                     
@@ -995,6 +1005,20 @@ class SystemNode extends NodeBase {
             for (const sat of satellites) {
                 // Skip satellites that have been manually renamed by the user
                 if (sat.hasCustomName) {
+                    subIndex++;
+                    continue;
+                }
+                
+                // Skip satellites that already have a unique (non-sequential) name
+                // Sequential patterns: "ParentName-I", "ParentName-1", etc.
+                // Anything else is considered a unique name that should be preserved
+                const hasSequentialName = (
+                    sat.nodeName.startsWith(primary.nodeName + '-') &&
+                    /^.+-([IVX]+|\d+)$/.test(sat.nodeName)
+                );
+                if (!hasSequentialName && sat.nodeName !== 'New Moon' && sat.nodeName !== 'Lesser Moon' && sat.nodeName !== 'Asteroid' && sat.nodeName !== 'Large Asteroid') {
+                    // This satellite has a unique name, preserve it
+                    sat._hasUniqueName = true;
                     subIndex++;
                     continue;
                 }
