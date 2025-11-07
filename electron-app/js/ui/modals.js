@@ -295,18 +295,10 @@ class Modals {
 
             const updateXenosOptions = () => {
                 xenosStarsCheckbox.disabled = !starsCheckbox.checked;
-                if (!starsCheckbox.checked) {
-                    xenosStarsCheckbox.checked = false;
-                } else {
-                    xenosStarsCheckbox.checked = true;
-                }
+                xenosStarsCheckbox.checked = starsCheckbox.checked;
 
                 xenosBestiaryCheckbox.disabled = !bestiaryCheckbox.checked;
-                if (!bestiaryCheckbox.checked) {
-                    xenosBestiaryCheckbox.checked = false;
-                } else {
-                    xenosBestiaryCheckbox.checked = true;
-                }
+                xenosBestiaryCheckbox.checked = bestiaryCheckbox.checked;
             };
 
             starsCheckbox.addEventListener('change', updateXenosOptions);

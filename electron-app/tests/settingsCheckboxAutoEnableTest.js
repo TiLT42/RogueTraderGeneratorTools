@@ -6,18 +6,10 @@
     // Simulate the updateXenosOptions function from modals.js
     function simulateUpdateXenosOptions(starsChecked, bestiaryChecked, xenosStarsCheckbox, xenosBestiaryCheckbox) {
         xenosStarsCheckbox.disabled = !starsChecked;
-        if (!starsChecked) {
-            xenosStarsCheckbox.checked = false;
-        } else {
-            xenosStarsCheckbox.checked = true;
-        }
+        xenosStarsCheckbox.checked = starsChecked;
 
         xenosBestiaryCheckbox.disabled = !bestiaryChecked;
-        if (!bestiaryChecked) {
-            xenosBestiaryCheckbox.checked = false;
-        } else {
-            xenosBestiaryCheckbox.checked = true;
-        }
+        xenosBestiaryCheckbox.checked = bestiaryChecked;
     }
     
     // Test 1: Enabling Stars of Inequity should auto-enable its xenos source
