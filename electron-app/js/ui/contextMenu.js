@@ -23,7 +23,11 @@ class ContextMenu {
     ];
 
     static NON_MOVABLE_TYPES = [
-        NodeTypes.PirateShips         // Pirate Den always at top of system
+        NodeTypes.PirateShips,        // Pirate Den always at top of system
+        NodeTypes.Zone,               // Zone nodes are fixed in system
+        NodeTypes.NativeSpecies,      // Container for Xenos children
+        NodeTypes.PrimitiveXenos,     // Container header only
+        NodeTypes.OrbitalFeatures     // Container for moons/asteroids
     ];
 
     static NON_EDITABLE_NOTES_TYPES = [
