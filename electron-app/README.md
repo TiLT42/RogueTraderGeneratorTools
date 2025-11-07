@@ -83,6 +83,21 @@ npm run dev
 
 When running in development mode, the Developer Tools will open automatically in a separate window for easier debugging.
 
+### Building Installers
+
+To build platform-specific installers locally:
+
+```bash
+npm run build
+```
+
+This will create installers in the `dist/` directory:
+- **Windows**: `.exe` NSIS installer
+- **macOS**: `.dmg` disk image (if building on macOS)
+- **Linux**: `.AppImage` portable application (if building on Linux)
+
+Note: electron-builder can only build for the current platform by default. For cross-platform builds, use the automated GitHub Actions workflow (see [RELEASE_PROCESS.md](../RELEASE_PROCESS.md) in the root directory).
+
 ## Developer Tools
 
 You can open the Chromium Developer Tools to inspect the UI, view console logs, and debug:
