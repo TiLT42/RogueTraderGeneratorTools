@@ -23,7 +23,18 @@ class ContextMenu {
     ];
 
     static NON_MOVABLE_TYPES = [
-        NodeTypes.PirateShips         // Pirate Den always at top of system
+        NodeTypes.PirateShips,        // Pirate Den always at top of system
+        NodeTypes.Zone,               // Zone nodes are fixed in system
+        NodeTypes.NativeSpecies,      // Container for Xenos children
+        NodeTypes.PrimitiveXenos,     // Container header only
+        NodeTypes.OrbitalFeatures     // Container for moons/asteroids
+    ];
+
+    static NON_EDITABLE_NOTES_TYPES = [
+        NodeTypes.Zone,              // Organizational container
+        NodeTypes.OrbitalFeatures,   // Organizational container for moons/asteroids
+        NodeTypes.NativeSpecies,     // Organizational container for Xenos children
+        NodeTypes.PrimitiveXenos     // Organizational container header only
     ];
 
     constructor() {
@@ -111,10 +122,18 @@ class ContextMenu {
             return items;
         }
 
-        // Regenerate / Edit Notes (excluded entirely for Zone nodes per WPF parity)
-        if (node.type !== NodeTypes.Zone && this.canGenerate(node)) {
+        // Regenerate (only for nodes that can generate)
+        if (this.canGenerate(node)) {
             items.push({ label: 'Regenerate', action: 'generate' });
+        }
+        
+        // Edit Notes (available for most nodes except organizational ones)
+        if (this.canEditNotes(node)) {
             items.push({ label: 'Edit Notes', action: 'edit-description' });
+        }
+        
+        // Add separator if we added any generation/notes items
+        if (this.canGenerate(node) || this.canEditNotes(node)) {
             items.push({ type: 'separator' });
         }
 
@@ -512,6 +531,11 @@ class ContextMenu {
     canGenerate(node) {
         // Nodes that don't support generation (containers or static content)
         return !ContextMenu.NON_GENERATING_TYPES.includes(node.type);
+    }
+
+    canEditNotes(node) {
+        // Nodes that cannot have notes edited (purely organizational containers)
+        return !ContextMenu.NON_EDITABLE_NOTES_TYPES.includes(node.type);
     }
 
     canMoveUp(node) {
