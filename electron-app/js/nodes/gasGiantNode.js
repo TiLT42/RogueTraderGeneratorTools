@@ -140,7 +140,7 @@ class GasGiantNode extends NodeBase {
                 const isOldDefaultSequential = (child.nodeName.startsWith('Planet-') || child.nodeName.startsWith('Gas Giant-')) && matchesSequentialPattern;
                 const hasSequentialName = isCurrentParentSequential || isOldDefaultSequential;
                 
-                if (!hasSequentialName && child.nodeName !== 'New Moon' && child.nodeName !== 'Lesser Moon' && child.nodeName !== 'Asteroid' && child.nodeName !== 'Large Asteroid') {
+                if (!hasSequentialName && child.nodeName !== 'Planet' && child.nodeName !== 'Lesser Moon' && child.nodeName !== 'Large Asteroid') {
                     // This satellite has a unique name, preserve it
                     count++;
                     continue;

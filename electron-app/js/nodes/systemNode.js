@@ -1019,7 +1019,7 @@ class SystemNode extends NodeBase {
                 const isOldDefaultSequential = (sat.nodeName.startsWith('Planet-') || sat.nodeName.startsWith('Gas Giant-')) && matchesSequentialPattern;
                 const hasSequentialName = isCurrentParentSequential || isOldDefaultSequential;
                 
-                if (!hasSequentialName && sat.nodeName !== 'New Moon' && sat.nodeName !== 'Lesser Moon' && sat.nodeName !== 'Asteroid' && sat.nodeName !== 'Large Asteroid') {
+                if (!hasSequentialName && sat.nodeName !== 'Planet' && sat.nodeName !== 'Lesser Moon' && sat.nodeName !== 'Large Asteroid') {
                     // This satellite has a unique name, preserve it
                     sat._hasUniqueName = true;
                     subIndex++;
