@@ -15,16 +15,32 @@ global.window = {
 global.document = {};
 global.alert = (msg) => console.log(`[ALERT DIALOG] ${msg}`);
 
-// Load and evaluate the error handler code
-const fs = require('fs');
+// Load and execute the error handler code using require
+// Note: We need to set up the environment before requiring
 const path = require('path');
-const errorHandlerCode = fs.readFileSync(
-    path.join(__dirname, '../js/errorHandler.js'),
-    'utf8'
-);
+const errorHandlerPath = path.join(__dirname, '../js/errorHandler.js');
 
-// Execute error handler code
-eval(errorHandlerCode);
+// Clear require cache to ensure fresh load
+delete require.cache[require.resolve(errorHandlerPath)];
+
+// Load the error handler module
+// Since it's written as a browser script, we need to execute it in our global context
+const fs = require('fs');
+const vm = require('vm');
+const errorHandlerCode = fs.readFileSync(errorHandlerPath, 'utf8');
+
+// Create a context with our globals
+const context = vm.createContext({
+    window: global.window,
+    document: global.document,
+    console: console,
+    Error: Error,
+    TypeError: TypeError,
+    alert: global.alert
+});
+
+// Execute the error handler code in the context
+vm.runInContext(errorHandlerCode, context);
 
 console.log('=== Error Handler Integration Tests ===\n');
 

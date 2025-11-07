@@ -22,6 +22,7 @@ class ErrorHandler {
         this.isDev = isDev;
 
         // Handle uncaught errors in renderer process
+        // Note: Using arrow functions to preserve 'this' context (lexical binding)
         window.addEventListener('error', (event) => {
             console.error('Uncaught error:', event.error);
             this.showError('Unexpected Error', event.error);
@@ -29,6 +30,7 @@ class ErrorHandler {
         });
 
         // Handle unhandled promise rejections
+        // Note: Using arrow functions to preserve 'this' context (lexical binding)
         window.addEventListener('unhandledrejection', (event) => {
             console.error('Unhandled promise rejection:', event.reason);
             this.showError('Promise Rejection', event.reason);

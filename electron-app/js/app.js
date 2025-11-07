@@ -16,6 +16,7 @@ class App {
 
     initializeComponents() {
         // Initialize error handler first (so it can catch errors during initialization)
+        // Note: process.argv is available because nodeIntegration is enabled in main.js
         const isDev = process.argv.includes('--dev');
         window.errorHandler.initialize(isDev);
 
