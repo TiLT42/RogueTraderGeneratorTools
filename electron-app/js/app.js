@@ -206,6 +206,14 @@ class App {
                     window.documentViewer.printContent();
                     break;
 
+                case 'print-current':
+                    window.documentViewer.printContent();
+                    break;
+
+                case 'print-workspace':
+                    window.documentViewer.printWorkspace();
+                    break;
+
                 case 'export-rtf':
                     window.documentViewer.exportToRTF();
                     break;

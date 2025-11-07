@@ -27,10 +27,24 @@
                 <span class="toolbar-label">Save As</span>
             </button>
             <div class="toolbar-separator"></div>
-            <button class="toolbar-btn" id="btn-print" title="Print (Ctrl+P)">
-                <span class="icon" id="icon-print"></span>
-                <span class="toolbar-label">Print</span>
-            </button>
+            <div class="dropdown">
+                <button class="toolbar-btn dropdown-toggle" id="btn-print" title="Print">
+                    <span class="icon" id="icon-print"></span>
+                    <span class="toolbar-label">Print</span>
+                    <span class="icon chevron" id="icon-print-chevron"></span>
+                </button>
+                <div class="dropdown-menu" id="print-menu">
+                    <div class="dropdown-section">
+                        <div class="dropdown-section-title">Current Node</div>
+                        <button class="dropdown-item" data-action="print-current">Print</button>
+                    </div>
+                    <div class="dropdown-separator"></div>
+                    <div class="dropdown-section">
+                        <div class="dropdown-section-title">Workspace</div>
+                        <button class="dropdown-item" data-action="print-workspace">Print</button>
+                    </div>
+                </div>
+            </div>
             <div class="toolbar-separator"></div>
             <div class="dropdown">
                 <button class="toolbar-btn dropdown-toggle" id="btn-export" title="Export">
