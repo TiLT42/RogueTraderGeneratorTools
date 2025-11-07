@@ -60,7 +60,7 @@
           "arch": ["x64"]
         }
       ],
-      "icon": "assets/d6_128x128.ico"
+      "icon": "assets/icon.png"
     },
     "nsis": {
       "oneClick": false,
@@ -76,7 +76,7 @@
         }
       ],
       "category": "public.app-category.utilities",
-      "icon": "assets/d6_128x128.ico"
+      "icon": "assets/icon.png"
     },
     "linux": {
       "target": [
@@ -86,7 +86,7 @@
         }
       ],
       "category": "Utility",
-      "icon": "assets/d6_128x128.ico"
+      "icon": "assets/icon.png"
     }
   }
 }

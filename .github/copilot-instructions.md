@@ -183,7 +183,7 @@ XenosBase.cs               # Base alien species class (1,050 lines)
 XenosKoronusBestiary.cs    # Koronus Bestiary species (1,751 lines)
 XenosPrimitive.cs          # Primitive species generation (560 lines)
 XenosStarsOfInequity.cs    # Stars of Inequity species (671 lines)
-d6_128x128.ico             # Application icon
+icon.png             # Application icon
 ```
 
 ## Understanding Application Workflow

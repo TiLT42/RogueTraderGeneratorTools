@@ -47,7 +47,7 @@ electron-app/
 ├── styles.css              # Application styles
 ├── package.json            # Package configuration
 ├── assets/                 # Application assets
-│   └── d6_128x128.ico     # Application icon
+│   └── icon.png     # Application icon
 └── js/                     # JavaScript modules
     ├── globals.js          # Global constants and state
     ├── random.js           # Random number generation
