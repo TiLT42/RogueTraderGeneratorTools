@@ -1,4 +1,4 @@
-const { app, BrowserWindow, Menu, dialog, ipcMain } = require('electron');
+const { app, BrowserWindow, Menu, dialog, ipcMain, shell } = require('electron');
 const path = require('path');
 const fs = require('fs');
 
@@ -44,6 +44,16 @@ function createWindow() {
             mainWindow.webContents.inspectElement(params.x, params.y);
         });
     }
+
+    // Open external links in default browser instead of Electron window
+    mainWindow.webContents.setWindowOpenHandler(({ url }) => {
+        // Open external URLs in the default browser
+        if (url.startsWith('http://') || url.startsWith('https://')) {
+            shell.openExternal(url);
+            return { action: 'deny' }; // Prevent opening in Electron
+        }
+        return { action: 'allow' }; // Allow other protocols if needed
+    });
 }
 
 function createMenu() {
