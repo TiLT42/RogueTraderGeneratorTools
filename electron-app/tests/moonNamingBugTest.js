@@ -98,7 +98,7 @@ app.whenReady().then(async () => {
             results.push('  After removal, orbitalFeaturesNode is: ' + (planet2.orbitalFeaturesNode !== null));
             
             // Now add a new moon using the FIXED getOrCreateOrbitalFeatures method
-            // Reuse contextMenu from earlier
+            // (contextMenu was obtained from window.contextMenu earlier)
             const orbitalFeatures3 = contextMenu.getOrCreateOrbitalFeatures(planet2);
             
             const newMoon2 = createNode(NodeTypes.Planet);
