@@ -37,7 +37,7 @@ function sanitizeHTML(html) {
         if (node.nodeType === Node.ELEMENT_NODE) {
             const tagName = node.tagName.toLowerCase();
             
-            if (allowedTags.hasOwnProperty(tagName)) {
+            if (tagName in allowedTags) {
                 const cleanElement = document.createElement(tagName);
                 
                 for (let child of node.childNodes) {

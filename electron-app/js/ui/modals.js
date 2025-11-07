@@ -75,6 +75,8 @@ class Modals {
         const toolbar = this.body.querySelector('.rich-text-toolbar');
         const editor = document.getElementById('custom-description');
         
+        // Note: document.execCommand is deprecated but remains widely supported in modern browsers
+        // and is the standard approach for contenteditable. For Electron (Chromium-based), this works reliably.
         toolbar.addEventListener('click', (e) => {
             const button = e.target.closest('.toolbar-btn-rt');
             if (!button) return;
@@ -161,7 +163,7 @@ class Modals {
                 const tagName = node.tagName.toLowerCase();
                 
                 // If tag is allowed, create clean version
-                if (allowedTags.hasOwnProperty(tagName)) {
+                if (tagName in allowedTags) {
                     const cleanElement = document.createElement(tagName);
                     
                     // Recursively clean children
