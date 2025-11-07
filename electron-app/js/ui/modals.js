@@ -77,6 +77,8 @@ class Modals {
             const newName = document.getElementById('node-name').value.trim();
             if (newName) {
                 node.nodeName = newName;
+                // Mark this node as having a custom name to prevent automatic renaming
+                node.hasCustomName = true;
                 window.treeView.refresh();
                 window.documentViewer.refresh();
                 markDirty();

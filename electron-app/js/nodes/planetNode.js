@@ -299,13 +299,16 @@ class PlanetNode extends NodeBase {
         let count = 1;
         for (const child of this.orbitalFeaturesNode.children) {
             if (child.type === NodeTypes.Planet || child.type === NodeTypes.LesserMoon || child.type === NodeTypes.Asteroid) {
-                // Use astronomical naming convention:
-                // - Unique planet names use Arabic numerals (sci-fi convention)
-                // - Astronomical planet names use Roman numerals
-                if (hasUniqueName) {
-                    child.nodeName = `${this.nodeName}-${count}`;
-                } else {
-                    child.nodeName = `${this.nodeName}-${window.CommonData.roman(count)}`;
+                // Skip nodes that have been manually renamed by the user
+                if (!child.hasCustomName) {
+                    // Use astronomical naming convention:
+                    // - Unique planet names use Arabic numerals (sci-fi convention)
+                    // - Astronomical planet names use Roman numerals
+                    if (hasUniqueName || this.hasCustomName) {
+                        child.nodeName = `${this.nodeName}-${count}`;
+                    } else {
+                        child.nodeName = `${this.nodeName}-${window.CommonData.roman(count)}`;
+                    }
                 }
                 // Recurse for nested moons
                 if (child.type === NodeTypes.Planet && typeof child._assignNamesToOrbitalFeatures === 'function') {
@@ -1412,6 +1415,7 @@ class PlanetNode extends NodeBase {
             customDescription: data.customDescription || '',
             pageReference: data.pageReference || '',
             isGenerated: data.isGenerated || false,
+            hasCustomName: data.hasCustomName || false,
             fontWeight: data.fontWeight || 'normal',
             fontStyle: data.fontStyle || 'normal',
             fontForeground: data.fontForeground || '#2ecc71'

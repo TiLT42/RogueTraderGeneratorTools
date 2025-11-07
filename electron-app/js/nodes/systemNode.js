@@ -895,6 +895,13 @@ class SystemNode extends NodeBase {
                     child._primarySequenceNumber = seqIndex;
                     child._hasUniqueName = false; // Track if this planet has a unique evocative name
                     
+                    // Skip nodes that have been manually renamed by the user
+                    if (child.hasCustomName) {
+                        primaries.push(child);
+                        seqIndex++;
+                        continue;
+                    }
+                    
                     // Determine if THIS specific planet should get a unique name
                     const shouldBeUnique = this.shouldPlanetHaveUniqueName(child);
                     
@@ -964,7 +971,7 @@ class SystemNode extends NodeBase {
             }
             
             // Phase 2: If any moons will be named, ensure parent body is also named
-            if (numToName > 0 && !primary._hasUniqueName) {
+            if (numToName > 0 && !primary._hasUniqueName && !primary.hasCustomName) {
                 // Give parent body a unique name
                 const generatedName = getGeneratedName(primary.parent || this.primaryBiosphereZone, primary.type);
                 primary.nodeName = generatedName;
@@ -986,6 +993,12 @@ class SystemNode extends NodeBase {
             // Phase 4: Assign names to all satellites
             let subIndex = 1;
             for (const sat of satellites) {
+                // Skip satellites that have been manually renamed by the user
+                if (sat.hasCustomName) {
+                    subIndex++;
+                    continue;
+                }
+                
                 if (satellitesToName.has(sat)) {
                     // Give this satellite a unique name
                     const generatedName = getGeneratedName(primary.parent || this.primaryBiosphereZone, sat.type);
@@ -995,7 +1008,7 @@ class SystemNode extends NodeBase {
                     // Standard moon naming based on parent
                     // - If parent has unique name: ParentName-Arabic (e.g., "Tirane-1")
                     // - If parent has astronomical name: ParentName-Roman (e.g., "Kepler-22 b-I")
-                    if (primary._hasUniqueName) {
+                    if (primary._hasUniqueName || primary.hasCustomName) {
                         // Unique planet names use Arabic numerals for sci-fi convention
                         sat.nodeName = `${primary.nodeName}-${subIndex}`;
                     } else {

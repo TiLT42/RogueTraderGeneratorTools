@@ -13,6 +13,9 @@ class NodeBase {
         this.fontForeground = '#000000';
         this.pageReference = '';
         this.customDescription = '';
+        // Track if this node has been manually renamed by the user
+        // to prevent automatic naming from overwriting custom names
+        this.hasCustomName = false;
         // Generic inhabitant fields used by many concrete nodes (not all nodes set these)
         this.inhabitants = this.inhabitants || 'None';
         this.inhabitantDevelopment = this.inhabitantDevelopment || '';
@@ -123,6 +126,7 @@ class NodeBase {
             customDescription: this.customDescription,
             pageReference: this.pageReference,
             isGenerated: this.isGenerated,
+            hasCustomName: this.hasCustomName,
             fontWeight: this.fontWeight,
             fontStyle: this.fontStyle,
             fontForeground: this.fontForeground,

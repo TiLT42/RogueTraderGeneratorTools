@@ -56,7 +56,7 @@ class LesserMoonNode extends NodeBase {
         const node = new LesserMoonNode(data.id);
         Object.assign(node, {
             nodeName: data.nodeName || 'Lesser Moon', description: data.description || '', customDescription: data.customDescription || '',
-            pageReference: data.pageReference || createPageReference(16), isGenerated: data.isGenerated || false,
+            pageReference: data.pageReference || createPageReference(16), isGenerated: data.isGenerated || false, hasCustomName: data.hasCustomName || false,
             fontWeight: data.fontWeight || 'normal', fontStyle: data.fontStyle || 'normal', fontForeground: data.fontForeground || '#bdc3c7'
         });
         node.mineralResources = data.mineralResources || [];
