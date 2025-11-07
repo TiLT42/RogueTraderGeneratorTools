@@ -1013,11 +1013,12 @@ class SystemNode extends NodeBase {
                 
                 // Skip satellites that already have a unique (non-sequential) name
                 // Sequential patterns: "ParentName-I", "ParentName-1", etc.
-                // Anything else is considered a unique name that should be preserved
-                const hasSequentialName = (
-                    sat.nodeName.startsWith(primary.nodeName + '-') &&
-                    /^.+-([IVX]+|\d+)$/.test(sat.nodeName)
-                );
+                // Check if it matches ANY sequential pattern (current parent OR old default names)
+                const matchesSequentialPattern = /^.+-([IVX]+|\d+)$/.test(sat.nodeName);
+                const isCurrentParentSequential = sat.nodeName.startsWith(primary.nodeName + '-') && matchesSequentialPattern;
+                const isOldDefaultSequential = (sat.nodeName.startsWith('Planet-') || sat.nodeName.startsWith('Gas Giant-')) && matchesSequentialPattern;
+                const hasSequentialName = isCurrentParentSequential || isOldDefaultSequential;
+                
                 if (!hasSequentialName && sat.nodeName !== 'New Moon' && sat.nodeName !== 'Lesser Moon' && sat.nodeName !== 'Asteroid' && sat.nodeName !== 'Large Asteroid') {
                     // This satellite has a unique name, preserve it
                     sat._hasUniqueName = true;

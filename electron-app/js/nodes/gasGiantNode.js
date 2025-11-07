@@ -134,10 +134,12 @@ class GasGiantNode extends NodeBase {
                 
                 // Skip nodes that already have a unique (non-sequential) name
                 // Sequential patterns: "ParentName-I", "ParentName-1", etc.
-                const hasSequentialName = (
-                    child.nodeName.startsWith(this.nodeName + '-') &&
-                    /^.+-([IVX]+|\d+)$/.test(child.nodeName)
-                );
+                // Check if it matches ANY sequential pattern (current parent OR old default names)
+                const matchesSequentialPattern = /^.+-([IVX]+|\d+)$/.test(child.nodeName);
+                const isCurrentParentSequential = child.nodeName.startsWith(this.nodeName + '-') && matchesSequentialPattern;
+                const isOldDefaultSequential = (child.nodeName.startsWith('Planet-') || child.nodeName.startsWith('Gas Giant-')) && matchesSequentialPattern;
+                const hasSequentialName = isCurrentParentSequential || isOldDefaultSequential;
+                
                 if (!hasSequentialName && child.nodeName !== 'New Moon' && child.nodeName !== 'Lesser Moon' && child.nodeName !== 'Asteroid' && child.nodeName !== 'Large Asteroid') {
                     // This satellite has a unique name, preserve it
                     count++;
