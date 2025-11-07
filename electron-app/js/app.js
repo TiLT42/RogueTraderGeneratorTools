@@ -202,11 +202,9 @@ class App {
                     }
                     break;
 
-                case 'print':
-                    window.documentViewer.printContent();
-                    break;
-
-                case 'print-current':
+                // Print actions
+                case 'print':  // Legacy action from keyboard shortcut and menu
+                case 'print-current':  // New action from dropdown menu
                     window.documentViewer.printContent();
                     break;
 
