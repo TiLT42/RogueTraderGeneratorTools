@@ -915,36 +915,98 @@ class SystemNode extends NodeBase {
             }
         }
 
-        // Satellite naming
+        // Satellite naming - bulk approach per orbit
         const nameSatellites = (primary) => {
             if (!primary.orbitalFeaturesNode) return;
-            let subIndex = 1;
-            for (const sat of primary.orbitalFeaturesNode.children) {
-                const isSatelliteBody = (sat.type === NodeTypes.Planet || sat.type === NodeTypes.LesserMoon || sat.type === NodeTypes.Asteroid);
-                if (isSatelliteBody) {
-                    // Check if this moon should get a unique name (moons with major human presence)
-                    const moonShouldBeUnique = this.shouldPlanetHaveUniqueName(sat);
-                    
-                    if (moonShouldBeUnique) {
-                        // Moon has major human presence - give it a unique name
-                        const generatedName = getGeneratedName(primary.parent || this.primaryBiosphereZone, sat.type);
-                        sat.nodeName = generatedName;
-                        sat._hasUniqueName = true;
-                    } else {
-                        // Standard moon naming based on parent
-                        // - If parent has unique name: ParentName-Arabic (e.g., "Tirane-1")
-                        // - If parent has astronomical name: ParentName-Roman (e.g., "Kepler-22 b-I")
-                        if (primary._hasUniqueName) {
-                            // Unique planet names use Arabic numerals for sci-fi convention
-                            sat.nodeName = `${primary.nodeName}-${subIndex}`;
-                        } else {
-                            // Astronomical names use Roman numerals
-                            sat.nodeName = `${primary.nodeName}-${window.CommonData.roman(subIndex)}`;
-                        }
-                        sat._hasUniqueName = false;
-                    }
-                    subIndex++;
+            
+            // Collect all satellite bodies in this orbit
+            const satellites = primary.orbitalFeaturesNode.children.filter(sat => 
+                sat.type === NodeTypes.Planet || sat.type === NodeTypes.LesserMoon || sat.type === NodeTypes.Asteroid
+            );
+            
+            if (satellites.length === 0) return;
+            
+            // Phase 1: Determine how many moons should get unique names in this orbit
+            // Count moons with major human presence (these MUST be named)
+            const moonsWithMajorPresence = satellites.filter(sat => 
+                sat.inhabitants === 'Human' && sat.inhabitantDevelopment && 
+                ['Voidfarers', 'Advanced Industry', 'Basic Industry', 'Pre-Industrial'].includes(sat.inhabitantDevelopment)
+            );
+            
+            let numToName = moonsWithMajorPresence.length;
+            
+            // If in Starfarers system with humans, all satellites get names
+            if (this.systemFeatures.includes('Starfarers')) {
+                const allPlanets = [];
+                const collectPlanets = (node) => {
+                    if (node.type === NodeTypes.Planet) allPlanets.push(node);
+                    if (node.children) node.children.forEach(collectPlanets);
+                };
+                collectPlanets(this);
+                const hasHumanStarfarers = allPlanets.some(p => 
+                    p.inhabitants === 'Human' && p.isInhabitantHomeWorld
+                );
+                if (hasHumanStarfarers) {
+                    numToName = satellites.length;
                 }
+            }
+            
+            // If not all satellites are being named, add random additional naming based on system context
+            if (numToName < satellites.length) {
+                // In evocative systems, randomly name additional moons (maintaining ~50% distribution)
+                if (this.generateUniquePlanetNames) {
+                    const remaining = satellites.length - numToName;
+                    // Roll for how many additional moons to name (roughly 50% chance per remaining moon)
+                    for (let i = 0; i < remaining; i++) {
+                        if (RollD10() >= 6) numToName++;
+                    }
+                }
+            }
+            
+            // Phase 2: If any moons will be named, ensure parent body is also named
+            if (numToName > 0 && !primary._hasUniqueName) {
+                // Give parent body a unique name
+                const generatedName = getGeneratedName(primary.parent || this.primaryBiosphereZone, primary.type);
+                primary.nodeName = generatedName;
+                const astronomicalPattern = `${this.nodeName} ${indexToLetter(primary._primarySequenceNumber)}`;
+                primary._hasUniqueName = !generatedName.startsWith(astronomicalPattern);
+            }
+            
+            // Phase 3: Prioritize which satellites get unique names
+            // Priority order: Planets (full moons) → Lesser Moons → Asteroids
+            const prioritized = [
+                ...satellites.filter(s => s.type === NodeTypes.Planet),
+                ...satellites.filter(s => s.type === NodeTypes.LesserMoon),
+                ...satellites.filter(s => s.type === NodeTypes.Asteroid)
+            ];
+            
+            // Mark the first numToName satellites for unique naming
+            const satellitesToName = new Set(prioritized.slice(0, numToName));
+            
+            // Phase 4: Assign names to all satellites
+            let subIndex = 1;
+            for (const sat of satellites) {
+                if (satellitesToName.has(sat)) {
+                    // Give this satellite a unique name
+                    const generatedName = getGeneratedName(primary.parent || this.primaryBiosphereZone, sat.type);
+                    sat.nodeName = generatedName;
+                    sat._hasUniqueName = true;
+                } else {
+                    // Standard moon naming based on parent
+                    // - If parent has unique name: ParentName-Arabic (e.g., "Tirane-1")
+                    // - If parent has astronomical name: ParentName-Roman (e.g., "Kepler-22 b-I")
+                    if (primary._hasUniqueName) {
+                        // Unique planet names use Arabic numerals for sci-fi convention
+                        sat.nodeName = `${primary.nodeName}-${subIndex}`;
+                    } else {
+                        // Astronomical names use Roman numerals
+                        sat.nodeName = `${primary.nodeName}-${window.CommonData.roman(subIndex)}`;
+                    }
+                    sat._hasUniqueName = false;
+                }
+                subIndex++;
+                
+                // Recursively name satellites of satellites (moons of moons)
                 if (sat.orbitalFeaturesNode && sat.type === NodeTypes.Planet) nameSatellites(sat);
             }
         };
