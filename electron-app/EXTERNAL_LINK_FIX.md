@@ -18,10 +18,18 @@ Added an event handler in `main.js` that intercepts all external link clicks and
    ```javascript
    // Open external links in default browser instead of Electron window
    mainWindow.webContents.setWindowOpenHandler(({ url }) => {
-       // Open external URLs in the default browser
-       if (url.startsWith('http://') || url.startsWith('https://')) {
-           shell.openExternal(url);
-           return { action: 'deny' }; // Prevent opening in Electron
+       // Validate and open external URLs in the default browser
+       try {
+           const parsedUrl = new URL(url);
+           if (parsedUrl.protocol === 'http:' || parsedUrl.protocol === 'https:') {
+               shell.openExternal(url).catch(err => {
+                   console.error('Failed to open external URL:', url, err);
+               });
+               return { action: 'deny' }; // Prevent opening in Electron
+           }
+       } catch (err) {
+           console.error('Invalid URL format:', url, err);
+           return { action: 'deny' }; // Deny malformed URLs
        }
        return { action: 'allow' }; // Allow other protocols if needed
    });
@@ -30,9 +38,12 @@ Added an event handler in `main.js` that intercepts all external link clicks and
 ### How It Works
 - When a user clicks a link with `target="_blank"` (which all external links in the About dialog have)
 - The `setWindowOpenHandler` event is triggered
-- If the URL starts with `http://` or `https://`, it's opened in the default browser using `shell.openExternal()`
+- The URL is parsed and validated using the `URL` constructor
+- If the URL is valid and uses `http:` or `https:` protocol, it's opened in the default browser using `shell.openExternal()`
 - The handler returns `{ action: 'deny' }` to prevent Electron from opening its own window
-- For other protocols (if any), the handler returns `{ action: 'allow' }` to maintain normal behavior
+- If the URL is malformed, the error is caught and logged, and the action is denied
+- If `shell.openExternal()` fails, the error is caught and logged
+- For other valid protocols (if any), the handler returns `{ action: 'allow' }` to maintain normal behavior
 
 ## Testing Instructions
 
@@ -55,9 +66,12 @@ All links in the About dialog now open in the default browser:
 - Tabler Icons website
 
 ### Security Considerations
-- Only HTTP and HTTPS URLs are redirected to the external browser
-- This prevents potential security issues with opening untrusted URLs within the Electron context
+- URLs are validated using the standard `URL` constructor which properly parses and validates URL format
+- Only HTTP and HTTPS protocols are redirected to the external browser
+- Malformed URLs are caught and denied, preventing potential security issues
+- Error handling ensures the application continues to function even if URL opening fails
 - Links still use `rel="noopener"` for additional security
+- This prevents potential security issues with opening untrusted or malformed URLs within the Electron context
 
 ## Benefits
 1. **Improved User Experience**: Users can now see and copy URLs from their browser
