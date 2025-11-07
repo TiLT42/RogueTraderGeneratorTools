@@ -168,8 +168,8 @@ class TreeView {
             previousSelected.classList.remove('selected');
         }
 
-        // Select new node
-        const nodeElement = this.container.querySelector(`[data-node-id="${node.id}"]`);
+        // Select new node - must find the .tree-node-content element specifically
+        const nodeElement = this.container.querySelector(`.tree-node-content[data-node-id="${node.id}"]`);
         if (nodeElement) {
             nodeElement.classList.add('selected');
         }
@@ -224,7 +224,7 @@ class TreeView {
         
         // Restore selection if possible
         if (this.selectedNode) {
-            const nodeElement = this.container.querySelector(`[data-node-id="${this.selectedNode.id}"]`);
+            const nodeElement = this.container.querySelector(`.tree-node-content[data-node-id="${this.selectedNode.id}"]`);
             if (nodeElement) {
                 nodeElement.classList.add('selected');
             }
