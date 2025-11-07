@@ -327,7 +327,6 @@ class ContextMenu {
                     const orbitalFeatures = this.getOrCreateOrbitalFeatures(this.currentNode);
                     const newNode = createNode(NodeTypes.Planet);
                     newNode.isMoon = true;
-                    newNode.nodeName = 'New Moon';
                     // Set maxSize based on parent planet's body value if available
                     if (this.currentNode.bodyValue) {
                         newNode.maxSize = this.currentNode.bodyValue;
@@ -339,7 +338,6 @@ class ContextMenu {
                     // For Orbital Features node, create a moon planet
                     const newNode = createNode(NodeTypes.Planet);
                     newNode.isMoon = true;
-                    newNode.nodeName = 'New Moon';
                     // Try to get maxSize from parent planet
                     if (this.currentNode.parent && this.currentNode.parent.bodyValue) {
                         newNode.maxSize = this.currentNode.parent.bodyValue;
@@ -360,14 +358,12 @@ class ContextMenu {
                 if (this.currentNode.type === NodeTypes.Planet || this.currentNode.type === NodeTypes.GasGiant) {
                     const orbitalFeatures = this.getOrCreateOrbitalFeatures(this.currentNode);
                     const newNode = createNode(NodeTypes.LesserMoon);
-                    newNode.nodeName = 'Lesser Moon';
                     orbitalFeatures.addChild(newNode);
                     // Auto-name the moon using astronomical convention
                     this.renameOrbitalFeatures(this.currentNode);
                 } else {
                     // For Orbital Features node, create a lesser moon
                     const newNode = createNode(NodeTypes.LesserMoon);
-                    newNode.nodeName = 'Lesser Moon';
                     this.currentNode.addChild(newNode);
                     // Auto-name the moon using astronomical convention
                     if (this.currentNode.parent) {
@@ -384,14 +380,12 @@ class ContextMenu {
                 if (this.currentNode.type === NodeTypes.Planet || this.currentNode.type === NodeTypes.GasGiant) {
                     const orbitalFeatures = this.getOrCreateOrbitalFeatures(this.currentNode);
                     const newNode = createNode(NodeTypes.Asteroid);
-                    newNode.nodeName = 'Asteroid';
                     orbitalFeatures.addChild(newNode);
                     // Auto-name the asteroid using astronomical convention
                     this.renameOrbitalFeatures(this.currentNode);
                 } else {
                     // For Orbital Features node, create an asteroid
                     const newNode = createNode(NodeTypes.Asteroid);
-                    newNode.nodeName = 'Asteroid';
                     this.currentNode.addChild(newNode);
                     // Auto-name the asteroid using astronomical convention
                     if (this.currentNode.parent) {
