@@ -455,6 +455,10 @@ class ContextMenu {
         // Look for existing Orbital Features node
         for (const child of planetOrGasGiant.children) {
             if (child.type === NodeTypes.OrbitalFeatures) {
+                // Ensure the property is set even if node exists as child
+                if (!planetOrGasGiant.orbitalFeaturesNode) {
+                    planetOrGasGiant.orbitalFeaturesNode = child;
+                }
                 return child;
             }
         }
@@ -462,6 +466,8 @@ class ContextMenu {
         // Create new Orbital Features node if it doesn't exist
         const orbitalFeatures = createNode(NodeTypes.OrbitalFeatures);
         planetOrGasGiant.addChild(orbitalFeatures);
+        // Set the property so naming methods can find it
+        planetOrGasGiant.orbitalFeaturesNode = orbitalFeatures;
         return orbitalFeatures;
     }
     
