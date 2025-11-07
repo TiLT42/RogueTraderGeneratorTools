@@ -115,11 +115,12 @@ class DocumentViewer {
         }
 
         // Build combined HTML content from all root nodes
-        let combinedHTML = '';
+        const contentParts = [];
         for (const node of window.APP_STATE.rootNodes) {
             const nodeContent = node.getDocumentContent(true); // Always collate children
-            combinedHTML += nodeContent + '\n';
+            contentParts.push(nodeContent);
         }
+        const combinedHTML = contentParts.join('\n');
 
         // Create a new window for printing
         const printWindow = window.open('', '_blank');
