@@ -35,6 +35,7 @@ namespace RogueTraderSystemGenerator
             if (StarsOfInequityCheckBox.IsChecked == true)
             {
                 XenosGeneratorSoiCheckBox.IsEnabled = true;
+                XenosGeneratorSoiCheckBox.IsChecked = true;
             }
             else
             {
@@ -44,6 +45,7 @@ namespace RogueTraderSystemGenerator
             if(TheKoronusBestiaryCheckBox.IsChecked == true)
             {
                 XenosGeneratorKbCheckBox.IsEnabled = true;
+                XenosGeneratorKbCheckBox.IsChecked = true;
             }
             else
             {

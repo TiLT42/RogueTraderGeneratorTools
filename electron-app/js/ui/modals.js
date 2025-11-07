@@ -297,11 +297,15 @@ class Modals {
                 xenosStarsCheckbox.disabled = !starsCheckbox.checked;
                 if (!starsCheckbox.checked) {
                     xenosStarsCheckbox.checked = false;
+                } else {
+                    xenosStarsCheckbox.checked = true;
                 }
 
                 xenosBestiaryCheckbox.disabled = !bestiaryCheckbox.checked;
                 if (!bestiaryCheckbox.checked) {
                     xenosBestiaryCheckbox.checked = false;
+                } else {
+                    xenosBestiaryCheckbox.checked = true;
                 }
             };
 
