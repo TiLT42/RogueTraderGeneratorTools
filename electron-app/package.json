@@ -27,9 +27,66 @@
   },
   "devDependencies": {
     "electron": "^38.1.0",
+    "electron-builder": "^25.1.8",
     "jsdom": "^27.1.0"
   },
   "dependencies": {
     "@tabler/icons": "^3.35.0"
+  },
+  "build": {
+    "appId": "com.tilt42.rogue-trader-generator-tools",
+    "productName": "Rogue Trader Generator Tools",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "**/*",
+      "!tests/**/*",
+      "!scripts/**/*",
+      "!*.md",
+      "!.*",
+      "!dist/**/*",
+      "!bug-demo.html",
+      "!rich-text-notes-demo.html",
+      "!subtle-selection-demo.html",
+      "!test-selection.html",
+      "!test_graveyard.html",
+      "!test_modal_fix.html"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        }
+      ],
+      "icon": "assets/d6_128x128.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    },
+    "mac": {
+      "target": [
+        {
+          "target": "dmg",
+          "arch": ["x64", "arm64"]
+        }
+      ],
+      "category": "public.app-category.utilities",
+      "icon": "assets/d6_128x128.ico"
+    },
+    "linux": {
+      "target": [
+        {
+          "target": "AppImage",
+          "arch": ["x64"]
+        }
+      ],
+      "category": "Utility",
+      "icon": "assets/d6_128x128.ico"
+    }
   }
 }
