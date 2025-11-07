@@ -202,8 +202,14 @@ class App {
                     }
                     break;
 
-                case 'print':
+                // Print actions
+                case 'print':  // Legacy action from keyboard shortcut and menu
+                case 'print-current':  // New action from dropdown menu
                     window.documentViewer.printContent();
+                    break;
+
+                case 'print-workspace':
+                    window.documentViewer.printWorkspace();
                     break;
 
                 case 'export-rtf':

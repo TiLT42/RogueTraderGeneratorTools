@@ -35,9 +35,7 @@ class Toolbar {
             window.workspace.saveAsWorkspace();
         });
 
-        document.getElementById('btn-print').addEventListener('click', () => {
-            window.documentViewer.printContent();
-        });
+        // Print button is now a dropdown, handled in setupDropdowns()
 
         document.getElementById('btn-settings').addEventListener('click', () => {
             window.modals.showSettings();
@@ -76,6 +74,22 @@ class Toolbar {
     }
 
     setupDropdowns() {
+        // Print dropdown in toolbar
+        const printBtn = document.getElementById('btn-print');
+        const printMenu = document.getElementById('print-menu');
+        this.setupDropdown(printBtn, printMenu);
+
+        // Print menu items
+        printMenu.querySelectorAll('.dropdown-item').forEach(item => {
+            item.addEventListener('click', (e) => {
+                const action = e.target.dataset.action;
+                if (window.app) {
+                    window.app.handleMenuAction(action);
+                }
+                this.closeAllDropdowns();
+            });
+        });
+
         // Export dropdown in toolbar
         const exportBtn = document.getElementById('btn-export');
         const exportMenu = document.getElementById('export-menu');
@@ -163,6 +177,7 @@ class Toolbar {
         document.getElementById('icon-save').innerHTML = Icons.save;
         document.getElementById('icon-save-as').innerHTML = Icons.save;
         document.getElementById('icon-print').innerHTML = Icons.print;
+        document.getElementById('icon-print-chevron').innerHTML = Icons.chevronDown;
         document.getElementById('icon-export').innerHTML = Icons.export;
         document.getElementById('icon-export-chevron').innerHTML = Icons.chevronDown;
         document.getElementById('icon-settings').innerHTML = Icons.settings;
@@ -219,6 +234,7 @@ class Toolbar {
         
         const saveBtn = document.getElementById('btn-save');
         const saveAsBtn = document.getElementById('btn-save-as');
+        const printBtn = document.getElementById('btn-print');
         const exportBtn = document.getElementById('btn-export');
 
         // Save button: disabled if tree is empty OR workspace is not dirty
@@ -229,6 +245,11 @@ class Toolbar {
         // Save As button: disabled if tree is empty
         if (saveAsBtn) {
             saveAsBtn.disabled = !hasContent;
+        }
+
+        // Print button: disabled if tree is empty
+        if (printBtn) {
+            printBtn.disabled = !hasContent;
         }
 
         // Export button: disabled if tree is empty

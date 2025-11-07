@@ -38,6 +38,45 @@ class DocumentViewer {
         this.render();
     }
 
+    getPrintStyles() {
+        return `
+            body {
+                font-family: 'Times New Roman', serif;
+                font-size: 12pt;
+                line-height: 1.6;
+                margin: 1in;
+                color: black;
+                background: white;
+            }
+            h1, h2, h3, h4 { 
+                color: black; 
+                page-break-after: avoid;
+            }
+            h1 { font-size: 20pt; font-weight: bold; }
+            h2 { font-size: 16pt; font-weight: bold; }
+            h3 { font-size: 14pt; font-weight: bold; }
+            h4 { font-size: 12pt; font-weight: bold; }
+            .description-section {
+                background: none;
+                border: 1px solid #ccc;
+                padding: 10pt;
+                margin: 10pt 0;
+            }
+            .page-reference {
+                font-style: italic;
+                font-size: 10pt;
+                color: #666;
+            }
+            ul, ol { margin: 10pt 0; }
+            li { margin: 2pt 0; }
+            @media print {
+                .description-section {
+                    border: 1px solid black;
+                }
+            }
+        `;
+    }
+
     printContent() {
         if (!this.currentNode) {
             alert('No content to print');
@@ -55,44 +94,48 @@ class DocumentViewer {
             <head>
                 <title>Print - ${this.currentNode.nodeName}</title>
                 <style>
-                    body {
-                        font-family: 'Times New Roman', serif;
-                        font-size: 12pt;
-                        line-height: 1.6;
-                        margin: 1in;
-                        color: black;
-                        background: white;
-                    }
-                    h1, h2, h3, h4 { 
-                        color: black; 
-                        page-break-after: avoid;
-                    }
-                    h1 { font-size: 20pt; font-weight: bold; }
-                    h2 { font-size: 16pt; font-weight: bold; }
-                    h3 { font-size: 14pt; font-weight: bold; }
-                    h4 { font-size: 12pt; font-weight: bold; }
-                    .description-section {
-                        background: none;
-                        border: 1px solid #ccc;
-                        padding: 10pt;
-                        margin: 10pt 0;
-                    }
-                    .page-reference {
-                        font-style: italic;
-                        font-size: 10pt;
-                        color: #666;
-                    }
-                    ul, ol { margin: 10pt 0; }
-                    li { margin: 2pt 0; }
-                    @media print {
-                        .description-section {
-                            border: 1px solid black;
-                        }
-                    }
+                    ${this.getPrintStyles()}
                 </style>
             </head>
             <body>
                 ${content}
+            </body>
+            </html>
+        `);
+        
+        printWindow.document.close();
+        printWindow.focus();
+        printWindow.print();
+    }
+
+    printWorkspace() {
+        if (!window.APP_STATE.rootNodes || window.APP_STATE.rootNodes.length === 0) {
+            alert('No content in workspace to print');
+            return;
+        }
+
+        // Build combined HTML content from all root nodes
+        const contentParts = [];
+        for (const node of window.APP_STATE.rootNodes) {
+            const nodeContent = node.getDocumentContent(true); // Always collate children
+            contentParts.push(nodeContent);
+        }
+        const combinedHTML = contentParts.join('\n');
+
+        // Create a new window for printing
+        const printWindow = window.open('', '_blank');
+        
+        printWindow.document.write(`
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>Print - Workspace</title>
+                <style>
+                    ${this.getPrintStyles()}
+                </style>
+            </head>
+            <body>
+                ${combinedHTML}
             </body>
             </html>
         `);
