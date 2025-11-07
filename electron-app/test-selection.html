@@ -79,9 +79,9 @@
         <h3>Expected appearance:</h3>
         <p>The middle item ("Planet: This should be highlighted") should have:</p>
         <ul>
-            <li>✅ Blue background (#0078d4)</li>
+            <li>✅ Blue background (var(--bg-selected): #0078d4)</li>
             <li>✅ White text</li>
-            <li>✅ Bright blue LEFT border (3px, #3498db)</li>
+            <li>✅ Bright blue LEFT border (3px, var(--accent-secondary): #3498db)</li>
         </ul>
     </div>
     
@@ -138,7 +138,7 @@
                 results += `- Border Left Color: ${borderColor}<br>`;
                 
                 if (parseInt(borderLeft) >= 3) {
-                    results += '<br><span class="success">✓ Border left is applied (${borderLeft})</span><br>';
+                    results += `<br><span class="success">✓ Border left is applied (${borderLeft})</span><br>`;
                 } else {
                     results += '<br><span class="error">✗ Border left is NOT applied correctly</span><br>';
                 }
