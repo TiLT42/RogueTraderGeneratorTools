@@ -18,7 +18,12 @@ class ContextMenu {
         NodeTypes.Zone,
         NodeTypes.NativeSpecies,
         NodeTypes.PrimitiveXenos,
-        NodeTypes.OrbitalFeatures
+        NodeTypes.OrbitalFeatures,
+        NodeTypes.PirateShips         // Pirate Den has fixed name
+    ];
+
+    static NON_MOVABLE_TYPES = [
+        NodeTypes.PirateShips         // Pirate Den always at top of system
     ];
 
     constructor() {
@@ -510,6 +515,11 @@ class ContextMenu {
     }
 
     canMoveUp(node) {
+        // Check if this node type can move at all
+        if (ContextMenu.NON_MOVABLE_TYPES.includes(node.type)) {
+            return false;
+        }
+        
         // If node has a parent, check position in parent's children
         if (node.parent) {
             const siblings = node.parent.children;
@@ -527,6 +537,11 @@ class ContextMenu {
     }
 
     canMoveDown(node) {
+        // Check if this node type can move at all
+        if (ContextMenu.NON_MOVABLE_TYPES.includes(node.type)) {
+            return false;
+        }
+        
         // If node has a parent, check position in parent's children
         if (node.parent) {
             const siblings = node.parent.children;

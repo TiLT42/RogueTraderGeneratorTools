@@ -22,13 +22,14 @@ class ShipNode extends NodeBase {
     // Fallback: generate a random pirate ship if none provided
     generate() {
         super.generate();
-        if (!this.ship) {
-            // Human-only generation for standalone ships (WPF parity)
-            const s = window.StarshipToolsData.getRandomPirateShip(Species.Human);
-            this.setShip(s);
-        } else {
-            this.updateDescription();
+        // Always generate a new ship when regenerating
+        // If this ship is part of a pirate den, use the den's species
+        let species = Species.Human; // default
+        if (this.parent && this.parent.type === NodeTypes.PirateShips && this.parent.pirateSpecies) {
+            species = this.parent.pirateSpecies;
         }
+        const s = window.StarshipToolsData.getRandomPirateShip(species);
+        this.setShip(s);
     }
 
     updateDescription() {

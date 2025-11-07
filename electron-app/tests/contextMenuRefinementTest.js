@@ -153,4 +153,12 @@ console.assert(!groupingHasRename, 'Grouping node should not have Rename');
 console.assert(groupingHasDelete, 'Grouping node should have Delete');
 console.log('✓ Grouping node context menu items are correct\n');
 
+// Test 9: Pirate Den (PirateShips) type restrictions  
+console.log('Test 9: Pirate Den node type restrictions');
+// Can't create PirateShipsNode in test environment, but we can test the logic
+console.assert(ContextMenu.NON_RENAMABLE_TYPES.includes(NodeTypes.PirateShips), 'PirateShips should be in NON_RENAMABLE_TYPES');
+console.assert(ContextMenu.NON_MOVABLE_TYPES.includes(NodeTypes.PirateShips), 'PirateShips should be in NON_MOVABLE_TYPES');
+console.assert(!ContextMenu.NON_GENERATING_TYPES.includes(NodeTypes.PirateShips), 'PirateShips should NOT be in NON_GENERATING_TYPES');
+console.log('✓ Pirate Den type restrictions correct\n');
+
 console.log('=== All Context Menu Refinement Tests Passed ===\n');
