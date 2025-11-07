@@ -38,17 +38,3 @@ My focus will now turn to the UI. I have two priorities here, in this order:
 
 #### UPDATE 05.11.25
 The UI has now been updated to address the points listed above. The Electron app is now at a more advanced stage than the WPF app ever was, though there is still a significant risk of bugs and a few adjustments that need to be made. It's getting close to something that can be released properly. Until then, I will continue tweaking and improving it.
-
-## For Maintainers: Creating Releases
-
-The Electron version has an automated release pipeline that builds installers for Windows, macOS, and Linux. To create a new release:
-
-1. Go to the Actions tab on GitHub
-2. Select "Release Electron App" workflow
-3. Click "Run workflow" and provide:
-   - Version number (e.g., 2.0.0)
-   - Release notes
-4. Wait for the build to complete (creates draft release)
-5. Review and publish the release
-
-For detailed instructions, see [RELEASE_PROCESS.md](RELEASE_PROCESS.md).
