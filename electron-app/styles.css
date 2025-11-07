@@ -447,6 +447,8 @@ body {
 .tree-node-content.selected {
     background-color: var(--bg-selected);
     color: var(--text-inverted);
+    border-left: 3px solid var(--accent-secondary);
+    padding-left: 5px;
 }
 
 .tree-node-content.selected:hover {
