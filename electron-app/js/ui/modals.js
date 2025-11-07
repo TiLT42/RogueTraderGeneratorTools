@@ -46,21 +46,159 @@ class Modals {
         this.body.innerHTML = `
             <div class="form-group">
                 <label for="custom-description">Custom Notes:</label>
-                <textarea id="custom-description" rows="6">${node.customDescription || ''}</textarea>
+                <div class="rich-text-toolbar">
+                    <button type="button" class="toolbar-btn-rt" data-command="h3" title="Heading">
+                        <strong>H</strong>
+                    </button>
+                    <button type="button" class="toolbar-btn-rt" data-command="bold" title="Bold (Ctrl+B)">
+                        <strong>B</strong>
+                    </button>
+                    <button type="button" class="toolbar-btn-rt" data-command="italic" title="Italic (Ctrl+I)">
+                        <em>I</em>
+                    </button>
+                    <button type="button" class="toolbar-btn-rt" data-command="underline" title="Underline (Ctrl+U)">
+                        <u>U</u>
+                    </button>
+                    <div class="toolbar-separator-rt"></div>
+                    <button type="button" class="toolbar-btn-rt" data-command="insertUnorderedList" title="Bullet List">
+                        ≡
+                    </button>
+                    <button type="button" class="toolbar-btn-rt" data-command="insertOrderedList" title="Numbered List">
+                        ⋮
+                    </button>
+                </div>
+                <div id="custom-description" class="rich-text-editor" contenteditable="true">${this.sanitizeHTML(node.customDescription || '')}</div>
             </div>
         `;
 
+        // Set up toolbar button handlers
+        const toolbar = this.body.querySelector('.rich-text-toolbar');
+        const editor = document.getElementById('custom-description');
+        
+        toolbar.addEventListener('click', (e) => {
+            const button = e.target.closest('.toolbar-btn-rt');
+            if (!button) return;
+            
+            e.preventDefault();
+            const command = button.getAttribute('data-command');
+            
+            if (command === 'h3') {
+                // Toggle heading format
+                document.execCommand('formatBlock', false, '<h3>');
+            } else {
+                document.execCommand(command, false, null);
+            }
+            
+            // Keep focus on editor
+            editor.focus();
+        });
+
+        // Add keyboard shortcuts
+        editor.addEventListener('keydown', (e) => {
+            if (e.ctrlKey || e.metaKey) {
+                switch(e.key.toLowerCase()) {
+                    case 'b':
+                        e.preventDefault();
+                        document.execCommand('bold', false, null);
+                        break;
+                    case 'i':
+                        e.preventDefault();
+                        document.execCommand('italic', false, null);
+                        break;
+                    case 'u':
+                        e.preventDefault();
+                        document.execCommand('underline', false, null);
+                        break;
+                }
+            }
+        });
+
         this.okButton.textContent = 'Save';
         this.okButton.onclick = () => {
-            const description = document.getElementById('custom-description').value;
-            node.customDescription = description;
+            const html = editor.innerHTML;
+            // Sanitize HTML before saving
+            node.customDescription = this.sanitizeHTML(html);
             window.documentViewer.refresh();
             markDirty();
             this.hide();
         };
 
         this.show();
-        document.getElementById('custom-description').focus();
+        editor.focus();
+    }
+
+    // Sanitize HTML to only allow specific tags
+    sanitizeHTML(html) {
+        if (!html) return '';
+        
+        // Create a temporary div to parse the HTML
+        const temp = document.createElement('div');
+        temp.innerHTML = html;
+        
+        // Allowed tags and their attributes
+        const allowedTags = {
+            'h3': [],
+            'b': [],
+            'strong': [],
+            'i': [],
+            'em': [],
+            'u': [],
+            'ul': [],
+            'ol': [],
+            'li': [],
+            'br': [],
+            'p': [],
+            'div': []
+        };
+        
+        // Recursively clean nodes
+        const cleanNode = (node) => {
+            if (node.nodeType === Node.TEXT_NODE) {
+                return node.cloneNode(false);
+            }
+            
+            if (node.nodeType === Node.ELEMENT_NODE) {
+                const tagName = node.tagName.toLowerCase();
+                
+                // If tag is allowed, create clean version
+                if (allowedTags.hasOwnProperty(tagName)) {
+                    const cleanElement = document.createElement(tagName);
+                    
+                    // Recursively clean children
+                    for (let child of node.childNodes) {
+                        const cleanChild = cleanNode(child);
+                        if (cleanChild) {
+                            cleanElement.appendChild(cleanChild);
+                        }
+                    }
+                    
+                    return cleanElement;
+                } else {
+                    // Tag not allowed - extract text content and children
+                    const fragment = document.createDocumentFragment();
+                    for (let child of node.childNodes) {
+                        const cleanChild = cleanNode(child);
+                        if (cleanChild) {
+                            fragment.appendChild(cleanChild);
+                        }
+                    }
+                    return fragment;
+                }
+            }
+            
+            return null;
+        };
+        
+        // Clean the HTML
+        const cleanDiv = document.createElement('div');
+        for (let child of temp.childNodes) {
+            const cleanChild = cleanNode(child);
+            if (cleanChild) {
+                cleanDiv.appendChild(cleanChild);
+            }
+        }
+        
+        return cleanDiv.innerHTML;
     }
 
     showRename(node) {
