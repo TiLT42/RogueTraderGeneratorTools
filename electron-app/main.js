@@ -361,6 +361,24 @@ ipcMain.handle('show-open-dialog', async (event, options) => {
     return result;
 });
 
+// IPC handler for showing error dialogs
+ipcMain.handle('show-error-dialog', async (event, title, message) => {
+    const options = {
+        type: 'error',
+        title: title || 'Error',
+        message: message || 'An error occurred',
+        buttons: ['OK']
+    };
+    
+    // Only show dialog if window exists
+    if (mainWindow && !mainWindow.isDestroyed()) {
+        await dialog.showMessageBox(mainWindow, options);
+    } else {
+        // Fallback to console if window doesn't exist
+        console.error(`[${title}]`, message);
+    }
+});
+
 // IPC handler for updating menu item availability when settings change
 ipcMain.on('settings-updated', (event, settings) => {
     try {
