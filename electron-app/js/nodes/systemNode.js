@@ -904,7 +904,9 @@ class SystemNode extends NodeBase {
                     
                     // Skip nodes that already have a unique (non-astronomical) name
                     // Check using the node's own method to detect unique names
-                    const hasExistingUniqueName = (typeof child._hasUniquePlanetName === 'function') && child._hasUniquePlanetName();
+                    // BUT exclude default/generic names that need to be named
+                    const isDefaultName = (child.nodeName === 'Planet' || child.nodeName === 'Gas Giant');
+                    const hasExistingUniqueName = !isDefaultName && (typeof child._hasUniquePlanetName === 'function') && child._hasUniquePlanetName();
                     if (hasExistingUniqueName) {
                         child._hasUniqueName = true; // Mark for satellite naming logic
                         primaries.push(child);
