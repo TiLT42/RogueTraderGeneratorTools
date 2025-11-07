@@ -115,7 +115,7 @@ Method: assignSequentialBodyNames()
 
 ## Documentation
 
-Complete specification: `/ASTRONOMICAL_NAMING.md`
+The astronomical naming implementation is documented in the code comments in `electron-app/js/nodes/systemNode.js`.
 
 ## Test Coverage
 
