@@ -1,6 +1,26 @@
 // Context menu management
 
 class ContextMenu {
+    // Static constants for node type restrictions
+    static NON_GENERATING_TYPES = [
+        NodeTypes.Zone,              // Zone containers don't generate
+        NodeTypes.NativeSpecies,     // Container for Xenos children
+        NodeTypes.PrimitiveXenos,    // Container header only
+        NodeTypes.OrbitalFeatures,   // Container for moons/asteroids
+        NodeTypes.Asteroid,          // Static placeholder
+        NodeTypes.DustCloud,         // Static description
+        NodeTypes.GravityRiptide,    // Static description
+        NodeTypes.RadiationBursts,   // Only stores count
+        NodeTypes.SolarFlares        // Only stores count
+    ];
+
+    static NON_RENAMABLE_TYPES = [
+        NodeTypes.Zone,
+        NodeTypes.NativeSpecies,
+        NodeTypes.PrimitiveXenos,
+        NodeTypes.OrbitalFeatures
+    ];
+
     constructor() {
         this.element = document.getElementById('context-menu');
         this.currentNode = null;
@@ -486,19 +506,7 @@ class ContextMenu {
 
     canGenerate(node) {
         // Nodes that don't support generation (containers or static content)
-        const nonGeneratingTypes = [
-            NodeTypes.Zone,              // Zone containers don't generate
-            NodeTypes.NativeSpecies,     // Container for Xenos children
-            NodeTypes.PrimitiveXenos,    // Container header only
-            NodeTypes.OrbitalFeatures,   // Container for moons/asteroids
-            NodeTypes.Asteroid,          // Static placeholder
-            NodeTypes.DustCloud,         // Static description
-            NodeTypes.GravityRiptide,    // Static description
-            NodeTypes.RadiationBursts,   // Only stores count
-            NodeTypes.SolarFlares        // Only stores count
-        ];
-        
-        return !nonGeneratingTypes.includes(node.type);
+        return !ContextMenu.NON_GENERATING_TYPES.includes(node.type);
     }
 
     canMoveUp(node) {
@@ -544,14 +552,7 @@ class ContextMenu {
         if (!node) return false;
         
         // These nodes should not be renamed (zones and grouping containers)
-        const nonRenamableTypes = [
-            NodeTypes.Zone,
-            NodeTypes.NativeSpecies,
-            NodeTypes.PrimitiveXenos,
-            NodeTypes.OrbitalFeatures
-        ];
-        
-        return !nonRenamableTypes.includes(node.type);
+        return !ContextMenu.NON_RENAMABLE_TYPES.includes(node.type);
     }
 
     // Delete permission: allow for any node except Zone nodes (which are structural)
