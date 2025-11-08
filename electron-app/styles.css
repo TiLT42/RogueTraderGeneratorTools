@@ -670,7 +670,7 @@ body {
 
 /* Compact modal style for simple dialogs (update notifications, info messages) */
 .modal-compact {
-    max-width: 450px;
+    max-width: 550px;
     width: auto;
     min-width: 400px;
 }

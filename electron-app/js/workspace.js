@@ -50,8 +50,13 @@ class Workspace {
 
     async saveToFile(filePath) {
         try {
+            // Use dynamic version with fallback
+            const appVersion = (window.VersionManager && window.VersionManager.getVersion) 
+                ? window.VersionManager.getVersion() 
+                : '2.0.0';
+            
             const workspaceData = {
-                version: '2.0',
+                version: appVersion,
                 rootNodes: window.APP_STATE.rootNodes.map(node => node.toJSON()),
                 nodeIdCounter: window.APP_STATE.nodeIdCounter
             };

@@ -4,7 +4,10 @@ class UpdateChecker {
     constructor() {
         this.repoOwner = 'TiLT42';
         this.repoName = 'RogueTraderGeneratorTools';
-        this.currentVersion = '2.0.0'; // Matches package.json
+        // Use dynamic version with fallback
+        this.currentVersion = (window.VersionManager && window.VersionManager.getVersion) 
+            ? window.VersionManager.getVersion() 
+            : '2.0.0';
         
         // Debug mode: set to true to simulate a new version being available
         this.debugMode = false;

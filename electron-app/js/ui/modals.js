@@ -482,10 +482,15 @@ class Modals {
 
     showAbout() {
         this.title.textContent = '';
+        // Use dynamic version with fallback
+        const versionText = (window.VersionManager && window.VersionManager.getDisplayVersion) 
+            ? window.VersionManager.getDisplayVersion() 
+            : 'Version 2.0.0';
+        
         this.body.innerHTML = `
             <div style="text-align: center;">
                 <h3>Rogue Trader Generator Tools</h3>
-                <p>Version 2.0</p>
+                <p>${versionText}</p>
                 <p>A tool for generating systems, ships, xenos, and treasures for the Rogue Trader RPG.</p>
                 <p>Developed by Espen Gätzschmann.</p>
                 <br>
@@ -557,6 +562,11 @@ class Modals {
      */
     showUpdateNotification(version, releaseUrl, onDontAskAgain) {
         this.title.textContent = 'Update Available';
+        // Use dynamic version with fallback
+        const currentVersion = (window.VersionManager && window.VersionManager.getVersion) 
+            ? window.VersionManager.getVersion() 
+            : '2.0.0';
+        
         this.body.innerHTML = `
             <div style="margin-bottom: 20px;">
                 <p style="font-size: 14px; margin-bottom: 10px;">
@@ -566,7 +576,7 @@ class Modals {
                     Version ${version}
                 </p>
                 <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 15px;">
-                    You are currently running version 2.0.0
+                    You are currently running version ${currentVersion}
                 </p>
             </div>
             <div style="margin-top: 15px;">
