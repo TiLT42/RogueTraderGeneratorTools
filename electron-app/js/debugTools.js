@@ -229,31 +229,34 @@ class DebugTools {
     }
 
     setupConsoleHelpers() {
-        // Add console styling for better debugging
-        const originalLog = console.log;
-        const originalError = console.error;
-        const originalWarn = console.warn;
-        
-        console.log = (...args) => {
-            originalLog('%c[LOG]', 'color: #2196F3; font-weight: bold;', ...args);
+        // Create a custom logger object instead of overriding native console
+        // This avoids interfering with third-party libraries or debugging tools
+        window.logger = {
+            log: (...args) => {
+                console.log('%c[LOG]', 'color: #2196F3; font-weight: bold;', ...args);
+            },
+            
+            error: (...args) => {
+                console.error('%c[ERROR]', 'color: #f44336; font-weight: bold;', ...args);
+            },
+            
+            warn: (...args) => {
+                console.warn('%c[WARN]', 'color: #ff9800; font-weight: bold;', ...args);
+            },
+            
+            debug: (...args) => {
+                console.log('%c[DEBUG]', 'color: #4caf50; font-weight: bold;', ...args);
+            },
+            
+            generation: (...args) => {
+                console.log('%c[GENERATION]', 'color: #9c27b0; font-weight: bold;', ...args);
+            }
         };
         
-        console.error = (...args) => {
-            originalError('%c[ERROR]', 'color: #f44336; font-weight: bold;', ...args);
-        };
+        // For convenience, also add to DEBUG namespace
+        window.DEBUG.logger = window.logger;
         
-        console.warn = (...args) => {
-            originalWarn('%c[WARN]', 'color: #ff9800; font-weight: bold;', ...args);
-        };
-        
-        // Add debug-specific console methods
-        console.debug = (...args) => {
-            originalLog('%c[DEBUG]', 'color: #4caf50; font-weight: bold;', ...args);
-        };
-        
-        console.generation = (...args) => {
-            originalLog('%c[GENERATION]', 'color: #9c27b0; font-weight: bold;', ...args);
-        };
+        console.log('🎨 Custom logger available as window.logger');
     }
 
     setupPerformanceMonitoring() {
@@ -264,7 +267,7 @@ class DebugTools {
                 const start = performance.now();
                 const result = originalCreateNode.apply(this, args);
                 const end = performance.now();
-                console.debug(`Node creation (${args[0]}): ${(end - start).toFixed(2)}ms`);
+                window.logger.debug(`Node creation (${args[0]}): ${(end - start).toFixed(2)}ms`);
                 return result;
             };
         }
@@ -277,7 +280,7 @@ class DebugTools {
                     const start = performance.now();
                     const result = originalAddNode.call(this, node);
                     const end = performance.now();
-                    console.debug(`Tree view add node: ${(end - start).toFixed(2)}ms`);
+                    window.logger.debug(`Tree view add node: ${(end - start).toFixed(2)}ms`);
                     return result;
                 };
             }

@@ -56,6 +56,9 @@ function createWindow() {
         
         // Add debug-specific keyboard shortcuts
         mainWindow.webContents.on('before-input-event', (event, input) => {
+            // Only handle keyDown events to avoid duplicate triggers
+            if (input.type !== 'keyDown') return;
+            
             switch (input.key) {
                 case 'F5':
                     // Force reload
