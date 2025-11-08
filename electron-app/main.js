@@ -27,6 +27,16 @@ function createWindow() {
     // In dev mode, open DevTools for easier debugging
     if (isDev) {
         mainWindow.webContents.openDevTools({ mode: 'detach' });
+        console.log('🐛 Development mode active - DevTools opened');
+        
+        // Add additional debugging capabilities in dev mode
+        mainWindow.webContents.on('did-finish-load', () => {
+            // Inject development helpers after page load
+            mainWindow.webContents.executeJavaScript(`
+                console.log('🔧 Development mode - Debug features enabled');
+                console.log('💡 Use window.debug or window.DEBUG for debugging utilities');
+            `);
+        });
     }
     
     // Remove the application menu (we're using toolbars instead)
@@ -42,6 +52,26 @@ function createWindow() {
         mainWindow.webContents.on('context-menu', (_event, params) => {
             if (!mainWindow || mainWindow.isDestroyed()) return;
             mainWindow.webContents.inspectElement(params.x, params.y);
+        });
+        
+        // Add debug-specific keyboard shortcuts
+        mainWindow.webContents.on('before-input-event', (event, input) => {
+            if (input.control || input.meta) {
+                switch (input.key) {
+                    case 'F5':
+                        // Force reload
+                        mainWindow.webContents.reloadIgnoringCache();
+                        break;
+                    case 'F11':
+                        // Toggle full screen
+                        mainWindow.setFullScreen(!mainWindow.isFullScreen());
+                        break;
+                    case 'F12':
+                        // Toggle DevTools
+                        mainWindow.webContents.toggleDevTools();
+                        break;
+                }
+            }
         });
     }
 
@@ -138,20 +168,35 @@ function createMenu() {
             submenu: [
                 { role: 'reload' },
                 { role: 'forceReload' },
-                { type: 'separator' },
-                // Use role to get OS-default accelerator (Ctrl+Shift+I on Win/Linux, Alt+Cmd+I on macOS)
-                { role: 'toggleDevTools' },
-                // Also provide F12 as an additional shortcut on Windows/Linux
-                {
-                    label: 'Toggle Developer Tools (F12)',
-                    accelerator: process.platform === 'darwin' ? undefined : 'F12',
-                    visible: process.platform !== 'darwin',
-                    click: () => {
-                        if (mainWindow && !mainWindow.isDestroyed()) {
-                            mainWindow.webContents.toggleDevTools();
+                ...(isDev ? [
+                    { type: 'separator' },
+                    // Debug tools only in development mode
+                    { role: 'toggleDevTools' },
+                    {
+                        label: 'Toggle Developer Tools (F12)',
+                        accelerator: process.platform === 'darwin' ? undefined : 'F12',
+                        visible: process.platform !== 'darwin',
+                        click: () => {
+                            if (mainWindow && !mainWindow.isDestroyed()) {
+                                mainWindow.webContents.toggleDevTools();
+                            }
+                        }
+                    },
+                    {
+                        label: 'Debug Panel (Ctrl+Shift+D)',
+                        accelerator: 'CmdOrCtrl+Shift+D',
+                        click: () => {
+                            if (mainWindow && !mainWindow.isDestroyed()) {
+                                mainWindow.webContents.executeJavaScript(`
+                                    const panel = document.getElementById('debug-panel');
+                                    if (panel) {
+                                        panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+                                    }
+                                `);
+                            }
                         }
                     }
-                },
+                ] : []),
                 { type: 'separator' },
                 { role: 'resetZoom' },
                 { role: 'zoomIn' },
