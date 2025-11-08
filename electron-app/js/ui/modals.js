@@ -249,7 +249,7 @@ class Modals {
             <div class="settings-tabs">
                 <button class="settings-tab active" data-tab="books">Books</button>
                 <button class="settings-tab" data-tab="xenos">Xenos</button>
-                <button class="settings-tab" data-tab="appearance">Appearance</button>
+                <button class="settings-tab" data-tab="general">General</button>
             </div>
             
             <div class="settings-tab-content active" data-tab-content="books">
@@ -355,7 +355,7 @@ class Modals {
                 </div>
             </div>
             
-            <div class="settings-tab-content" data-tab-content="appearance">
+            <div class="settings-tab-content" data-tab-content="general">
                 <div class="settings-section">
                     <h3 class="settings-section-title">Appearance</h3>
                     
@@ -367,6 +367,21 @@ class Modals {
                         <div class="toggle-switch-label">
                             <strong>Dark Mode</strong>
                             <span>Switch between light and dark theme for the application interface</span>
+                        </div>
+                    </label>
+                </div>
+                
+                <div class="settings-section">
+                    <h3 class="settings-section-title">Updates</h3>
+                    
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="check-updates-toggle" ${window.APP_STATE.settings.checkForUpdatesOnStartup ? 'checked' : ''}>
+                        <div class="toggle-switch-control">
+                            <div class="toggle-switch-slider"></div>
+                        </div>
+                        <div class="toggle-switch-label">
+                            <strong>Check for updates on startup</strong>
+                            <span>Automatically check for new versions when the application starts</span>
                         </div>
                     </label>
                 </div>
@@ -401,6 +416,9 @@ class Modals {
             // Save dark mode setting and apply theme (applyTheme function from globals.js)
             window.APP_STATE.settings.darkMode = document.getElementById('dark-mode-toggle').checked;
             applyTheme(window.APP_STATE.settings.darkMode);
+
+            // Save update checker setting
+            window.APP_STATE.settings.checkForUpdatesOnStartup = document.getElementById('check-updates-toggle').checked;
 
             // Save book settings
             window.APP_STATE.settings.enabledBooks.CoreRuleBook = true; // Always true
@@ -502,6 +520,83 @@ class Modals {
         this.okButton.textContent = 'Close';
         this.okButton.onclick = () => {
             this.cancelButton.style.display = 'inline-block';
+            this.hide();
+        };
+
+        this.show();
+    }
+
+    /**
+     * Show a simple informational dialog
+     * @param {string} title - Dialog title
+     * @param {string} message - Dialog message
+     */
+    showInfo(title, message) {
+        this.title.textContent = title;
+        this.body.innerHTML = `<p>${message}</p>`;
+
+        this.cancelButton.style.display = 'none';
+        this.okButton.textContent = 'OK';
+        this.okButton.onclick = () => {
+            this.cancelButton.style.display = 'inline-block';
+            this.hide();
+        };
+
+        this.show();
+    }
+
+    /**
+     * Show update notification dialog
+     * @param {string} version - New version available
+     * @param {string} releaseUrl - URL to the release page
+     * @param {Function} onDontAskAgain - Callback when "don't ask again" is checked
+     */
+    showUpdateNotification(version, releaseUrl, onDontAskAgain) {
+        this.title.textContent = 'Update Available';
+        this.body.innerHTML = `
+            <div style="margin-bottom: 20px;">
+                <p style="font-size: 14px; margin-bottom: 10px;">
+                    A new version of Rogue Trader Generator Tools is available!
+                </p>
+                <p style="font-size: 16px; font-weight: bold; color: var(--accent-primary); margin-bottom: 15px;">
+                    Version ${version}
+                </p>
+                <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 15px;">
+                    You are currently running version 2.0.0
+                </p>
+            </div>
+            <div style="margin-top: 15px;">
+                <label style="display: flex; align-items: center; cursor: pointer; user-select: none;">
+                    <input type="checkbox" id="dont-ask-again" style="margin-right: 8px;">
+                    <span style="font-size: 13px;">Don't ask again for this update</span>
+                </label>
+            </div>
+        `;
+
+        this.okButton.textContent = 'Update';
+        this.cancelButton.style.display = 'inline-block';
+        this.cancelButton.textContent = 'Cancel';
+        
+        this.okButton.onclick = () => {
+            const dontAskAgain = document.getElementById('dont-ask-again').checked;
+            if (onDontAskAgain) {
+                onDontAskAgain(dontAskAgain);
+            }
+            
+            // Open release page in user's default browser
+            if (releaseUrl) {
+                const { shell } = require('electron');
+                shell.openExternal(releaseUrl);
+            }
+            
+            this.hide();
+        };
+
+        this.cancelButton.onclick = () => {
+            const dontAskAgain = document.getElementById('dont-ask-again').checked;
+            if (onDontAskAgain) {
+                onDontAskAgain(dontAskAgain);
+            }
             this.hide();
         };
 

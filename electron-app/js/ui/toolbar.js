@@ -41,6 +41,12 @@ class Toolbar {
             window.modals.showSettings();
         });
 
+        document.getElementById('btn-check-updates').addEventListener('click', () => {
+            if (window.updateChecker) {
+                window.updateChecker.checkAndNotify(true); // true = manual check
+            }
+        });
+
         document.getElementById('btn-about').addEventListener('click', () => {
             window.modals.showAbout();
         });
@@ -181,6 +187,7 @@ class Toolbar {
         document.getElementById('icon-export').innerHTML = Icons.export;
         document.getElementById('icon-export-chevron').innerHTML = Icons.chevronDown;
         document.getElementById('icon-settings').innerHTML = Icons.settings;
+        document.getElementById('icon-check-updates').innerHTML = Icons.download;
         document.getElementById('icon-about').innerHTML = Icons.info;
     }
 
