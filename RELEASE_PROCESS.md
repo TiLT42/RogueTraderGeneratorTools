@@ -60,10 +60,10 @@ Previous WPF releases used version 1.x.
 
 ## Release Artifacts
 
-Each release will include three installers:
+Each release will include installers for multiple platforms with clear platform identifiers in the file names:
 
 ### Windows
-- **File**: `Rogue Trader Generator Tools Setup x.x.x.exe`
+- **File**: `Rogue-Trader-Generator-Tools-Windows-x.x.x-Setup.exe`
 - **Format**: NSIS installer
 - **Features**: 
   - Installation wizard
@@ -72,13 +72,15 @@ Each release will include three installers:
   - Standard Windows installation/uninstallation
 
 ### macOS
-- **File**: `Rogue Trader Generator Tools-x.x.x.dmg` or similar
+- **Files**: 
+  - `Rogue-Trader-Generator-Tools-macOS-x64-x.x.x.dmg` (Intel Macs)
+  - `Rogue-Trader-Generator-Tools-macOS-arm64-x.x.x.dmg` (Apple Silicon Macs)
 - **Format**: DMG disk image
-- **Architectures**: Universal binary (Intel x64 + Apple Silicon arm64)
+- **Architectures**: Separate builds for Intel x64 and Apple Silicon arm64
 - **Installation**: Drag and drop to Applications folder
 
 ### Linux
-- **File**: `Rogue Trader Generator Tools-x.x.x.AppImage`
+- **File**: `Rogue-Trader-Generator-Tools-Linux-x.x.x.AppImage`
 - **Format**: AppImage portable application
 - **Architecture**: x64
 - **Usage**: Make executable and run directly, no installation needed
