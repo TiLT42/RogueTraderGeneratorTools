@@ -305,16 +305,22 @@ class PlanetNode extends NodeBase {
                     continue;
                 }
                 
-                // Skip nodes that already have a unique (non-sequential) name
+                // Determine if this satellite should be renamed
                 // Sequential patterns: "ParentName-I", "ParentName-1", etc.
-                // Check if it matches ANY sequential pattern (current parent OR old default names)
                 const matchesSequentialPattern = /^.+-([IVX]+|\d+)$/.test(child.nodeName);
-                const isCurrentParentSequential = child.nodeName.startsWith(this.nodeName + '-') && matchesSequentialPattern;
-                const isOldDefaultSequential = (child.nodeName.startsWith('Planet-') || child.nodeName.startsWith('Gas Giant-')) && matchesSequentialPattern;
-                const hasSequentialName = isCurrentParentSequential || isOldDefaultSequential;
+                const isDefaultName = child.nodeName === 'Planet' || child.nodeName === 'Gas Giant' || 
+                                     child.nodeName === 'Lesser Moon' || child.nodeName === 'Large Asteroid';
+                const isOldDefaultSequential = (child.nodeName.startsWith('Planet-') || 
+                                               child.nodeName.startsWith('Gas Giant-')) && matchesSequentialPattern;
                 
-                if (!hasSequentialName && child.nodeName !== 'Planet' && child.nodeName !== 'Gas Giant' && child.nodeName !== 'Lesser Moon' && child.nodeName !== 'Large Asteroid') {
-                    // This satellite has a unique name, preserve it
+                // Rename if:
+                // 1. It's a default name (e.g., "Planet", "Lesser Moon")
+                // 2. It matches sequential pattern (any name + Roman/Arabic numerals)
+                // 3. It's an old default sequential name (e.g., "Planet-I")
+                const shouldRename = isDefaultName || matchesSequentialPattern || isOldDefaultSequential;
+                
+                if (!shouldRename) {
+                    // This satellite has a unique name that's not sequential, preserve it
                     count++;
                     continue;
                 }

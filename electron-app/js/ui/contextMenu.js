@@ -183,6 +183,16 @@ class ContextMenu {
             items.push({ type: 'separator' });
         }
 
+        // Name generation actions for planets, moons, gas giants, lesser moons, and asteroids
+        if (this.canGenerateUniqueName(node)) {
+            items.push({ label: 'Generate Unique Name', action: 'generate-unique-name' });
+            // Only show "Remove Unique Name" if the node has a unique or custom name
+            if (this.hasUniqueOrCustomName(node)) {
+                items.push({ label: 'Remove Unique Name', action: 'remove-unique-name' });
+            }
+            items.push({ type: 'separator' });
+        }
+
         if (node.type === NodeTypes.NativeSpecies) {
             items.push({ label: 'Add Xenos', action: 'add-xenos' });
             items.push({ type: 'separator' });
@@ -482,6 +492,22 @@ class ContextMenu {
                 }
                 break;
 
+            case 'generate-unique-name':
+                if (!this.currentNode) return;
+                this.generateUniqueName(this.currentNode);
+                window.treeView.refresh();
+                window.documentViewer.refresh();
+                markDirty();
+                break;
+
+            case 'remove-unique-name':
+                if (!this.currentNode) return;
+                this.removeUniqueName(this.currentNode);
+                window.treeView.refresh();
+                window.documentViewer.refresh();
+                markDirty();
+                break;
+
             default:
                 console.log('Unhandled action:', action);
         }
@@ -602,6 +628,211 @@ class ContextMenu {
         if (node.type === NodeTypes.Zone) return false;
         // All other nodes can be deleted, including root nodes
         return true;
+    }
+
+    // Check if a node can have unique names generated or removed
+    canGenerateUniqueName(node) {
+        if (!node) return false;
+        
+        // These node types support unique name generation:
+        // - Planets (including moons with isMoon=true)
+        // - Gas Giants
+        // - Lesser Moons
+        // - Asteroids
+        return node.type === NodeTypes.Planet || 
+               node.type === NodeTypes.GasGiant || 
+               node.type === NodeTypes.LesserMoon || 
+               node.type === NodeTypes.Asteroid;
+    }
+
+    // Check if a node has a unique or custom name (vs. astronomical/sequential naming)
+    hasUniqueOrCustomName(node) {
+        if (!node) return false;
+        
+        // If the node has been explicitly marked as custom, it has a unique name
+        if (node.hasCustomName) return true;
+        
+        // For satellites (moons, lesser moons, asteroids), check if they have sequential naming
+        // Check this BEFORE checking planet/gas giant type, since moons are also planet nodes
+        if (node.parent && node.parent.type === NodeTypes.OrbitalFeatures) {
+            // Sequential patterns: "ParentName-I", "ParentName-1", etc.
+            const matchesSequentialPattern = /^.+-([IVX]+|\d+)$/.test(node.nodeName);
+            // Default names
+            const isDefaultName = node.nodeName === 'Planet' || node.nodeName === 'Gas Giant' || 
+                                 node.nodeName === 'Lesser Moon' || node.nodeName === 'Large Asteroid';
+            
+            // If it doesn't match sequential pattern and isn't a default name, it's unique
+            return !matchesSequentialPattern && !isDefaultName;
+        }
+        
+        // For planets and gas giants (that are NOT satellites), check if the name follows astronomical pattern
+        if (node.type === NodeTypes.Planet || node.type === NodeTypes.GasGiant) {
+            // Check if the node has the _hasUniquePlanetName method
+            if (typeof node._hasUniquePlanetName === 'function') {
+                return node._hasUniquePlanetName();
+            }
+        }
+        
+        // For other cases, assume it's not unique
+        return false;
+    }
+
+    // Generate a unique name for a planet, moon, gas giant, lesser moon, or asteroid
+    generateUniqueName(node) {
+        if (!this.canGenerateUniqueName(node)) return;
+        
+        // Find the zone node to use its name generator
+        let zone = this._findZoneNode(node);
+        if (!zone) {
+            console.warn('Could not find zone node for unique name generation');
+            return;
+        }
+        
+        // Generate unique name based on node type
+        let newName;
+        if (node.type === NodeTypes.GasGiant) {
+            // Use zone's gas giant name generator
+            if (typeof zone.generateGasGiantName === 'function') {
+                newName = zone.generateGasGiantName();
+            } else {
+                console.warn('Zone does not have generateGasGiantName method');
+                return;
+            }
+        } else {
+            // Use zone's planet name generator for planets, moons, lesser moons, and asteroids
+            if (typeof zone.generatePlanetName === 'function') {
+                newName = zone.generatePlanetName();
+            } else {
+                console.warn('Zone does not have generatePlanetName method');
+                return;
+            }
+        }
+        
+        // Set the new name and mark as custom
+        node.nodeName = newName;
+        node.hasCustomName = true;
+        
+        // If this is a parent body with orbital features, update satellite names
+        if (node.type === NodeTypes.Planet && typeof node._assignNamesToOrbitalFeatures === 'function') {
+            node._assignNamesToOrbitalFeatures();
+        } else if (node.type === NodeTypes.GasGiant && typeof node.assignNamesForOrbitalFeatures === 'function') {
+            node.assignNamesForOrbitalFeatures();
+        }
+    }
+
+    // Remove unique name and revert to astronomical naming
+    removeUniqueName(node) {
+        if (!this.canGenerateUniqueName(node)) return;
+        
+        // Find the system node for astronomical naming
+        let systemNode = this._findSystemNode(node);
+        if (!systemNode) {
+            console.warn('Could not find system node for astronomical naming');
+            return;
+        }
+        
+        // Determine the astronomical name based on the node's position
+        let newName;
+        
+        if (node.parent && node.parent.type === NodeTypes.OrbitalFeatures) {
+            // This is a satellite (moon, lesser moon, or asteroid)
+            // Name it relative to its parent body
+            const parentBody = node.parent.parent;
+            if (!parentBody) {
+                console.warn('Could not find parent body for satellite');
+                return;
+            }
+            
+            // Get the index of this satellite among its siblings
+            const siblings = node.parent.children.filter(child => 
+                child.type === NodeTypes.Planet || 
+                child.type === NodeTypes.LesserMoon || 
+                child.type === NodeTypes.Asteroid
+            );
+            const index = siblings.indexOf(node);
+            
+            // Check if parent has a unique name or astronomical name
+            const parentHasUniqueName = parentBody.hasCustomName || 
+                (typeof parentBody._hasUniquePlanetName === 'function' && parentBody._hasUniquePlanetName());
+            
+            // Use Arabic numerals for unique parent names, Roman numerals for astronomical
+            if (parentHasUniqueName) {
+                newName = `${parentBody.nodeName}-${index + 1}`;
+            } else {
+                newName = `${parentBody.nodeName}-${window.CommonData.roman(index + 1)}`;
+            }
+        } else {
+            // This is a primary body (planet or gas giant)
+            // Name it with system name + letter
+            const zone = this._findZoneNode(node);
+            if (!zone) {
+                console.warn('Could not find zone for primary body naming');
+                return;
+            }
+            
+            // Get all primary bodies in the system in zone order
+            const zonesInOrder = [
+                systemNode.innerCauldronZone, 
+                systemNode.primaryBiosphereZone, 
+                systemNode.outerReachesZone
+            ];
+            
+            let sequenceNumber = 1;
+            let found = false;
+            
+            for (const z of zonesInOrder) {
+                if (!z) continue;
+                for (const child of z.children) {
+                    if (child.type === NodeTypes.Planet || child.type === NodeTypes.GasGiant) {
+                        if (child === node) {
+                            found = true;
+                            break;
+                        }
+                        sequenceNumber++;
+                    }
+                }
+                if (found) break;
+            }
+            
+            // Convert sequence number to letter (1=b, 2=c, etc.)
+            const letter = String.fromCharCode(97 + sequenceNumber); // 97 is 'a', so 1->b
+            newName = `${systemNode.nodeName} ${letter}`;
+        }
+        
+        // Set the new name and clear custom flag
+        node.nodeName = newName;
+        node.hasCustomName = false;
+        
+        // If this is a parent body with orbital features, update satellite names
+        if (node.type === NodeTypes.Planet && typeof node._assignNamesToOrbitalFeatures === 'function') {
+            node._assignNamesToOrbitalFeatures();
+        } else if (node.type === NodeTypes.GasGiant && typeof node.assignNamesForOrbitalFeatures === 'function') {
+            node.assignNamesForOrbitalFeatures();
+        }
+    }
+
+    // Find the zone node for a given node (traverses up the tree)
+    _findZoneNode(node) {
+        let current = node.parent;
+        while (current) {
+            if (current.type === NodeTypes.Zone) {
+                return current;
+            }
+            current = current.parent;
+        }
+        return null;
+    }
+
+    // Find the system node for a given node (traverses up the tree)
+    _findSystemNode(node) {
+        let current = node.parent;
+        while (current) {
+            if (current.type === NodeTypes.System) {
+                return current;
+            }
+            current = current.parent;
+        }
+        return null;
     }
 }
 
