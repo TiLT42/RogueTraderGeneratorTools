@@ -455,5 +455,14 @@ ipcMain.on('settings-updated', (event, settings) => {
 // IPC handler for getting the application version
 // This is the reliable way to get version in packaged apps
 ipcMain.handle('get-app-version', () => {
-    return app.getVersion();
+    try {
+        // Read version from our package.json instead of using app.getVersion()
+        // app.getVersion() returns the Electron framework version, not our app version
+        const packageJsonPath = path.join(__dirname, 'package.json');
+        const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
+        return packageJson.version || '2.0.1';
+    } catch (error) {
+        console.error('Error reading package.json version:', error);
+        return '2.0.1'; // Fallback version
+    }
 });

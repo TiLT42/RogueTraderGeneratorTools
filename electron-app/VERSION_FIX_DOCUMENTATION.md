@@ -1,13 +1,19 @@
 # Version Number Fix Documentation
 
-## Problem
+## Update (November 2025)
+**Bug Fixed**: The IPC handler in `main.js` was using `app.getVersion()`, which incorrectly returned the Electron framework version (e.g., 38.1.0) instead of the application version from package.json. This has been fixed to directly read from package.json.
+
+## Original Problem
 The version number displayed in the application didn't update when building releases, even though package.json was updated. The app would show version 2.0.0 when it should show 2.0.1.
 
-## Root Cause
+## Original Root Cause
 The `VersionManager` class attempted to read `package.json` from the filesystem using relative paths. While this works in development, it fails in packaged Electron applications because:
 - Files are bundled into an ASAR archive during packaging
 - The `__dirname` and `process.cwd()` paths change in packaged apps
 - The fallback paths used weren't reliable in the packaged environment
+
+## Second Issue Discovered
+After implementing the IPC-based solution, a second issue was discovered: `app.getVersion()` in Electron returns the version of the Electron framework itself (from the `electron` devDependency in package.json, e.g., 38.1.0), not the application's version field. This caused the UpdateChecker to show the current version as "38.1.0" instead of "2.0.1".
 
 ## Solution
 Implemented a two-tier approach for getting the application version:
@@ -29,12 +35,21 @@ Implemented a two-tier approach for getting the application version:
 ## Changes Made
 
 ### 1. main.js
-Added IPC handler:
+Added IPC handler (Updated to fix issue with app.getVersion() returning Electron framework version):
 ```javascript
 // IPC handler for getting the application version
 // This is the reliable way to get version in packaged apps
 ipcMain.handle('get-app-version', () => {
-    return app.getVersion();
+    try {
+        // Read version from our package.json instead of using app.getVersion()
+        // app.getVersion() returns the Electron framework version, not our app version
+        const packageJsonPath = path.join(__dirname, 'package.json');
+        const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
+        return packageJson.version || '2.0.1';
+    } catch (error) {
+        console.error('Error reading package.json version:', error);
+        return '2.0.1'; // Fallback version
+    }
 });
 ```
 
@@ -73,15 +88,18 @@ ipcMain.handle('get-app-version', () => {
 ## Testing
 The fix has been validated to:
 - ✓ Load version correctly in development (from package.json)
-- ✓ Will load version correctly in packaged apps (via app.getVersion())
+- ✓ Will load version correctly in packaged apps (via direct package.json reading)
 - ✓ Has multiple fallback mechanisms for robustness
 - ✓ Update checker gets version dynamically
 - ✓ About dialog will show correct version
 
 ## Why This Will Work in Packaged Apps
-1. Electron's `app.getVersion()` reads from the app's metadata, which is set during packaging from package.json
-2. The GitHub Actions workflow updates package.json before building: `npm version ${{ inputs.version }}`
-3. electron-builder includes package.json in the build by default
+1. The IPC handler directly reads from package.json in the main process
+2. electron-builder includes package.json in the packaged app by default
+3. The __dirname in main.js points to the app's root directory even in packaged apps
+4. The GitHub Actions workflow updates package.json before building: `npm version ${{ inputs.version }}`
+5. This avoids the incorrect behavior where `app.getVersion()` returns the Electron framework version (e.g., 38.1.0) instead of the app version
+4. The GitHub Actions workflow updates package.json before building: `npm version ${{ inputs.version }}`
 4. The packaged app's metadata contains the updated version
 5. Our IPC handler exposes this reliable version to the renderer process
 
