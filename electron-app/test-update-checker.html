@@ -108,12 +108,22 @@
     </div>
 
     <div class="test-section">
-        <h2>Test 5: Settings Modal - General Tab</h2>
+        <h2>Test 5: GitHub API Fix Verification</h2>
+        <p>Test the fix for GitHub API 404 error by trying both /releases/latest and fallback methods.</p>
+        <div class="test-controls">
+            <button class="test-btn" onclick="testDirectAPI()">Test Direct API</button>
+            <button class="test-btn" onclick="testUpdateCheckerLogic()">Test UpdateChecker Logic</button>
+        </div>
+        <div class="status" id="status-5">Click buttons to test API endpoints and fallback logic.</div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 6: Settings Modal - General Tab</h2>
         <p>Verify the Settings modal has "General" tab with Updates section.</p>
         <div class="test-controls">
             <button class="test-btn" onclick="showSettingsModal()">Show Settings Modal</button>
         </div>
-        <div class="status" id="status-5">Click button to show settings.</div>
+        <div class="status" id="status-6">Click button to show settings.</div>
     </div>
 
     <!-- Modal Dialogs -->
@@ -191,8 +201,72 @@
             document.getElementById('status-4').innerHTML = `Debug mode status: <span id="debug-status" style="color: ${color}; font-weight: bold;">${status}</span>`;
         }
 
+        async function testDirectAPI() {
+            document.getElementById('status-5').innerHTML = 'Testing GitHub API endpoints...';
+            
+            try {
+                // Test /releases/latest
+                document.getElementById('status-5').innerHTML += '<br>Testing /releases/latest...';
+                const latestResponse = await fetch('https://api.github.com/repos/TiLT42/RogueTraderGeneratorTools/releases/latest', {
+                    headers: { 'Accept': 'application/vnd.github.v3+json' }
+                });
+                
+                if (latestResponse.ok) {
+                    const latestData = await latestResponse.json();
+                    document.getElementById('status-5').innerHTML += `<br>✅ /releases/latest works: ${latestData.tag_name}`;
+                } else {
+                    document.getElementById('status-5').innerHTML += `<br>❌ /releases/latest failed: ${latestResponse.status}`;
+                    
+                    // Test fallback method
+                    document.getElementById('status-5').innerHTML += '<br>Testing fallback /releases...';
+                    const releasesResponse = await fetch('https://api.github.com/repos/TiLT42/RogueTraderGeneratorTools/releases', {
+                        headers: { 'Accept': 'application/vnd.github.v3+json' }
+                    });
+                    
+                    if (releasesResponse.ok) {
+                        const releases = await releasesResponse.json();
+                        const latestRelease = releases.find(r => !r.draft && !r.prerelease);
+                        if (latestRelease) {
+                            document.getElementById('status-5').innerHTML += `<br>✅ Fallback works: ${latestRelease.tag_name}`;
+                        } else {
+                            document.getElementById('status-5').innerHTML += '<br>❌ No published releases found';
+                        }
+                    } else {
+                        document.getElementById('status-5').innerHTML += `<br>❌ Fallback also failed: ${releasesResponse.status}`;
+                    }
+                }
+            } catch (error) {
+                document.getElementById('status-5').innerHTML += `<br>❌ Error: ${error.message}`;
+            }
+        }
+
+        async function testUpdateCheckerLogic() {
+            document.getElementById('status-5').innerHTML = 'Testing UpdateChecker logic...';
+            
+            if (!window.updateChecker) {
+                document.getElementById('status-5').innerHTML += '<br>❌ UpdateChecker not found';
+                return;
+            }
+            
+            try {
+                const result = await window.updateChecker.checkForUpdates();
+                document.getElementById('status-5').innerHTML += `<br>UpdateChecker result:`;
+                document.getElementById('status-5').innerHTML += `<br>- Has update: ${result.hasUpdate}`;
+                document.getElementById('status-5').innerHTML += `<br>- Latest version: ${result.latestVersion}`;
+                document.getElementById('status-5').innerHTML += `<br>- Release URL: ${result.releaseUrl ? 'Available' : 'None'}`;
+                
+                if (result.latestVersion) {
+                    document.getElementById('status-5').innerHTML += '<br>✅ UpdateChecker fix working!';
+                } else {
+                    document.getElementById('status-5').innerHTML += '<br>❌ UpdateChecker still failing';
+                }
+            } catch (error) {
+                document.getElementById('status-5').innerHTML += `<br>❌ UpdateChecker error: ${error.message}`;
+            }
+        }
+
         function showSettingsModal() {
-            document.getElementById('status-5').textContent = 'Showing settings modal...';
+            document.getElementById('status-6').textContent = 'Showing settings modal...';
             window.modals.showSettings();
         }
 

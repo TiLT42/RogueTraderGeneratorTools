@@ -30,20 +30,19 @@ class UpdateChecker {
                 };
             }
 
-            // Fetch latest release from GitHub API
-            const apiUrl = `https://api.github.com/repos/${this.repoOwner}/${this.repoName}/releases/latest`;
-            const response = await fetch(apiUrl, {
-                headers: {
-                    'Accept': 'application/vnd.github.v3+json'
-                }
-            });
+            // Try the /releases/latest endpoint first
+            let releaseData = await this.fetchLatestRelease();
+            
+            // If that fails, fall back to finding the latest release manually
+            if (!releaseData) {
+                releaseData = await this.fetchLatestReleaseManually();
+            }
 
-            if (!response.ok) {
-                console.error('[UpdateChecker] Failed to fetch release info:', response.status);
+            if (!releaseData) {
+                console.error('[UpdateChecker] Unable to fetch release information');
                 return { hasUpdate: false, latestVersion: null, releaseUrl: null };
             }
 
-            const releaseData = await response.json();
             const latestVersion = this.normalizeVersion(releaseData.tag_name);
             const releaseUrl = releaseData.html_url;
 
@@ -63,6 +62,71 @@ class UpdateChecker {
         } catch (error) {
             console.error('[UpdateChecker] Error checking for updates:', error);
             return { hasUpdate: false, latestVersion: null, releaseUrl: null };
+        }
+    }
+
+    /**
+     * Fetch latest release using the /releases/latest endpoint
+     * @returns {Promise<Object|null>} Release data or null if failed
+     */
+    async fetchLatestRelease() {
+        try {
+            const apiUrl = `https://api.github.com/repos/${this.repoOwner}/${this.repoName}/releases/latest`;
+            const response = await fetch(apiUrl, {
+                headers: {
+                    'Accept': 'application/vnd.github.v3+json'
+                }
+            });
+
+            if (!response.ok) {
+                console.warn('[UpdateChecker] /releases/latest endpoint failed:', response.status);
+                return null;
+            }
+
+            return await response.json();
+        } catch (error) {
+            console.warn('[UpdateChecker] Error fetching from /releases/latest:', error);
+            return null;
+        }
+    }
+
+    /**
+     * Manually find the latest release from the /releases endpoint
+     * @returns {Promise<Object|null>} Latest release data or null if failed
+     */
+    async fetchLatestReleaseManually() {
+        try {
+            console.log('[UpdateChecker] Falling back to manual latest release detection');
+            const apiUrl = `https://api.github.com/repos/${this.repoOwner}/${this.repoName}/releases`;
+            const response = await fetch(apiUrl, {
+                headers: {
+                    'Accept': 'application/vnd.github.v3+json'
+                }
+            });
+
+            if (!response.ok) {
+                console.error('[UpdateChecker] Failed to fetch releases list:', response.status);
+                return null;
+            }
+
+            const releases = await response.json();
+            
+            // Find the latest non-draft, non-prerelease
+            const latestRelease = releases.find(release => 
+                !release.draft && !release.prerelease
+            );
+
+            if (!latestRelease) {
+                console.error('[UpdateChecker] No published releases found');
+                return null;
+            }
+
+            console.log('[UpdateChecker] Found latest release manually:', latestRelease.tag_name);
+            return latestRelease;
+
+        } catch (error) {
+            console.error('[UpdateChecker] Error fetching releases manually:', error);
+            return null;
         }
     }
 

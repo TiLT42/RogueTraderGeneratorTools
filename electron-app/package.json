@@ -33,7 +33,8 @@
     "jsdom": "^27.1.0"
   },
   "dependencies": {
-    "@tabler/icons": "^3.35.0"
+    "@tabler/icons": "^3.35.0",
+    "node-fetch": "^3.3.2"
   },
   "build": {
     "appId": "com.tilt42.rogue-trader-generator-tools",
