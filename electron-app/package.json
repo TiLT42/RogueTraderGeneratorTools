@@ -1,6 +1,6 @@
 {
   "name": "rogue-trader-generator-tools",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Electron-based Rogue Trader RPG system and content generator",
   "main": "main.js",
   "scripts": {
@@ -59,7 +59,9 @@
       "target": [
         {
           "target": "nsis",
-          "arch": ["x64"]
+          "arch": [
+            "x64"
+          ]
         }
       ],
       "icon": "assets/icon.png",
@@ -75,7 +77,10 @@
       "target": [
         {
           "target": "dmg",
-          "arch": ["x64", "arm64"]
+          "arch": [
+            "x64",
+            "arm64"
+          ]
         }
       ],
       "category": "public.app-category.utilities",
@@ -86,7 +91,9 @@
       "target": [
         {
           "target": "AppImage",
-          "arch": ["x64"]
+          "arch": [
+            "x64"
+          ]
         }
       ],
       "category": "Utility",
