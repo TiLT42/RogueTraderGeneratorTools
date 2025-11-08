@@ -11,7 +11,8 @@ class ContextMenu {
         NodeTypes.DustCloud,         // Static description
         NodeTypes.GravityRiptide,    // Static description
         NodeTypes.RadiationBursts,   // Only stores count
-        NodeTypes.SolarFlares        // Only stores count
+        NodeTypes.SolarFlares,       // Only stores count
+        NodeTypes.LesserMoon         // Static placeholder
     ];
 
     static NON_RENAMABLE_TYPES = [
