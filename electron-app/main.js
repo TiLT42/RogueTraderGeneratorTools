@@ -458,11 +458,18 @@ ipcMain.handle('get-app-version', () => {
     try {
         // Read version from our package.json instead of using app.getVersion()
         // app.getVersion() returns the Electron framework version, not our app version
+        
+        // In packaged apps, __dirname points to the app.asar file
+        // Node.js fs module in main process can read from ASAR archives transparently
+        // In development, __dirname points to the electron-app directory
         const packageJsonPath = path.join(__dirname, 'package.json');
         const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
         return packageJson.version || '2.0.1';
     } catch (error) {
         console.error('Error reading package.json version:', error);
+        console.error('Attempted path:', path.join(__dirname, 'package.json'));
+        console.error('__dirname:', __dirname);
+        console.error('app.isPackaged:', app.isPackaged);
         return '2.0.1'; // Fallback version
     }
 });
