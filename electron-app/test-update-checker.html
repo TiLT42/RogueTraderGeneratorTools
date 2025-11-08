@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Update Checker UI Test</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+        .test-section {
+            margin: 30px 0;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+        }
+        .test-section h2 {
+            margin-top: 0;
+        }
+        .test-controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .test-btn {
+            padding: 10px 20px;
+            background: #0066cc;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .test-btn:hover {
+            background: #0052a3;
+        }
+        .status {
+            margin-top: 10px;
+            padding: 10px;
+            background: #f0f0f0;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .toolbar-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: #f0f0f0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .toolbar-btn:hover {
+            background: #e0e0e0;
+        }
+        .icon {
+            width: 20px;
+            height: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Update Checker UI Test Page</h1>
+    <p>This page allows you to test the update checker UI components without running the full application.</p>
+
+    <div class="test-section">
+        <h2>Test 1: Check for Updates Button</h2>
+        <p>This button should appear in the toolbar between Settings and About.</p>
+        <div class="test-controls">
+            <button class="toolbar-btn" id="test-btn-check-updates">
+                <span class="icon" id="test-icon-check-updates"></span>
+                <span>Check for Updates</span>
+            </button>
+        </div>
+        <div class="status" id="status-1">Button rendered. Click to test functionality.</div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 2: Update Available Modal</h2>
+        <p>Simulate an update being available and show the notification.</p>
+        <div class="test-controls">
+            <button class="test-btn" onclick="showUpdateModal()">Show Update Modal</button>
+        </div>
+        <div class="status" id="status-2">Click button to show modal.</div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 3: No Update Available Modal</h2>
+        <p>Show the "no update" message for manual checks.</p>
+        <div class="test-controls">
+            <button class="test-btn" onclick="showNoUpdateModal()">Show No Update Modal</button>
+        </div>
+        <div class="status" id="status-3">Click button to show modal.</div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 4: Debug Mode Toggle</h2>
+        <p>Test enabling/disabling debug mode via console.</p>
+        <div class="test-controls">
+            <button class="test-btn" onclick="enableDebugMode()">Enable Debug Mode</button>
+            <button class="test-btn" onclick="disableDebugMode()">Disable Debug Mode</button>
+            <button class="test-btn" onclick="checkDebugStatus()">Check Status</button>
+        </div>
+        <div class="status" id="status-4">Debug mode status: <span id="debug-status">unknown</span></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 5: Settings Modal - General Tab</h2>
+        <p>Verify the Settings modal has "General" tab with Updates section.</p>
+        <div class="test-controls">
+            <button class="test-btn" onclick="showSettingsModal()">Show Settings Modal</button>
+        </div>
+        <div class="status" id="status-5">Click button to show settings.</div>
+    </div>
+
+    <!-- Modal Dialogs -->
+    <div id="modal-overlay" class="modal-overlay hidden">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 id="modal-title">Dialog</h3>
+                <button class="modal-close" id="modal-close">&times;</button>
+            </div>
+            <div class="modal-body" id="modal-body">
+                <!-- Dynamic content -->
+            </div>
+            <div class="modal-footer">
+                <button id="modal-ok" class="btn btn-primary">OK</button>
+                <button id="modal-cancel" class="btn btn-secondary">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/globals.js"></script>
+    <script src="js/updateChecker.js"></script>
+    <script src="js/ui/icons.js"></script>
+    <script src="js/ui/modals.js"></script>
+    
+    <script>
+        // Initialize test page
+        document.addEventListener('DOMContentLoaded', () => {
+            // Set up icon
+            document.getElementById('test-icon-check-updates').innerHTML = Icons.download;
+            
+            // Set up button click handler
+            document.getElementById('test-btn-check-updates').addEventListener('click', () => {
+                document.getElementById('status-1').textContent = 'Button clicked! Check console for logs.';
+                if (window.updateChecker) {
+                    window.updateChecker.checkAndNotify(true);
+                } else {
+                    alert('Update checker not initialized');
+                }
+            });
+            
+            // Initialize modals
+            window.modals = new Modals();
+            
+            // Check initial debug status
+            checkDebugStatus();
+        });
+
+        function showUpdateModal() {
+            document.getElementById('status-2').textContent = 'Showing update modal...';
+            window.modals.showUpdateNotification('2.1.0', 'https://github.com/TiLT42/RogueTraderGeneratorTools/releases/tag/v2.1.0', (dontAskAgain) => {
+                document.getElementById('status-2').textContent = `Modal closed. Don't ask again: ${dontAskAgain}`;
+            });
+        }
+
+        function showNoUpdateModal() {
+            document.getElementById('status-3').textContent = 'Showing no update modal...';
+            window.modals.showInfo('No Updates Available', 'You are running the latest version of Rogue Trader Generator Tools.');
+        }
+
+        function enableDebugMode() {
+            window.UPDATE_CHECKER_DEBUG = true;
+            document.getElementById('status-4').innerHTML = 'Debug mode status: <span id="debug-status" style="color: green; font-weight: bold;">ENABLED</span>';
+            console.log('Debug mode enabled');
+        }
+
+        function disableDebugMode() {
+            window.UPDATE_CHECKER_DEBUG = false;
+            document.getElementById('status-4').innerHTML = 'Debug mode status: <span id="debug-status" style="color: red; font-weight: bold;">DISABLED</span>';
+            console.log('Debug mode disabled');
+        }
+
+        function checkDebugStatus() {
+            const status = window.UPDATE_CHECKER_DEBUG ? 'ENABLED' : 'DISABLED';
+            const color = window.UPDATE_CHECKER_DEBUG ? 'green' : 'red';
+            document.getElementById('status-4').innerHTML = `Debug mode status: <span id="debug-status" style="color: ${color}; font-weight: bold;">${status}</span>`;
+        }
+
+        function showSettingsModal() {
+            document.getElementById('status-5').textContent = 'Showing settings modal...';
+            window.modals.showSettings();
+        }
+
+        // Mock required functions
+        window.applyTheme = (isDark) => {
+            console.log('applyTheme called:', isDark);
+        };
+
+        window.saveSettings = () => {
+            console.log('saveSettings called');
+        };
+
+        window.markDirty = () => {
+            console.log('markDirty called');
+        };
+
+        // Mock electron shell
+        if (typeof require === 'undefined') {
+            window.require = (module) => {
+                if (module === 'electron') {
+                    return {
+                        shell: {
+                            openExternal: (url) => {
+                                console.log('Would open URL:', url);
+                                alert('Would open in browser: ' + url);
+                            }
+                        }
+                    };
+                }
+                return {};
+            };
+        }
+    </script>
+</body>
+</html>

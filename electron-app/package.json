@@ -6,6 +6,8 @@
   "scripts": {
     "start": "electron . --no-sandbox",
     "dev": "electron . --dev --no-sandbox",
+    "debug": "electron . --dev --no-sandbox --inspect=5858",
+    "debug-brk": "electron . --dev --no-sandbox --inspect-brk=5858",
     "build": "electron-builder",
     "test": "node tests/runParity.js",
     "parity-test": "node tests/runParity.js",

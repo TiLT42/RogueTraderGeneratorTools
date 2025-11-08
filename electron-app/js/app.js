@@ -59,6 +59,16 @@ class App {
         // Update toolbar button availability based on settings
         this.updateMenuAvailability();
 
+        // Check for updates on startup if enabled
+        if (window.APP_STATE.settings.checkForUpdatesOnStartup) {
+            // Delay the check to not interfere with app initialization
+            setTimeout(() => {
+                if (window.updateChecker) {
+                    window.updateChecker.checkAndNotify(false); // false = automatic check
+                }
+            }, 2000); // 2 second delay after app initialization
+        }
+
         console.log('Rogue Trader Generator Tools initialized');
     }
     

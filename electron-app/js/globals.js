@@ -64,6 +64,8 @@ window.APP_STATE = {
         mergeWithChildDocuments: false,
         allowFreeMovement: true,
         darkMode: false, // Default to light mode
+        checkForUpdatesOnStartup: true, // Check for updates on startup by default
+        skippedVersion: null, // Version that user chose to skip
         enabledBooks: {
             CoreRuleBook: true,
             StarsOfInequity: true,
