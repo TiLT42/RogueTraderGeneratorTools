@@ -39,6 +39,7 @@ class Modals {
         this.okButton.onclick = null;
         // Remove any modal-specific classes
         this.body.classList.remove('modal-body-settings');
+        this.modal.classList.remove('modal-compact');
     }
 
     showEditDescription(node) {
@@ -535,6 +536,9 @@ class Modals {
         this.title.textContent = title;
         this.body.innerHTML = `<p>${message}</p>`;
 
+        // Apply compact modal styling
+        this.modal.classList.add('modal-compact');
+
         this.cancelButton.style.display = 'none';
         this.okButton.textContent = 'OK';
         this.okButton.onclick = () => {
@@ -572,6 +576,9 @@ class Modals {
                 </label>
             </div>
         `;
+
+        // Apply compact modal styling
+        this.modal.classList.add('modal-compact');
 
         this.okButton.textContent = 'Update';
         this.cancelButton.style.display = 'inline-block';

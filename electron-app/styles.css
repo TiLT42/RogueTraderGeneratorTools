@@ -668,6 +668,13 @@ body {
     flex-direction: column;
 }
 
+/* Compact modal style for simple dialogs (update notifications, info messages) */
+.modal-compact {
+    max-width: 450px;
+    width: auto;
+    min-width: 400px;
+}
+
 .modal-header {
     padding: 15px 20px;
     border-bottom: 1px solid var(--border-secondary);
