@@ -4,14 +4,20 @@ class UpdateChecker {
     constructor() {
         this.repoOwner = 'TiLT42';
         this.repoName = 'RogueTraderGeneratorTools';
-        // Use dynamic version with fallback
-        this.currentVersion = (window.VersionManager && window.VersionManager.getVersion) 
-            ? window.VersionManager.getVersion() 
-            : '2.0.0';
         
         // Debug mode: set to true to simulate a new version being available
         this.debugMode = false;
         this.debugSimulatedVersion = '2.1.0';
+    }
+
+    /**
+     * Get current version dynamically (allows for async loading)
+     * @returns {string} Current version
+     */
+    getCurrentVersion() {
+        return (window.VersionManager && window.VersionManager.getVersion) 
+            ? window.VersionManager.getVersion() 
+            : '2.0.1';
     }
 
     /**
@@ -46,10 +52,13 @@ class UpdateChecker {
             const latestVersion = this.normalizeVersion(releaseData.tag_name);
             const releaseUrl = releaseData.html_url;
 
-            // Compare versions
-            const hasUpdate = this.isNewerVersion(latestVersion, this.currentVersion);
+            // Get current version dynamically
+            const currentVersion = this.getCurrentVersion();
 
-            console.log('[UpdateChecker] Current version:', this.currentVersion);
+            // Compare versions
+            const hasUpdate = this.isNewerVersion(latestVersion, currentVersion);
+
+            console.log('[UpdateChecker] Current version:', currentVersion);
             console.log('[UpdateChecker] Latest version:', latestVersion);
             console.log('[UpdateChecker] Update available:', hasUpdate);
 

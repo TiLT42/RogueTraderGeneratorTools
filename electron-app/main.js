@@ -451,3 +451,9 @@ ipcMain.on('settings-updated', (event, settings) => {
         console.error('Error updating menu item availability:', error);
     }
 });
+
+// IPC handler for getting the application version
+// This is the reliable way to get version in packaged apps
+ipcMain.handle('get-app-version', () => {
+    return app.getVersion();
+});
