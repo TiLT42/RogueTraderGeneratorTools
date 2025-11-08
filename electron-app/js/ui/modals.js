@@ -219,6 +219,14 @@ class Modals {
                 node.nodeName = newName;
                 // Mark this node as having a custom name to prevent automatic renaming
                 node.hasCustomName = true;
+                
+                // If this is a parent body with orbital features, update satellite names
+                if (node.type === NodeTypes.Planet && typeof node._assignNamesToOrbitalFeatures === 'function') {
+                    node._assignNamesToOrbitalFeatures();
+                } else if (node.type === NodeTypes.GasGiant && typeof node.assignNamesForOrbitalFeatures === 'function') {
+                    node.assignNamesForOrbitalFeatures();
+                }
+                
                 window.treeView.refresh();
                 window.documentViewer.refresh();
                 markDirty();
