@@ -186,7 +186,10 @@ class ContextMenu {
         // Name generation actions for planets, moons, gas giants, lesser moons, and asteroids
         if (this.canGenerateUniqueName(node)) {
             items.push({ label: 'Generate Unique Name', action: 'generate-unique-name' });
-            items.push({ label: 'Remove Unique Name', action: 'remove-unique-name' });
+            // Only show "Remove Unique Name" if the node has a unique or custom name
+            if (this.hasUniqueOrCustomName(node)) {
+                items.push({ label: 'Remove Unique Name', action: 'remove-unique-name' });
+            }
             items.push({ type: 'separator' });
         }
 
@@ -640,6 +643,38 @@ class ContextMenu {
                node.type === NodeTypes.GasGiant || 
                node.type === NodeTypes.LesserMoon || 
                node.type === NodeTypes.Asteroid;
+    }
+
+    // Check if a node has a unique or custom name (vs. astronomical/sequential naming)
+    hasUniqueOrCustomName(node) {
+        if (!node) return false;
+        
+        // If the node has been explicitly marked as custom, it has a unique name
+        if (node.hasCustomName) return true;
+        
+        // For satellites (moons, lesser moons, asteroids), check if they have sequential naming
+        // Check this BEFORE checking planet/gas giant type, since moons are also planet nodes
+        if (node.parent && node.parent.type === NodeTypes.OrbitalFeatures) {
+            // Sequential patterns: "ParentName-I", "ParentName-1", etc.
+            const matchesSequentialPattern = /^.+-([IVX]+|\d+)$/.test(node.nodeName);
+            // Default names
+            const isDefaultName = node.nodeName === 'Planet' || node.nodeName === 'Gas Giant' || 
+                                 node.nodeName === 'Lesser Moon' || node.nodeName === 'Large Asteroid';
+            
+            // If it doesn't match sequential pattern and isn't a default name, it's unique
+            return !matchesSequentialPattern && !isDefaultName;
+        }
+        
+        // For planets and gas giants (that are NOT satellites), check if the name follows astronomical pattern
+        if (node.type === NodeTypes.Planet || node.type === NodeTypes.GasGiant) {
+            // Check if the node has the _hasUniquePlanetName method
+            if (typeof node._hasUniquePlanetName === 'function') {
+                return node._hasUniquePlanetName();
+            }
+        }
+        
+        // For other cases, assume it's not unique
+        return false;
     }
 
     // Generate a unique name for a planet, moon, gas giant, lesser moon, or asteroid

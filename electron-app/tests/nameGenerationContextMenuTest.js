@@ -58,11 +58,13 @@ console.assert(gasGiantItems.some(i => i.label === 'Remove Unique Name'), 'Gas G
 
 const lesserMoonItems = contextMenu.getContextMenuItems(lesserMoon);
 console.assert(lesserMoonItems.some(i => i.label === 'Generate Unique Name'), 'Lesser Moon should have Generate Unique Name menu item');
-console.assert(lesserMoonItems.some(i => i.label === 'Remove Unique Name'), 'Lesser Moon should have Remove Unique Name menu item');
+// Note: Default "Lesser Moon" name won't have Remove Unique Name since it's not unique/custom
+console.assert(!lesserMoonItems.some(i => i.label === 'Remove Unique Name'), 'Lesser Moon with default name should NOT have Remove Unique Name menu item');
 
 const asteroidItems = contextMenu.getContextMenuItems(asteroid);
 console.assert(asteroidItems.some(i => i.label === 'Generate Unique Name'), 'Asteroid should have Generate Unique Name menu item');
-console.assert(asteroidItems.some(i => i.label === 'Remove Unique Name'), 'Asteroid should have Remove Unique Name menu item');
+// Note: Default "Large Asteroid" name won't have Remove Unique Name since it's not unique/custom
+console.assert(!asteroidItems.some(i => i.label === 'Remove Unique Name'), 'Asteroid with default name should NOT have Remove Unique Name menu item');
 
 const zoneItems = contextMenu.getContextMenuItems(zone);
 console.assert(!zoneItems.some(i => i.label === 'Generate Unique Name'), 'Zone should NOT have Generate Unique Name menu item');

@@ -197,22 +197,51 @@ if (testMoon) {
 }
 
 console.log('\nStep 5: Verify context menu items are present');
+// Check planet after unique name generation (should have both items)
 if (testPlanet) {
+    // First, generate a unique name so the planet has a unique name
+    contextMenu.currentNode = testPlanet;
+    contextMenu.generateUniqueName(testPlanet);
+    
     const items = contextMenu.getContextMenuItems(testPlanet);
     const hasGenerateUniqueName = items.some(i => i.label === 'Generate Unique Name');
     const hasRemoveUniqueName = items.some(i => i.label === 'Remove Unique Name');
-    console.assert(hasGenerateUniqueName, 'Planet should have Generate Unique Name menu item');
-    console.assert(hasRemoveUniqueName, 'Planet should have Remove Unique Name menu item');
-    console.log('  ✓ Planet context menu has both name generation items');
+    console.assert(hasGenerateUniqueName, 'Planet with unique name should have Generate Unique Name menu item');
+    console.assert(hasRemoveUniqueName, 'Planet with unique name should have Remove Unique Name menu item');
+    console.log('  ✓ Planet context menu has both name generation items when it has unique name');
+    
+    // Now remove the unique name and check again
+    contextMenu.removeUniqueName(testPlanet);
+    
+    const items2 = contextMenu.getContextMenuItems(testPlanet);
+    const hasGenerateUniqueName2 = items2.some(i => i.label === 'Generate Unique Name');
+    const hasRemoveUniqueName2 = items2.some(i => i.label === 'Remove Unique Name');
+    console.assert(hasGenerateUniqueName2, 'Planet with astronomical name should have Generate Unique Name menu item');
+    console.assert(!hasRemoveUniqueName2, 'Planet with astronomical name should NOT have Remove Unique Name menu item');
+    console.log('  ✓ Planet context menu hides Remove Unique Name when it has astronomical name');
 }
 
 if (testGasGiant) {
+    // First, generate a unique name so the gas giant has a unique name
+    contextMenu.currentNode = testGasGiant;
+    contextMenu.generateUniqueName(testGasGiant);
+    
     const items = contextMenu.getContextMenuItems(testGasGiant);
     const hasGenerateUniqueName = items.some(i => i.label === 'Generate Unique Name');
     const hasRemoveUniqueName = items.some(i => i.label === 'Remove Unique Name');
-    console.assert(hasGenerateUniqueName, 'Gas giant should have Generate Unique Name menu item');
-    console.assert(hasRemoveUniqueName, 'Gas giant should have Remove Unique Name menu item');
-    console.log('  ✓ Gas giant context menu has both name generation items');
+    console.assert(hasGenerateUniqueName, 'Gas giant with unique name should have Generate Unique Name menu item');
+    console.assert(hasRemoveUniqueName, 'Gas giant with unique name should have Remove Unique Name menu item');
+    console.log('  ✓ Gas giant context menu has both name generation items when it has unique name');
+    
+    // Now remove the unique name and check again
+    contextMenu.removeUniqueName(testGasGiant);
+    
+    const items2 = contextMenu.getContextMenuItems(testGasGiant);
+    const hasGenerateUniqueName2 = items2.some(i => i.label === 'Generate Unique Name');
+    const hasRemoveUniqueName2 = items2.some(i => i.label === 'Remove Unique Name');
+    console.assert(hasGenerateUniqueName2, 'Gas giant with astronomical name should have Generate Unique Name menu item');
+    console.assert(!hasRemoveUniqueName2, 'Gas giant with astronomical name should NOT have Remove Unique Name menu item');
+    console.log('  ✓ Gas giant context menu hides Remove Unique Name when it has astronomical name');
 }
 
 // Test that system node does NOT have these items
