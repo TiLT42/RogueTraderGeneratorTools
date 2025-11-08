@@ -56,21 +56,19 @@ function createWindow() {
         
         // Add debug-specific keyboard shortcuts
         mainWindow.webContents.on('before-input-event', (event, input) => {
-            if (input.control || input.meta) {
-                switch (input.key) {
-                    case 'F5':
-                        // Force reload
-                        mainWindow.webContents.reloadIgnoringCache();
-                        break;
-                    case 'F11':
-                        // Toggle full screen
-                        mainWindow.setFullScreen(!mainWindow.isFullScreen());
-                        break;
-                    case 'F12':
-                        // Toggle DevTools
-                        mainWindow.webContents.toggleDevTools();
-                        break;
-                }
+            switch (input.key) {
+                case 'F5':
+                    // Force reload
+                    mainWindow.webContents.reloadIgnoringCache();
+                    break;
+                case 'F11':
+                    // Toggle full screen
+                    mainWindow.setFullScreen(!mainWindow.isFullScreen());
+                    break;
+                case 'F12':
+                    // Toggle DevTools
+                    mainWindow.webContents.toggleDevTools();
+                    break;
             }
         });
     }

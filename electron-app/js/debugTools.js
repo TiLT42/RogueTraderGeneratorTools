@@ -12,10 +12,13 @@ class DebugTools {
     }
 
     checkDevMode() {
-        // Check multiple indicators for development mode
-        return process.argv.includes('--dev') || 
-               process.env.NODE_ENV === 'development' || 
-               process.env.ELECTRON_IS_DEV === '1';
+        // Check multiple indicators for development mode, but only if 'process' exists
+        if (typeof process !== 'undefined' && process.argv && process.env) {
+            return process.argv.includes('--dev') || 
+                   process.env.NODE_ENV === 'development' || 
+                   process.env.ELECTRON_IS_DEV === '1';
+        }
+        return false;
     }
 
     initializeDebugTools() {
