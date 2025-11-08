@@ -62,7 +62,8 @@
           "arch": ["x64"]
         }
       ],
-      "icon": "assets/icon.png"
+      "icon": "assets/icon.png",
+      "artifactName": "Rogue-Trader-Generator-Tools-Windows-${version}-Setup.${ext}"
     },
     "nsis": {
       "oneClick": false,
@@ -78,7 +79,8 @@
         }
       ],
       "category": "public.app-category.utilities",
-      "icon": "assets/icon.png"
+      "icon": "assets/icon.png",
+      "artifactName": "Rogue-Trader-Generator-Tools-macOS-${arch}-${version}.${ext}"
     },
     "linux": {
       "target": [
@@ -88,7 +90,8 @@
         }
       ],
       "category": "Utility",
-      "icon": "assets/icon.png"
+      "icon": "assets/icon.png",
+      "artifactName": "Rogue-Trader-Generator-Tools-Linux-${version}.${ext}"
     }
   }
 }
