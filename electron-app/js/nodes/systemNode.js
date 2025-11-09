@@ -1083,10 +1083,9 @@ class SystemNode extends NodeBase {
         // Star Type - moved to top as introductory content to avoid gap
         desc += `<p><strong>Star Type:</strong> ${this.star}${addPageRef(13,'Table 1-2: Star Generation')}</p>`;
         
-        // Warp Status - display if not Normal
-        if (this.warpStatus && this.warpStatus !== 'Normal') {
-            desc += `<p><strong>Warp Status:</strong> ${this.warpStatus}${addPageRef(12)}</p>`;
-        }
+        // Warp Status - always display, but only include page reference when not Normal
+        const warpStatusPageRef = (this.warpStatus && this.warpStatus !== 'Normal') ? addPageRef(12) : '';
+        desc += `<p><strong>Warp Status:</strong> ${this.warpStatus || 'Normal'}${warpStatusPageRef}</p>`;
 
         // System Features section (plural/singular logic simplified – always list).
         if (this.systemFeatures.length === 1) {

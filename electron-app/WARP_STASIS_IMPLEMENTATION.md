@@ -9,8 +9,8 @@ This document summarizes the implementation of the Warp Stasis redesign feature 
 - **NEW**: Added `warpStatus` field to SystemNode
 - Default value: `"Normal"`
 - Possible values: `"Normal"`, `"Turbulent"`, `"Becalmed"`, `"Fully becalmed"`
-- Displayed in system description below Star Type (when not Normal)
-- Includes page reference to Stars of Inequity p.12
+- Always displayed in system description below Star Type
+- Page reference (Stars of Inequity p.12) only shown for non-Normal values
 
 ### 2. Warp Turbulence Feature
 - Sets `warpStatus` to `"Turbulent"`
@@ -136,6 +136,7 @@ warpStatus: data.warpStatus || 'Normal',
 ### Normal System (no Warp features)
 ```
 Star Type: Luminous
+Warp Status: Normal
 
 System Features
 • Bountiful

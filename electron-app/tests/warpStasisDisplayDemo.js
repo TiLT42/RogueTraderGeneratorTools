@@ -7,6 +7,7 @@ console.log('\n=== Warp Status Display Examples ===\n');
 console.log('Example 1: Normal System (no Warp features)');
 console.log('───────────────────────────────────────────────────────────');
 console.log('Star Type: Luminous');
+console.log('Warp Status: Normal');
 console.log('');
 console.log('System Features');
 console.log('• Bountiful');
@@ -76,7 +77,8 @@ console.log('──────────────────────�
 console.log('Key Changes Implemented:');
 console.log('');
 console.log('1. NEW: Warp Status field displayed below Star Type');
-console.log('   - Only shown when not "Normal"');
+console.log('   - Always displayed');
+console.log('   - Page reference only shown for Turbulent, Becalmed, and Fully becalmed');
 console.log('   - Values: Normal, Turbulent, Becalmed, Fully becalmed');
 console.log('');
 console.log('2. NEW: Common Warp Stasis text for ALL Warp Stasis systems');
