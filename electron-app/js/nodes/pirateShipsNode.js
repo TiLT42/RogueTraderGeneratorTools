@@ -17,19 +17,8 @@ class PirateShipsNode extends NodeBase {
         // Station presence (d10 >=5)
         this.containsWayfarerStation = (RollD10() >= 5);
 
-        // Choose species similar to WPF gating
-        const enabled = window.APP_STATE.settings.enabledBooks || {};
-        let safety = 200; // guard against infinite loop on misconfigured data
-        do {
-            this.pirateSpecies = window.StarshipToolsData.getRandomSpecies();
-            if (this.pirateSpecies === Species.Human) break;
-            if (this.pirateSpecies === Species.Ork && enabled.BattlefleetKoronus) break;
-            if (this.pirateSpecies === Species.Eldar && enabled.BattlefleetKoronus) break;
-            if (this.pirateSpecies === Species.RakGol && enabled.BattlefleetKoronus) break;
-            if (this.pirateSpecies === Species.ChaosReaver && enabled.BattlefleetKoronus) break;
-            if (this.pirateSpecies === Species.DarkEldar && enabled.BattlefleetKoronus && enabled.TheSoulReaver) break;
-            safety--;
-        } while (safety > 0);
+        // Choose pirate species (now simplified - getRandomPirateSpecies handles book checks)
+        this.pirateSpecies = window.StarshipToolsData.getRandomPirateSpecies();
 
         // Number of ships: 2d5 keep lowest-ish (WPF: RollD5()+4 twice, take min)
         const temp1 = RollD5() + 4;

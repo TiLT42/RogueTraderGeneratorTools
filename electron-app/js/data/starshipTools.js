@@ -59,25 +59,80 @@
     }
 
     // Weighted/random species selection
+    // Used by: Starship Graveyard generation (includes Kroot, Stryxis, Other for hulk species)
+    // Note: For pirate-specific generation, use getRandomPirateSpecies() instead
     function getRandomSpecies() {
-        const roll = RNG.nextInt(1, 14); // C# Next(1,15) -> [1..14]
-        switch (roll) {
-            case 1: return Species.Eldar;
-            case 2:
-            case 3:
-            case 4: return Species.Human;
-            case 5: return Species.Kroot; // kept for parity; not generated in pirate table
-            case 6:
-            case 7: return Species.Ork;
-            case 8: return Species.RakGol;
-            case 9:
-            case 10: return Species.ChaosReaver;
-            case 11: return Species.Stryxis; // kept for parity; not generated in pirate table
-            case 12: return Species.DarkEldar;
-            case 13:
-            case 14: return Species.Other;
-            default: throw new Error('Invalid roll in getRandomSpecies');
+        // Weighted array: [species, weight] pairs
+        // Total weight: 20 (easier to reason about percentages: weight/20 = percentage)
+        const speciesWeights = [
+            [Species.Human, 5],        // 25% - most common (base traitors/rogues per Stars of Inequity)
+            [Species.Eldar, 2],        // 10%
+            [Species.Ork, 3],          // 15%
+            [Species.RakGol, 2],       // 10%
+            [Species.ChaosReaver, 3],  // 15%
+            [Species.DarkEldar, 1],    // 5%
+            [Species.Kroot, 1],        // 5% - used in Starship Graveyard only
+            [Species.Stryxis, 1],      // 5% - used in Starship Graveyard only
+            [Species.Other, 2]         // 10% - used in Starship Graveyard only
+        ];
+        
+        // Build cumulative weight array for efficient lookup
+        let totalWeight = 0;
+        const cumulativeWeights = [];
+        for (const [species, weight] of speciesWeights) {
+            totalWeight += weight;
+            cumulativeWeights.push({ species, threshold: totalWeight });
         }
+        
+        // Roll and find species
+        const roll = RNG.nextInt(1, totalWeight);
+        for (const { species, threshold } of cumulativeWeights) {
+            if (roll <= threshold) return species;
+        }
+        
+        // Fallback (should never reach here)
+        return Species.Human;
+    }
+
+    // Pirate-specific species selection (no Kroot/Stryxis/Other)
+    // Based on Stars of Inequity lore: "Most such fleets are comprised of base traitors and rogues"
+    // Distribution aims for variety while keeping humans slightly more common per lore
+    function getRandomPirateSpecies() {
+        const enabled = window.APP_STATE?.settings?.enabledBooks || {};
+        const soulReaverOn = !!enabled[RuleBook.TheSoulReaver];
+        
+        // Weighted array for pirate species: total weight = 20
+        // Distribution: humans slightly favored, xenos roughly equal for variety
+        const pirateWeights = [
+            [Species.Human, 5],        // 25% - slightly more common per lore
+            [Species.Ork, 3],          // 15%
+            [Species.Eldar, 3],        // 15%
+            [Species.RakGol, 3],       // 15%
+            [Species.ChaosReaver, 3]   // 15%
+            // Remaining 15%: "other possibilities" spread across xenos variants
+        ];
+        
+        // Add Dark Eldar if Soul Reaver is enabled
+        if (soulReaverOn) {
+            pirateWeights.push([Species.DarkEldar, 3]); // ~13% each when enabled
+        }
+        
+        // Build cumulative weight array
+        let totalWeight = 0;
+        const cumulativeWeights = [];
+        for (const [species, weight] of pirateWeights) {
+            totalWeight += weight;
+            cumulativeWeights.push({ species, threshold: totalWeight });
+        }
+        
+        // Roll and find species
+        const roll = RNG.nextInt(1, totalWeight);
+        for (const { species, threshold } of cumulativeWeights) {
+            if (roll <= threshold) return species;
+        }
+        
+        // Fallback (should never reach here)
+        return Species.Human;
     }
 
     // Public: Get a random pirate ship (includes Eldar/Ork/etc pirate variants)
@@ -85,23 +140,8 @@
         const ship = createEmptyShip();
         ship.bookSource = RuleBook.BattlefleetKoronus;
 
-        const enabled = window.APP_STATE?.settings?.enabledBooks || {};
-        const soulReaverOn = !!enabled[RuleBook.TheSoulReaver];
-
         if (race === Species.Random) {
-            while (true) {
-                race = getRandomSpecies();
-                if (
-                    race === Species.Human ||
-                    race === Species.Ork ||
-                    race === Species.Eldar ||
-                    race === Species.RakGol ||
-                    race === Species.ChaosReaver ||
-                    (race === Species.DarkEldar && soulReaverOn)
-                ) {
-                    break;
-                }
-            }
+            race = getRandomPirateSpecies();
         }
         ship.race = race;
 
@@ -721,6 +761,7 @@
         ShipClass,
         createEmptyShip,
         getRandomSpecies,
+        getRandomPirateSpecies,
         getRandomPirateShip,
         generateRandomHumanShip,
         generateRandomHumanPirateShip,
