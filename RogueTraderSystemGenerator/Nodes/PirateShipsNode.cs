@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Globalization;
+using System.Linq;
 using System.Runtime.Serialization;
 using System.Windows.Documents;
 
@@ -66,6 +67,20 @@ namespace RogueTraderSystemGenerator.Nodes
                 Starship ship = StarshipTools.GetRandomPirateShip(_pirateSpecies);
                 ShipNode node = new ShipNode(ship) {Parent = this};
                 Children.Add(node);
+            }
+            
+            // Sort ships alphabetically by name after generation
+            SortShips();
+        }
+        
+        private void SortShips()
+        {
+            // Sort children alphabetically by NodeName (case-insensitive)
+            var sortedChildren = Children.OrderBy(node => node.NodeName, StringComparer.OrdinalIgnoreCase).ToList();
+            Children.Clear();
+            foreach (var child in sortedChildren)
+            {
+                Children.Add(child);
             }
         }
 
