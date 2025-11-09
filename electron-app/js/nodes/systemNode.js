@@ -217,14 +217,17 @@ class SystemNode extends NodeBase {
                 case 4: // Ill-Omened
                     if (hasFeature('Ill-Omened')) continue;
                     this.systemFeatures.push('Ill-Omened');
-                    this.chooseMultipleEffects(4, (idx) => {
-                        switch (idx) {
-                            case 1: this.illOmenedFickleFatePoints = true; break;
-                            case 2: this.illOmenedWillPowerPenalty = true; break;
-                            case 3: this.illOmenedDoubledInsanity = true; break;
-                            case 4: this.illOmenedFearFromPsychicExploration = true; break;
-                        }
-                    });
+                    // Only 50% chance of rolling for the 4 multiple effects (these are for truly foul systems)
+                    if (RollD10() <= 5) {
+                        this.chooseMultipleEffects(4, (idx) => {
+                            switch (idx) {
+                                case 1: this.illOmenedFickleFatePoints = true; break;
+                                case 2: this.illOmenedWillPowerPenalty = true; break;
+                                case 3: this.illOmenedDoubledInsanity = true; break;
+                                case 4: this.illOmenedFearFromPsychicExploration = true; break;
+                            }
+                        });
+                    }
                     break;
                 case 5: // Pirate Den
                     if (hasFeature('Pirate Den')) continue;
@@ -1157,12 +1160,29 @@ class SystemNode extends NodeBase {
             return `<li>${text}${addPageRef(page, ruleName)}</li>`;
         };
         const rulesList = [];
+        
+        // Stellar Anomaly: Always add these rules for ALL stellar anomaly systems
+        if (this.systemFeatures.includes('Stellar Anomaly')) {
+            rulesList.push(addRule('Scholastic Lore (Astromancy) and Navigation (Stellar) Tests made to plot routes through the System, or to determine position within it, receive a +10 bonus. ', 11, 'Stellar Anomaly'));
+            rulesList.push(addRule('Ships travelling through the System only need to roll for Warp Travel Encounters for every seven full days of travel (or once, for a trip of under seven days). ', 11, 'Stellar Anomaly'));
+            rulesList.push(addRule('On any result of doubles when rolling for a Warp Travel encounter, the vessel runs afoul of a hazard in realspace instead of applying the normally generated result. ', 11, 'Stellar Anomaly'));
+        }
+        
+        // Ill-Omened: Always add these rules for ALL ill-omened systems (before the optional effects)
+        if (this.systemFeatures.includes('Ill-Omened')) {
+            rulesList.push(addRule('Any ship entering the System for the first time loses 1d5 Morale, unless one of the Explorers passes a Challenging (+0) Charm or Intimidate Test. If the nature and reputation of the System was known to the crew ahead of time, the Test difficulty and Morale loss for failure might be higher at the GM\'s discretion. ', 10, 'Ill-Omened'));
+            rulesList.push(addRule('All Morale loss suffered within this System is increased by 1. This does not apply to Morale lost for entering a System the first time. ', 10, 'Ill-Omened'));
+            rulesList.push(addRule('Any Fear Tests made within the System are made at an additional -10 penalty. ', 10, 'Ill-Omened'));
+        }
+        
         if (this.gravityTidesGravityWellsAroundPlanets)
             rulesList.push(addRule('Safely entering the orbit of a Planet in this System with a voidship requires a Difficult (-10) Pilot (Space Craft) Test, causing the loss of 1 point of Hull Integrity for every two degrees of failure. Small craft can enter and exit the gravity well only after the pilot passes a Very Hard (-30) Pilot (Flyers) Test. Every full day in orbit requires another Pilot Test. ', 9, 'Gravity Tides'));
         if (this.gravityTidesTravelTimeBetweenPlanetsHalves)
             rulesList.push(addRule('Travel between Planets within this System takes half the usual time. ', 9, 'Gravity Tides'));
+        
+        // Ill-Omened optional effects (only present in truly foul systems - 50% chance during generation)
         if (this.illOmenedFickleFatePoints)
-            rulesList.push(addRule('When spending a Fate Point within this System, roll 1d10. On a 9, it has no effect. ', 10, 'Ill-Omened'));
+            rulesList.push(addRule('When spending a Fate Point within this System, roll 1d10. On a 9, it has no effect. If it was spent to alter a Test in some way, it counts as the only Fate Point that can be used for that Test as normal, even though it had no effect. Void Born Explorers recover still Fate Points lost in this manner (thanks to the result of 9) as normal. ', 10, 'Ill-Omened'));
         if (this.illOmenedWillPowerPenalty)
             rulesList.push(addRule('All Willpower Tests made within this System are made at a -10 penalty. ', 10, 'Ill-Omened'));
         if (this.illOmenedDoubledInsanity)
