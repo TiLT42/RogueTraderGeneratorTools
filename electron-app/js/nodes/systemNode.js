@@ -32,6 +32,12 @@ class SystemNode extends NodeBase {
         this.warpStasisNoPush = false;
         this.warpStasisReducedPsychicPhenomena = false;
         this.numPlanetsInWarpStorms = 0;
+        
+        // Warp Turbulence effects (page 12, Stars of Inequity)
+        this.warpTurbulenceNavigationPenalty = false;
+        this.warpTurbulencePsychicPhenomenaBonus = false;
+        this.warpTurbulenceCorruptionIncrease = false;
+        this.warpTurbulencePsyRatingBonus = false;
 
         // Initial creation rules (will be reinitialized each generate in reset)
         this.systemCreationRules = {};
@@ -75,6 +81,13 @@ class SystemNode extends NodeBase {
         this.warpStasisNoPush = false;
         this.warpStasisReducedPsychicPhenomena = false;
         this.numPlanetsInWarpStorms = 0;
+        
+        // Warp Turbulence effects
+        this.warpTurbulenceNavigationPenalty = false;
+        this.warpTurbulencePsychicPhenomenaBonus = false;
+        this.warpTurbulenceCorruptionIncrease = false;
+        this.warpTurbulencePsyRatingBonus = false;
+        
         this.systemCreationRules = {
             innerCauldronWeak: false,
             innerCauldronDominant: false,
@@ -269,8 +282,22 @@ class SystemNode extends NodeBase {
                     if (hasFeature('Warp Turbulence') || hasFeature('Warp Stasis')) continue;
                     this.systemFeatures.push('Warp Turbulence');
                     this.warpStatus = 'Turbulent';
-                    this.systemCreationRules.numPlanetsInWarpStorms = 1;
-                    this.numPlanetsInWarpStorms = 1;
+                    
+                    // Always apply navigation penalty (per page 12, Stars of Inequity)
+                    this.warpTurbulenceNavigationPenalty = true;
+                    
+                    // Choose one or more additional effects (occasionally including warp storms)
+                    this.chooseMultipleEffects(4, (idx) => {
+                        switch (idx) {
+                            case 1: this.warpTurbulencePsychicPhenomenaBonus = true; break;
+                            case 2: this.warpTurbulenceCorruptionIncrease = true; break;
+                            case 3: this.warpTurbulencePsyRatingBonus = true; break;
+                            case 4: 
+                                this.systemCreationRules.numPlanetsInWarpStorms = 1;
+                                this.numPlanetsInWarpStorms = 1;
+                                break;
+                        }
+                    });
                     break;
             }
             numFeaturesLeft--;
@@ -800,9 +827,17 @@ class SystemNode extends NodeBase {
     generateWarpStorms() {
         const num = this.systemCreationRules.numPlanetsInWarpStorms || this.numPlanetsInWarpStorms || 0;
         if (num <= 0) return;
+        
+        // Manually collect all planet nodes recursively
         const planets = [];
-        this.getAllDescendantNodesOfType && this.getAllDescendantNodesOfType('Planet').forEach(p=> planets.push(p));
+        const collectPlanets = (node) => {
+            if (node.type === NodeTypes.Planet) planets.push(node);
+            if (node.children) node.children.forEach(collectPlanets);
+        };
+        collectPlanets(this);
+        
         if (planets.length === 0) return;
+        
         const selected = new Set();
         let attempts = 0;
         while (selected.size < num && attempts < 100) { // safety loop
@@ -810,7 +845,10 @@ class SystemNode extends NodeBase {
             selected.add(idx);
             attempts++;
         }
-        selected.forEach(i => { planets[i].warpStorm = true; planets[i].updateDescription?.(); });
+        selected.forEach(i => { 
+            planets[i].warpStorm = true; 
+            planets[i].updateDescription?.(); 
+        });
     }
 
     /**
@@ -1142,8 +1180,22 @@ class SystemNode extends NodeBase {
             rulesList.push(addRule('Psychic Techniques cannot be used at the Push level within the System. ', 12, 'Warp Stasis'));
         if (this.warpStasisReducedPsychicPhenomena)
             rulesList.push(addRule('When rolling on Table 6-2: Psychic Phenomena (see page 160 of the Rogue Trader Core Rulebook) within this System, roll twice and use the lower result. ', 12, 'Warp Stasis'));
+        
+        // Warp Turbulence: Always include navigation penalty
+        if (this.warpTurbulenceNavigationPenalty)
+            rulesList.push(addRule('Navigators suffer a -10 penalty to Navigation (Warp) Tests for Warp Jumps that begin or end in this System. ', 12, 'Warp Turbulence'));
+        
+        // Warp Turbulence: Optional additional effects
+        if (this.warpTurbulencePsychicPhenomenaBonus)
+            rulesList.push(addRule('Add +10 to all rolls on Table 6–2: Psychic Phenomena (see page 160 of the Rogue Trader Core Rulebook) made within the System. ', 12, 'Warp Turbulence'));
+        if (this.warpTurbulenceCorruptionIncrease)
+            rulesList.push(addRule('Whenever an Explorer would gain Corruption Points within the System, increase the amount gained by 1. ', 12, 'Warp Turbulence'));
+        if (this.warpTurbulencePsyRatingBonus)
+            rulesList.push(addRule('Add +1 to the Psy Rating of any Psychic Technique used at the Unfettered or Push levels. ', 12, 'Warp Turbulence'));
+        
+        // Warp storm planet (can be from either Warp Turbulence or other sources)
         if (this.systemCreationRules.numPlanetsInWarpStorms > 0)
-            rulesList.push(addRule('One of the planets in this system is engulfed in a permanent Warp storm. ', 12, 'Warp Turbulence'));
+            rulesList.push(addRule('One of the Planets in the System is engulfed in a permanent Warp storm, rendering it inaccessible to all but the most dedicated (and insane) of travellers. Navigation (Warp) Tests made within this System suffer a -20 penalty due to the difficulty of plotting courses around this hazard. ', 12, 'Warp Turbulence'));
         if (rulesList.length > 0) {
             desc += `<h3>Additional Special Rule${rulesList.length>1?'s':''}</h3><ul>${rulesList.join('')}</ul>`;
         }
@@ -1228,6 +1280,10 @@ class SystemNode extends NodeBase {
         json.warpStasisNoPush = this.warpStasisNoPush;
         json.warpStasisReducedPsychicPhenomena = this.warpStasisReducedPsychicPhenomena;
         json.numPlanetsInWarpStorms = this.numPlanetsInWarpStorms;
+        json.warpTurbulenceNavigationPenalty = this.warpTurbulenceNavigationPenalty;
+        json.warpTurbulencePsychicPhenomenaBonus = this.warpTurbulencePsychicPhenomenaBonus;
+        json.warpTurbulenceCorruptionIncrease = this.warpTurbulenceCorruptionIncrease;
+        json.warpTurbulencePsyRatingBonus = this.warpTurbulencePsyRatingBonus;
         json.generateUniquePlanetNames = this.generateUniquePlanetNames;
         return json;
     }
@@ -1292,6 +1348,20 @@ class SystemNode extends NodeBase {
             featureEffects.numPlanetsInWarpStorms = this.numPlanetsInWarpStorms;
         }
         
+        // Warp Turbulence effects
+        if (this.warpTurbulenceNavigationPenalty) {
+            featureEffects.warpTurbulenceNavigationPenalty = true;
+        }
+        if (this.warpTurbulencePsychicPhenomenaBonus) {
+            featureEffects.warpTurbulencePsychicPhenomenaBonus = true;
+        }
+        if (this.warpTurbulenceCorruptionIncrease) {
+            featureEffects.warpTurbulenceCorruptionIncrease = true;
+        }
+        if (this.warpTurbulencePsyRatingBonus) {
+            featureEffects.warpTurbulencePsyRatingBonus = true;
+        }
+        
         // Only add featureEffects if there are any
         if (Object.keys(featureEffects).length > 0) {
             data.featureEffects = featureEffects;
@@ -1334,6 +1404,10 @@ class SystemNode extends NodeBase {
             warpStasisNoPush: data.warpStasisNoPush || false,
             warpStasisReducedPsychicPhenomena: data.warpStasisReducedPsychicPhenomena || false,
             numPlanetsInWarpStorms: data.numPlanetsInWarpStorms || 0,
+            warpTurbulenceNavigationPenalty: data.warpTurbulenceNavigationPenalty || false,
+            warpTurbulencePsychicPhenomenaBonus: data.warpTurbulencePsychicPhenomenaBonus || false,
+            warpTurbulenceCorruptionIncrease: data.warpTurbulenceCorruptionIncrease || false,
+            warpTurbulencePsyRatingBonus: data.warpTurbulencePsyRatingBonus || false,
             generateUniquePlanetNames: data.generateUniquePlanetNames || false
         });
         
