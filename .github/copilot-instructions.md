@@ -107,6 +107,26 @@ This launches the cross-platform Electron application (npm install takes 3-6 sec
 
 **TIMING**: Each workflow takes 1-2 seconds. NEVER CANCEL during generation.
 
+**Manual Testing Checklist** (use this for thorough validation):
+- [ ] All menu items clickable and functional
+- [ ] Tree view expands/collapses correctly
+- [ ] Generated content displays in document viewer
+- [ ] Export to RTF produces valid documents
+- [ ] Settings save and persist across sessions
+- [ ] File save/load maintains data integrity
+- [ ] All generation types produce valid output
+- [ ] No JavaScript errors in DevTools console
+- [ ] UI responsive during and after generation
+- [ ] Multiple generations don't cause memory leaks
+
+**Edge Cases to Test**:
+- Generate multiple systems without clearing (memory handling)
+- Rapid clicking on generate buttons (debouncing)
+- Export large systems with many planets (file size handling)
+- Load corrupted or old save files (error handling)
+- Toggle settings during generation (race conditions)
+- Close application during generation (cleanup)
+
 ### WPF Version Validation (Windows Only)
 **Manual Code Validation** (when working on Linux/macOS):
 - Review changes in core logic files without UI dependencies:
@@ -149,7 +169,7 @@ js/                     # JavaScript modules
 ├── random.js           # Random number generation
 ├── workspace.js        # Save/load functionality
 ├── app.js              # Main application logic
-├── nodes/              # Node type definitions (24 files)
+├── nodes/              # Node type definitions (23 files)
 │   ├── nodeBase.js     # Base node class
 │   ├── systemNode.js   # System generation
 │   ├── planetNode.js   # Planet generation  
@@ -234,20 +254,20 @@ icon.png             # Application icon
 ### Key Source Files by Technology
 
 **Electron Version (Cross-Platform)**:
-1. **`js/app.js`** (251 lines) - Main application logic and UI coordination
-2. **`js/nodes/systemNode.js`** (432 lines) - System generation algorithms  
-3. **`js/nodes/planetNode.js`** (642 lines) - Planet generation with environments
-4. **`js/nodes/primitiveXenosNode.js`** (284 lines) - Alien species generation
-5. **`js/ui/treeView.js`** (241 lines) - Tree navigation and management
-6. **`js/ui/documentViewer.js`** (183 lines) - Content display and export
-7. **`js/random.js`** (146 lines) - Random number generation utilities
-8. **`js/globals.js`** (108 lines) - Constants and enums
+1. **`js/nodes/systemNode.js`** (1,440 lines) - System generation algorithms  
+2. **`js/nodes/planetNode.js`** (1,525 lines) - Planet generation with environments
+3. **`js/ui/documentViewer.js`** (487 lines) - Content display and export
+4. **`js/app.js`** (398 lines) - Main application logic and UI coordination
+5. **`js/ui/treeView.js`** (255 lines) - Tree navigation and management
+6. **`js/workspace.js`** (201 lines) - Save/load functionality
+7. **`js/globals.js`** (176 lines) - Constants and enums
+8. **`js/random.js`** (170 lines) - Random number generation utilities
 
 **WPF Version (Windows Only)**:
 1. **`MainWindow.xaml.cs`** (1,190 lines) - Main UI logic and application entry point
 2. **`XenosKoronusBestiary.cs`** (1,751 lines) - Complex alien species generation 
 3. **`StarshipTools.cs`** (1,090 lines) - Starship generation and configuration
-4. **`XenosBase.cs`** (1,050 lines) - Base alien species functionality
+4. **`XenosBase.cs`** (1,006 lines) - Base alien species functionality
 5. **`Environment.cs`** (657 lines) - Planetary environment generation
 6. **`Globals.cs`** (119 lines) - Core utility functions and dice rolling
 
@@ -319,16 +339,116 @@ icon.png             # Application icon
 - Follow existing code patterns and naming conventions
 - Maintain compatibility with .NET Framework 4.0
 
+### Code Style Conventions
+**JavaScript/Electron Code**:
+- Use ES6+ features (arrow functions, const/let, template literals, destructuring)
+- Use camelCase for variables and functions, PascalCase for classes
+- Keep functions focused and single-purpose
+- Use meaningful variable names that describe purpose
+- Add comments only when logic is complex or non-obvious
+- Match existing file organization patterns in `js/` directory
+- Export classes and functions using module.exports
+- Keep line length reasonable (< 120 characters when practical)
+
+**C#/WPF Code**:
+- Follow Microsoft C# naming conventions (PascalCase for public members)
+- Use camelCase for private fields with underscore prefix (_fieldName)
+- Keep methods focused on single responsibility
+- Match existing XAML patterns for UI code
+- Maintain .NET Framework 4.0 compatibility (no newer C# features)
+- Use regions sparingly, prefer well-organized files
+- Add XML documentation comments for public APIs
+
+**General Principles**:
+- Consistency with existing code is more important than personal preference
+- Prioritize readability over cleverness
+- Keep changes minimal and surgical
+- Don't refactor working code unless fixing a bug
+
+### Security Best Practices
+**When Contributing Code**:
+- Never commit API keys, passwords, or sensitive credentials
+- Review dependencies for known vulnerabilities before adding
+- Validate all user input, especially in generation algorithms
+- Be cautious with file system operations (validate paths, handle errors)
+- Don't execute user-provided code or commands
+- Use secure randomness for game generation (already implemented)
+
+**Handling Game Content**:
+- Respect Fantasy Flight Games/Games Workshop intellectual property
+- Don't add copyrighted tables or content directly from books
+- Use algorithmic generation based on rulebook guidelines
+- Original generator logic and code are acceptable
+
+**Dependency Management**:
+- Keep dependencies up to date for security patches
+- Review npm audit output regularly
+- Minimize dependency count to reduce attack surface
+- Prefer well-maintained, popular packages
+
+**Reporting Security Issues**:
+- Report security vulnerabilities privately to repository maintainer
+- Don't open public issues for security problems
+- Provide clear reproduction steps and impact assessment
+
+### Environment and Configuration
+**Electron Version Environment Variables**:
+- `NODE_ENV`: Set to `development` for dev mode (enables debug features)
+- `ELECTRON_IS_DEV`: Automatically set by Electron, indicates dev mode
+- No API keys or external services required
+
+**Development vs Production**:
+- Development: Run with `npm run dev` - includes DevTools and debug panel
+- Production: Run with `npm start` or packaged app - no debug features
+- See DEBUGGING.md for detailed debugging workflows
+
+**Local Development Setup**:
+1. Clone repository
+2. Install Node.js 14+ (v20+ recommended)
+3. `cd electron-app && npm install`
+4. `npm start` to run application
+5. No additional configuration files needed
+
+**WPF Version Configuration**:
+- User settings stored in `Properties/Settings.settings`
+- First-run wizard configures book selections
+- Settings persist across application restarts
+- No environment variables required
+
+### Debugging and Development Tools
+**Electron Version** (see DEBUGGING.md for complete guide):
+- **Quick debug**: `npm run dev` - Opens app with DevTools and debug panel
+- **VS Code debugging**: Press F5 with Debug Electron configuration
+- **Debug panel**: Ctrl+Shift+D in dev mode for quick state inspection
+- **Node inspector**: `npm run debug` for main process debugging on port 5858
+- **Console access**: DevTools console available in renderer process
+
+**Debug Features (Dev Mode Only)**:
+- Floating debug panel with state dump and test generation
+- Enhanced error tracking and logging
+- Performance monitoring
+- Global debug variables exposed
+
+**WPF Version**:
+- Use Visual Studio debugger for breakpoints and inspection
+- Set breakpoints in C# code and step through execution
+- Watch window for variable inspection
+- Output window for debug logging
+
 ### Release and Distribution
-**Electron Version**:
-- Cross-platform distribution via Electron packaging
-- Build: `npm run build` (if available) or manual packaging
-- Supports Windows, macOS, and Linux
+**Electron Version** (see RELEASE_PROCESS.md for complete guide):
+- **Automated releases**: GitHub Actions workflow builds all platforms
+- **Trigger release**: Actions tab → "Release Electron App" → Run workflow
+- **Platforms**: Windows (.exe), macOS (.dmg), Linux (.AppImage)
+- **Build time**: 10-20 minutes for all platforms
+- **Process**: Build → Draft release created → Review → Publish
+- Version format: Semantic versioning (e.g., 2.0.0, 2.1.0)
 
 **WPF Version**:
 - Application distributed as single executable: `RogueTraderGeneratorTools.exe`
 - Current version downloads: https://github.com/TiLT42/RogueTraderGeneratorTools/releases
 - Latest release (v1.09): ~375KB standalone Windows executable
+- Manual build and release process (Windows only)
 
 ## Troubleshooting Common Issues
 
@@ -374,6 +494,20 @@ icon.png             # Application icon
 - **WPF**: Generation algorithms are CPU-intensive with complex table lookups  
 - **Both**: Large system generation can take 1-2 seconds (normal behavior)
 - **Memory**: Usage scales with number of generated objects in tree view
+
+**Performance Best Practices**:
+- **Avoid blocking the UI thread**: Long operations should show progress indicators
+- **Memory management**: Clear old data when generating new content if not needed
+- **Tree view optimization**: Don't expand all nodes at once for large systems
+- **Random number generation**: Use the built-in Random instances (already optimized)
+- **File I/O**: Save/load operations are synchronous but typically fast (< 1 second)
+- **Document export**: RTF generation is fast, but large systems take longer
+
+**Performance Monitoring**:
+- Use `npm run dev` to enable performance monitoring in Electron
+- Watch memory usage in DevTools Performance tab
+- Test with large generated systems (20+ planets)
+- Verify no memory leaks after multiple generations
 
 ## Important Notes
 
