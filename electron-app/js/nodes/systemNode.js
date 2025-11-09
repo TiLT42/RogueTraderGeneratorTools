@@ -18,6 +18,7 @@ class SystemNode extends NodeBase {
 
         // Star & features
         this.star = '';
+        this.warpStatus = 'Normal'; // Warp Status: Normal, Turbulent, Becalmed, Fully becalmed
         this.systemFeatures = [];
 
         // Feature sub-effect flags
@@ -61,6 +62,7 @@ class SystemNode extends NodeBase {
         this.primaryBiosphereZone = null;
         this.outerReachesZone = null;
         this.star = '';
+        this.warpStatus = 'Normal';
         this.systemFeatures = [];
         this.generateUniquePlanetNames = false; // will be set again on next name generation
         this.gravityTidesGravityWellsAroundPlanets = false;
@@ -247,17 +249,26 @@ class SystemNode extends NodeBase {
                 case 9: // Warp Stasis
                     if (hasFeature('Warp Stasis') || hasFeature('Warp Turbulence')) continue;
                     this.systemFeatures.push('Warp Stasis');
-                    this.chooseMultipleEffects(3, (idx) => {
-                        switch (idx) {
-                            case 1: this.warpStasisFocusPowerPenalties = true; break;
-                            case 2: this.warpStasisNoPush = true; break;
-                            case 3: this.warpStasisReducedPsychicPhenomena = true; break;
-                        }
-                    });
+                    // 50% chance of "Becalmed" or "Fully becalmed"
+                    if (RollD10() <= 5) {
+                        this.warpStatus = 'Becalmed';
+                        // No additional psychic effects for just "Becalmed"
+                    } else {
+                        this.warpStatus = 'Fully becalmed';
+                        // Only roll for additional effects if "Fully becalmed"
+                        this.chooseMultipleEffects(3, (idx) => {
+                            switch (idx) {
+                                case 1: this.warpStasisFocusPowerPenalties = true; break;
+                                case 2: this.warpStasisNoPush = true; break;
+                                case 3: this.warpStasisReducedPsychicPhenomena = true; break;
+                            }
+                        });
+                    }
                     break;
                 case 10: // Warp Turbulence
                     if (hasFeature('Warp Turbulence') || hasFeature('Warp Stasis')) continue;
                     this.systemFeatures.push('Warp Turbulence');
+                    this.warpStatus = 'Turbulent';
                     this.systemCreationRules.numPlanetsInWarpStorms = 1;
                     this.numPlanetsInWarpStorms = 1;
                     break;
@@ -1071,6 +1082,10 @@ class SystemNode extends NodeBase {
         
         // Star Type - moved to top as introductory content to avoid gap
         desc += `<p><strong>Star Type:</strong> ${this.star}${addPageRef(13,'Table 1-2: Star Generation')}</p>`;
+        
+        // Warp Status - always display, but only include page reference when not Normal
+        const warpStatusPageRef = (this.warpStatus && this.warpStatus !== 'Normal') ? addPageRef(12) : '';
+        desc += `<p><strong>Warp Status:</strong> ${this.warpStatus || 'Normal'}${warpStatusPageRef}</p>`;
 
         // System Features section (plural/singular logic simplified – always list).
         if (this.systemFeatures.length === 1) {
@@ -1103,6 +1118,11 @@ class SystemNode extends NodeBase {
             rulesList.push(addRule('Whenever an Explorer would gain Insanity Points while within this System, double the amount of Insanity Points he gains. ', 10, 'Ill-Omened'));
         if (this.illOmenedFearFromPsychicExploration)
             rulesList.push(addRule('Attempting to use Psychic Techniques from the Divination Discipline to gain information about the System or anything within it requires the user to pass a Difficult (-10) Fear Test before he can attempt the Focus Power Test. ', 10, 'Ill-Omened'));
+        // Warp Stasis: Add common text for ALL Warp Stasis systems (both Becalmed and Fully becalmed)
+        if (this.systemFeatures.includes('Warp Stasis')) {
+            rulesList.push(addRule('Travel to and from the System is becalmed. Double the base travel time of any trip entering or leaving the area. The time required to send Astrotelepathic messages into or out of the System is likewise doubled. In addition, pushing a coherent message across its boundaries requires incredible focus; Astropaths suffer a -3 penalty to their Psy Rating for the purposes of sending Astrotelepathic messages from this System. ', 12, 'Warp Stasis'));
+        }
+        // Additional Warp Stasis effects (only for "Fully becalmed" status)
         if (this.warpStasisFocusPowerPenalties)
             rulesList.push(addRule('Focus Power and Psyniscience Tests within the System are made at a -10 penalty. ', 12, 'Warp Stasis'));
         if (this.warpStasisNoPush)
@@ -1182,6 +1202,7 @@ class SystemNode extends NodeBase {
     toJSON() {
         const json = super.toJSON();
         json.star = this.star;
+        json.warpStatus = this.warpStatus;
         json.systemFeatures = this.systemFeatures;
         json.systemCreationRules = this.systemCreationRules;
         json.gravityTidesGravityWellsAroundPlanets = this.gravityTidesGravityWellsAroundPlanets;
@@ -1204,6 +1225,9 @@ class SystemNode extends NodeBase {
         // Add system-specific data
         if (this.star) {
             data.star = this.star;
+        }
+        if (this.warpStatus && this.warpStatus !== 'Normal') {
+            data.warpStatus = this.warpStatus;
         }
         if (this.systemFeatures && this.systemFeatures.length > 0) {
             data.systemFeatures = this.systemFeatures;
@@ -1284,6 +1308,7 @@ class SystemNode extends NodeBase {
         // Restore system-specific properties
         Object.assign(node, {
             star: data.star || '',
+            warpStatus: data.warpStatus || 'Normal',
             systemFeatures: data.systemFeatures || [],
             systemCreationRules: data.systemCreationRules || {},
             gravityTidesGravityWellsAroundPlanets: data.gravityTidesGravityWellsAroundPlanets || false,
