@@ -169,7 +169,7 @@ js/                     # JavaScript modules
 ├── random.js           # Random number generation
 ├── workspace.js        # Save/load functionality
 ├── app.js              # Main application logic
-├── nodes/              # Node type definitions (24 files)
+├── nodes/              # Node type definitions (23 files)
 │   ├── nodeBase.js     # Base node class
 │   ├── systemNode.js   # System generation
 │   ├── planetNode.js   # Planet generation  
@@ -254,20 +254,20 @@ icon.png             # Application icon
 ### Key Source Files by Technology
 
 **Electron Version (Cross-Platform)**:
-1. **`js/app.js`** (251 lines) - Main application logic and UI coordination
-2. **`js/nodes/systemNode.js`** (432 lines) - System generation algorithms  
-3. **`js/nodes/planetNode.js`** (642 lines) - Planet generation with environments
-4. **`js/nodes/primitiveXenosNode.js`** (284 lines) - Alien species generation
-5. **`js/ui/treeView.js`** (241 lines) - Tree navigation and management
-6. **`js/ui/documentViewer.js`** (183 lines) - Content display and export
-7. **`js/random.js`** (146 lines) - Random number generation utilities
-8. **`js/globals.js`** (108 lines) - Constants and enums
+1. **`js/nodes/systemNode.js`** (1,440 lines) - System generation algorithms  
+2. **`js/nodes/planetNode.js`** (1,525 lines) - Planet generation with environments
+3. **`js/ui/documentViewer.js`** (487 lines) - Content display and export
+4. **`js/app.js`** (398 lines) - Main application logic and UI coordination
+5. **`js/ui/treeView.js`** (255 lines) - Tree navigation and management
+6. **`js/workspace.js`** (201 lines) - Save/load functionality
+7. **`js/globals.js`** (176 lines) - Constants and enums
+8. **`js/random.js`** (170 lines) - Random number generation utilities
 
 **WPF Version (Windows Only)**:
 1. **`MainWindow.xaml.cs`** (1,190 lines) - Main UI logic and application entry point
 2. **`XenosKoronusBestiary.cs`** (1,751 lines) - Complex alien species generation 
 3. **`StarshipTools.cs`** (1,090 lines) - Starship generation and configuration
-4. **`XenosBase.cs`** (1,050 lines) - Base alien species functionality
+4. **`XenosBase.cs`** (1,006 lines) - Base alien species functionality
 5. **`Environment.cs`** (657 lines) - Planetary environment generation
 6. **`Globals.cs`** (119 lines) - Core utility functions and dice rolling
 
