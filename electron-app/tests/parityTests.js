@@ -24,32 +24,39 @@
 
   // 1. Test chooseMultipleEffects distribution termination logic.
   // We replicate the algorithm inline because we want to observe statistical shape quickly without depending on systemNode side-effects.
-  function chooseMultipleEffectsMock(rollerFn){
+  // Updated to match new graduated probability behavior
+  function chooseMultipleEffectsMock(max){
     const picked = [];
     const already = new Set();
+    let rollNumber = 0;
     while(true){
-      const roll = rollerFn();
-      if(already.has(roll)) break;
+      const upperBound = max + rollNumber;
+      const roll = window.RandBetween(1, upperBound);
+      rollNumber++;
+      if(roll > max) break; // Out of range, terminate
+      if(already.has(roll)) break; // Duplicate, terminate
       already.add(roll);
       picked.push(roll);
+      if(already.size === max) break; // All chosen
     }
     return picked;
   }
 
-  // Roller that simulates d10 results 1..10 uniformly
-  function d10(){ return window.RollD10(); }
-
+  // Test with max=10 to match typical usage
+  const max = 10;
   let totalPicks = 0; let trials = 2000; let maxLen = 0; let minLen = 999;
   for(let i=0;i<trials;i++){
-    const res = chooseMultipleEffectsMock(d10);
+    const res = chooseMultipleEffectsMock(max);
     totalPicks += res.length;
     if(res.length>maxLen) maxLen = res.length;
     if(res.length<minLen) minLen = res.length;
   }
   const avg = totalPicks / trials;
-  console.log('chooseMultipleEffects uniqueness termination stats:', {trials, avg, minLen, maxLen});
+  console.log('chooseMultipleEffects graduated probability stats:', {trials, max, avg, minLen, maxLen});
   assert(minLen >= 1, 'At least one effect should always be chosen');
-  assert(maxLen <= 10, 'Cannot pick more unique results than sides');
+  assert(maxLen <= max, 'Cannot pick more unique results than max');
+  // With graduated probability, average should be significantly less than max
+  assert(avg < max - 1, 'Average should be notably less than max due to graduated probability');
 
   // 2. Starfarers distribution sanity test.
   // We need access to systemNode logic. If available, construct a minimal fake system invoking generateStarfarers.
