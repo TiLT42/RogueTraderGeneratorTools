@@ -278,20 +278,33 @@ class SystemNode extends NodeBase {
     }
 
     chooseMultipleEffects(max, callback) {
-        // Parity implementation of C# Globals.SetupOneOrMoreSituation/GetNextOneOrMoreChoiceResult
-        // Behavior: roll 1..max; if result not yet taken -> apply & mark; if already taken -> terminate (return 0 sentinel)
-        // Guarantees at least one effect, up to max unique effects. Probability distribution matches C#.
+        // Modified behavior to reduce odds of multiple results:
+        // - First roll: unchanged (roll 1..max)
+        // - Second roll onwards: increase range by 1 each time (d(max+1), d(max+2), etc.)
+        // - If roll is outside valid range (> max) or duplicate, terminate
+        // This gradually decreases probability of additional results, preventing almost-all-results generation
         if (max <= 0) return;
         const taken = new Set();
+        let rollNumber = 0; // Track which roll we're on (0-indexed)
         while (true) {
-            const roll = RandBetween(1, max); // uniform 1..max
+            // For first roll: use 1..max
+            // For subsequent rolls: increase upper bound by rollNumber
+            const upperBound = max + rollNumber;
+            const roll = RandBetween(1, upperBound);
+            rollNumber++;
+            
+            // If roll is outside valid range, terminate
+            if (roll > max) {
+                break;
+            }
+            
             if (!taken.has(roll)) {
                 taken.add(roll);
                 callback(roll);
                 if (taken.size === max) break; // all chosen
-                // continue loop to attempt another (next attempt may stop if duplicate rolled)
+                // continue loop to attempt another (next attempt may stop if duplicate or out of range)
             } else {
-                // Duplicate roll encountered, terminate selection process (matches C# behavior)
+                // Duplicate roll encountered, terminate selection process
                 break;
             }
         }
