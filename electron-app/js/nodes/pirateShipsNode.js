@@ -29,7 +29,20 @@ class PirateShipsNode extends NodeBase {
         // Create ships as children
         this.children = [];
         for (let i = 0; i < this.numShips; i++) this._addNewShipInternal();
+        
+        // Sort ships alphabetically by name after generation
+        this._sortShips();
+        
         this.updateDescription();
+    }
+    
+    _sortShips() {
+        // Sort children alphabetically by nodeName (case-insensitive)
+        this.children.sort((a, b) => {
+            const nameA = a.nodeName.toLowerCase();
+            const nameB = b.nodeName.toLowerCase();
+            return nameA.localeCompare(nameB);
+        });
     }
 
     _addNewShipInternal() {
