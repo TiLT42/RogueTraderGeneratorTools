@@ -1468,6 +1468,23 @@ class PlanetNode extends NodeBase {
             if (this.environment.landmarks && this.environment.landmarks.length > 0) {
                 data.landmarks = this.environment.landmarks;
             }
+            // Include landmass organization if present (new feature)
+            if (this.environment.landmasses && this.environment.landmasses.length > 0) {
+                data.landmasses = this.environment.landmasses.map(lm => ({
+                    type: lm.type,
+                    letter: lm.letter,
+                    name: lm.name,
+                    territories: lm.territories.map(t => ({
+                        baseTerrain: t.baseTerrain,
+                        traits: window.EnvironmentData ? window.EnvironmentData.getTerritoryTraitList(t) : [],
+                        landmarks: window.EnvironmentData ? window.EnvironmentData.buildLandmarkList(t) : []
+                    }))
+                }));
+            }
+            // Include island landmarks if present
+            if (this.environment.islandLandmarks && this.environment.islandLandmarks.length > 0) {
+                data.islandLandmarks = this.environment.islandLandmarks;
+            }
         }
         
         // Add resources in a user-friendly format
