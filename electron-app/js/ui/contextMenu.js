@@ -855,6 +855,10 @@ class ContextMenu {
 
         // Store the old system name for comparison
         const oldSystemName = systemNode.nodeName;
+        
+        // Save the current generateUniquePlanetNames flag to preserve naming style
+        // This prevents the new system name from changing planet naming behavior
+        const savedGenerateUniquePlanetNames = systemNode.generateUniquePlanetNames;
 
         // Generate a new system name using the system's own generation method
         if (typeof systemNode.generateSystemName === 'function') {
@@ -865,6 +869,9 @@ class ContextMenu {
             console.warn('System node does not have generateSystemName method');
             return;
         }
+        
+        // Restore the original generateUniquePlanetNames flag to preserve naming style
+        systemNode.generateUniquePlanetNames = savedGenerateUniquePlanetNames;
 
         // Apply cascading rename to update all dependent astronomical names
         this.cascadeSystemRename(systemNode, oldSystemName);
