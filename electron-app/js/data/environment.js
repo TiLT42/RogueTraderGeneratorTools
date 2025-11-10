@@ -351,6 +351,7 @@
     /**
      * Assign territories to landmasses randomly.
      * Each territory must be assigned to a major landmass (not islands).
+     * When there are at least as many territories as landmasses, ensures each landmass gets at least one territory.
      * @param {Array} territories - Array of territory objects
      * @param {Array} landmasses - Array of landmass objects
      */
@@ -358,10 +359,38 @@
         if (!territories || territories.length === 0) return;
         if (!landmasses || landmasses.length === 0) return;
         
-        // Randomly assign each territory to a landmass
-        for (const territory of territories) {
-            const landmassIndex = RandBetween(0, landmasses.length - 1);
-            landmasses[landmassIndex].territories.push(territory);
+        // If we have at least as many territories as landmasses, ensure each landmass gets one first
+        if (territories.length >= landmasses.length) {
+            // Shuffle territories to randomize which ones go to which landmass initially
+            const shuffled = [...territories];
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = RandBetween(0, i);
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+            
+            // Assign one territory to each landmass first
+            for (let i = 0; i < landmasses.length; i++) {
+                landmasses[i].territories.push(shuffled[i]);
+            }
+            
+            // Randomly assign the remaining territories
+            for (let i = landmasses.length; i < shuffled.length; i++) {
+                const landmassIndex = RandBetween(0, landmasses.length - 1);
+                landmasses[landmassIndex].territories.push(shuffled[i]);
+            }
+        } else {
+            // Fewer territories than landmasses - distribute as widely as possible
+            // Shuffle landmasses to randomize which ones get territories
+            const landmassIndices = landmasses.map((_, i) => i);
+            for (let i = landmassIndices.length - 1; i > 0; i--) {
+                const j = RandBetween(0, i);
+                [landmassIndices[i], landmassIndices[j]] = [landmassIndices[j], landmassIndices[i]];
+            }
+            
+            // Assign each territory to a different landmass if possible
+            for (let i = 0; i < territories.length; i++) {
+                landmasses[landmassIndices[i]].territories.push(territories[i]);
+            }
         }
     }
     

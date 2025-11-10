@@ -1296,7 +1296,20 @@ class PlanetNode extends NodeBase {
                             const lm = window.EnvironmentData.buildLandmarkList(t);
                             if (lm.length > 0) {
                                 desc += '<ul>';
-                                lm.forEach(landmark => desc += `<li>${landmark}</li>`);
+                                lm.forEach(landmark => {
+                                    if (window.APP_STATE.settings.showPageNumbers) {
+                                        // Look up page reference for this landmark
+                                        const ref = this._environmentReferences.find(r => r.content === landmark);
+                                        if (ref) {
+                                            const pr = createPageReference(ref.pageNumber, '', Object.keys(RuleBook).find(k => window.CommonData.RuleBooks[k] === ref.book) || RuleBook.StarsOfInequity);
+                                            desc += `<li>${landmark} <span class="page-reference">${pr}</span></li>`;
+                                        } else {
+                                            desc += `<li>${landmark}</li>`;
+                                        }
+                                    } else {
+                                        desc += `<li>${landmark}</li>`;
+                                    }
+                                });
                                 desc += '</ul>';
                             }
                         }
@@ -1329,7 +1342,20 @@ class PlanetNode extends NodeBase {
                     const lm = window.EnvironmentData.buildLandmarkList(t);
                     if (lm.length > 0) {
                         desc += '<ul>';
-                        lm.forEach(landmark => desc += `<li>${landmark}</li>`);
+                        lm.forEach(landmark => {
+                            if (window.APP_STATE.settings.showPageNumbers) {
+                                // Look up page reference for this landmark
+                                const ref = this._environmentReferences.find(r => r.content === landmark);
+                                if (ref) {
+                                    const pr = createPageReference(ref.pageNumber, '', Object.keys(RuleBook).find(k => window.CommonData.RuleBooks[k] === ref.book) || RuleBook.StarsOfInequity);
+                                    desc += `<li>${landmark} <span class="page-reference">${pr}</span></li>`;
+                                } else {
+                                    desc += `<li>${landmark}</li>`;
+                                }
+                            } else {
+                                desc += `<li>${landmark}</li>`;
+                            }
+                        });
                         desc += '</ul>';
                     }
                 });
