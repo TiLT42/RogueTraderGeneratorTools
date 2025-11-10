@@ -164,8 +164,8 @@ console.assert(ContextMenu.NON_MOVABLE_TYPES.includes(NodeTypes.PirateShips), 'P
 console.assert(!ContextMenu.NON_GENERATING_TYPES.includes(NodeTypes.PirateShips), 'PirateShips should NOT be in NON_GENERATING_TYPES');
 console.log('✓ Pirate Den type restrictions correct\n');
 
-// Test 10: Notable Species xenos deletion restriction
-console.log('Test 10: Notable Species xenos deletion restriction');
+// Test 10: Notable Species deletion restrictions
+console.log('Test 10: Notable Species deletion restrictions');
 const notableSpeciesContainer = createNode(NodeTypes.NotableSpecies);
 const xenosUnderNotable = createNode(NodeTypes.Xenos);
 const nativeSpeciesContainer = createNode(NodeTypes.NativeSpecies);
@@ -175,8 +175,10 @@ const xenosUnderNative = createNode(NodeTypes.Xenos);
 notableSpeciesContainer.addChild(xenosUnderNotable);
 nativeSpeciesContainer.addChild(xenosUnderNative);
 
+console.assert(!contextMenu.canDelete(notableSpeciesContainer), 'Notable Species container should NOT be deletable');
+console.assert(contextMenu.canDelete(nativeSpeciesContainer), 'Native Species container should be deletable');
 console.assert(!contextMenu.canDelete(xenosUnderNotable), 'Xenos under Notable Species should NOT be deletable');
 console.assert(contextMenu.canDelete(xenosUnderNative), 'Xenos under Native Species should be deletable');
-console.log('✓ Notable Species xenos deletion restriction works correctly\n');
+console.log('✓ Notable Species deletion restrictions work correctly\n');
 
 console.log('=== All Context Menu Refinement Tests Passed ===\n');

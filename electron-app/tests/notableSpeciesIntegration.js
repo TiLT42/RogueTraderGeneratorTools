@@ -141,7 +141,17 @@ for (let i = 0; i < mockXenos.length; i++) {
 console.log('✓ Xenos naming with suffixes works correctly');
 console.log(`  Names: ${mockXenos.map(x => x.nodeName).join(', ')}\n`);
 
-console.log('Test 7: Test xenos deletion restriction');
+console.log('Test 7: Test deletion restrictions');
+// Test both container and xenos deletion
+if (contextMenu.canDelete(notableContainer)) {
+    throw new Error('NotableSpecies container should not be deletable');
+}
+if (!contextMenu.canDelete(nativeContainer)) {
+    throw new Error('NativeSpecies container should be deletable');
+}
+console.log('✓ Notable Species container cannot be deleted');
+console.log('✓ Native Species container can be deleted');
+
 // Create mock xenos under different parents
 const xenosUnderNotable = { type: 'xenos', parent: notableContainer };
 const xenosUnderNative = { type: 'xenos', parent: nativeContainer };

@@ -639,8 +639,9 @@ class ContextMenu {
     // Delete permission: allow for any node except Zone nodes (which are structural)
     canDelete(node) {
         if (!node) return false;
-        // Zones are structural and should not be deleted
+        // Zones and Notable Species are structural and should not be deleted
         if (node.type === NodeTypes.Zone) return false;
+        if (node.type === NodeTypes.NotableSpecies) return false;
         // Xenos under NotableSpecies cannot be deleted (they're tied to territories)
         if (node.type === NodeTypes.Xenos && node.parent && node.parent.type === NodeTypes.NotableSpecies) {
             return false;

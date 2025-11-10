@@ -1383,11 +1383,16 @@ class PlanetNode extends NodeBase {
                                 desc += `<li>${base}</li>`;
                             }
                             
-                            // Display landmarks for this territory (indented)
+                            // Display landmarks and notable species for this territory (indented)
                             const lm = window.EnvironmentData.buildLandmarkList(t);
                             if (lm.length > 0 || (t.notableSpeciesXenos && t.notableSpeciesXenos.length > 0)) {
                                 desc += '<ul>';
-                                // Show landmarks first
+                                // Show notable species first (above landmarks)
+                                if (t.notableSpeciesXenos && t.notableSpeciesXenos.length > 0) {
+                                    const speciesNames = t.notableSpeciesXenos.map(x => x.nodeName).join(', ');
+                                    desc += `<li>Notable Species: ${speciesNames}</li>`;
+                                }
+                                // Show landmarks after notable species
                                 lm.forEach(landmark => {
                                     if (window.APP_STATE.settings.showPageNumbers) {
                                         // Look up page reference for this landmark
@@ -1402,11 +1407,6 @@ class PlanetNode extends NodeBase {
                                         desc += `<li>${landmark}</li>`;
                                     }
                                 });
-                                // Show notable species
-                                if (t.notableSpeciesXenos && t.notableSpeciesXenos.length > 0) {
-                                    const speciesNames = t.notableSpeciesXenos.map(x => x.nodeName).join(', ');
-                                    desc += `<li><strong>Notable Species:</strong> ${speciesNames}</li>`;
-                                }
                                 desc += '</ul>';
                             }
                         }
@@ -1435,11 +1435,16 @@ class PlanetNode extends NodeBase {
                         desc += `<li>${base}</li>`;
                     }
                     
-                    // Display landmarks for this territory (indented)
+                    // Display landmarks and notable species for this territory (indented)
                     const lm = window.EnvironmentData.buildLandmarkList(t);
                     if (lm.length > 0 || (t.notableSpeciesXenos && t.notableSpeciesXenos.length > 0)) {
                         desc += '<ul>';
-                        // Show landmarks first
+                        // Show notable species first (above landmarks)
+                        if (t.notableSpeciesXenos && t.notableSpeciesXenos.length > 0) {
+                            const speciesNames = t.notableSpeciesXenos.map(x => x.nodeName).join(', ');
+                            desc += `<li>Notable Species: ${speciesNames}</li>`;
+                        }
+                        // Show landmarks after notable species
                         lm.forEach(landmark => {
                             if (window.APP_STATE.settings.showPageNumbers) {
                                 // Look up page reference for this landmark
@@ -1454,11 +1459,6 @@ class PlanetNode extends NodeBase {
                                 desc += `<li>${landmark}</li>`;
                             }
                         });
-                        // Show notable species
-                        if (t.notableSpeciesXenos && t.notableSpeciesXenos.length > 0) {
-                            const speciesNames = t.notableSpeciesXenos.map(x => x.nodeName).join(', ');
-                            desc += `<li><strong>Notable Species:</strong> ${speciesNames}</li>`;
-                        }
                         desc += '</ul>';
                     }
                 });
