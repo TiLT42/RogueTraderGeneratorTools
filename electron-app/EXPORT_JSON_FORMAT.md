@@ -64,7 +64,7 @@ Represents a complete star system with zones and orbital bodies.
   "name": "Koronus Expanse System Alpha",
   "description": "<p>A system in the Koronus Expanse...</p>",
   "star": "Red Giant",
-  "starColor": "#FF6B35",
+  "starColor": "Deep red",
   "warpStatus": "Turbulent",
   "systemFeatures": ["Bountiful", "Haven", "Warp Turbulence"],
   "systemCreationRules": {
@@ -111,7 +111,7 @@ Represents a complete star system with zones and orbital bodies.
 
 **Fields:**
 - `star` (string, optional): Star type (e.g., "Red Giant", "Blue Star")
-- `starColor` (string, optional): Hex color code for the star (e.g., "#FF6B35" for a red star)
+- `starColor` (string, optional): Descriptive color of the star (e.g., "Deep red", "Yellow-orange", "Blue-white")
 - `warpStatus` (string, optional): Warp condition of the system (only present if not "Normal")
   - Possible values: "Turbulent", "Becalmed", "Fully becalmed"
 - `systemFeatures` (array, optional): Array of system feature names that were rolled
@@ -638,7 +638,7 @@ The export format includes an `exportDate` but no version number. The structure 
       "name": "Koronus Expanse",
       "description": "<p>A remote star system...</p>",
       "star": "Red Giant",
-      "starColor": "#FF6B35",
+      "starColor": "Deep red",
       "systemFeatures": ["Bountiful"],
       "children": [
         {
@@ -700,7 +700,7 @@ For questions or issues with the Export JSON format:
 ## Version History
 
 ### Current Version (November 2025)
-- **System Nodes**: Added `starColor` field (hex color code for the star)
+- **System Nodes**: Added `starColor` field (descriptive color of the star)
 - **System Nodes**: Added `warpStatus` field (Warp condition: Normal, Turbulent, Becalmed, Fully becalmed)
 - **System Nodes**: Added Warp Turbulence effects to `featureEffects` object:
   - `warpTurbulenceNavigationPenalty`
