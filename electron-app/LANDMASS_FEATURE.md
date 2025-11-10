@@ -15,41 +15,42 @@ This feature enhances the planet generation system to provide a more immersive a
 2. **Letter Designations**: Each landmass receives a letter (A, B, C, etc.) for easy reference
    - Example: "Continent A", "Archipelago B", "Continent C"
 
-3. **Territory Distribution**: Territories are randomly assigned to landmasses
+3. **Territory Distribution**: Territories are randomly assigned to landmasses (when landmasses exist)
    - Each territory belongs to exactly one major landmass
    - Distribution is random but ensures no landmass is left empty if possible
 
-4. **Landmark Organization**: Landmarks are organized hierarchically
-   - Most landmarks remain with their territories on landmasses
-   - 20% of landmarks are assigned to smaller islands (grouped as "Islands")
-   - Island landmarks are displayed as a separate group
+4. **Landmark Organization**: Landmarks are always nested under their parent territories
+   - Landmarks are generated per territory according to the rulebook
+   - Display shows territories with their landmarks indented beneath them
+   - This applies both when landmasses exist and when they don't
 
-5. **Backward Compatibility**: The system automatically detects old save files
-   - Old saves display in the original flat format
-   - New planets display with the organized format
+5. **Improved Display for Planets Without Landmasses**: 
+   - Even planets with territories but no landmasses now show landmarks nested under territories
+   - This improves readability when there are many territories and landmarks
+
+6. **Backward Compatibility**: The system automatically handles old save files
+   - Old saves without landmass data display territories with nested landmarks
+   - New planets with landmasses display organized by landmass
    - No data loss or conversion needed
 
 ## Display Format Examples
 
-### Old Format (Backward Compatible)
+### Planets Without Landmasses (or Old Saves)
 
 ```
-Major Continents or Archipelagos: 3
-Smaller Islands: 42
+Major Continents or Archipelagos: 0
 
-Territories
+Territories:
 - Wasteland (Notable Species, Unique Compound)
+  - Canyon
+  - 3x Cave Network
 - Forest (Notable Species)
+  - Glacier
 - Plains (Expansive, Fertile)
-
-Landmarks
-- Canyon
-- 3x Cave Network
-- Glacier
-- Mountain
+  - Mountain
 ```
 
-### New Format (With Landmass Organization)
+### Planets With Landmasses (New Format)
 
 ```
 Major Continents or Archipelagos: 3
@@ -72,10 +73,6 @@ Continent C
   Territories:
   - Mountain (Extreme Temperature)
     - Volcano
-
-Islands
-- Reef
-- Whirlpool
 ```
 
 ## Technical Implementation
@@ -85,12 +82,11 @@ Islands
 1. **`electron-app/js/data/environment.js`**
    - Added `generateLandmasses(numContinents, numIslands, planet)` - Creates landmass classifications
    - Added `assignTerritoriesToLandmasses(territories, landmasses)` - Distributes territories
-   - Added `assignLandmarksToIslands(territories, hasIslands)` - Assigns landmarks to islands
    - Added `organizeLandmasses(env, numContinents, numIslands, planet)` - Main orchestrator
 
 2. **`electron-app/js/nodes/planetNode.js`**
    - Added `organizeLandmasses()` method - Called during planet generation
-   - Modified `updateDescription()` - Displays organized format when available
+   - Modified `updateDescription()` - Displays organized format when available, or nested landmarks otherwise
    - Enhanced `toExportJSON()` - Includes landmass data in exports
    - Maintained `toJSON()` and `fromJSON()` - Automatic backward compatibility
 
@@ -102,7 +98,7 @@ The environment object now includes:
 environment: {
   territories: [...],          // Existing territory array
   references: [...],           // Existing reference array
-  landmasses: [                // NEW: Landmass organization
+  landmasses: [                // NEW: Landmass organization (only when numContinents > 0)
     {
       type: 'Continent',       // or 'Archipelago'
       letter: 'A',             // Letter designation
@@ -110,10 +106,11 @@ environment: {
       territories: [...],      // Territories on this landmass
       landmarks: []            // Placeholder for future use
     }
-  ],
-  islandLandmarks: [...]       // NEW: Landmarks on islands
+  ]
 }
 ```
+
+Note: Landmarks are not stored separately as they remain part of their territory objects as per the rulebook. The `landmarks` array in landmass objects is kept for potential future use but is not currently populated.
 
 ## Algorithm Details
 
@@ -130,21 +127,29 @@ environment: {
    - Randomly select a landmass (uniform distribution)
    - Add territory to that landmass's territory list
 
-### Landmark Assignment
+### Landmark Display
 
-1. For each territory's landmarks:
-   - For each individual landmark instance:
-     - Roll d10; on 1-2 (20% chance), assign to islands
-     - Otherwise, keep with territory on its landmass
+Landmarks remain part of their parent territory objects (as per the rulebook). The display logic:
+
+1. When landmasses exist:
+   - Display each landmass as a section
+   - List territories under each landmass
+   - Nest landmarks under their parent territories
+
+2. When no landmasses exist but territories do:
+   - Display territories directly (no landmass grouping)
+   - Nest landmarks under their parent territories
+   - This improves readability for planets with many territories and landmarks
 
 ## Use Cases
 
 ### For Game Masters
 
-1. **Quick Reference**: Easily see which territories and features belong to each major landmass
+1. **Quick Reference**: Easily see which territories and features belong to each major landmass (when present)
 2. **Adventure Planning**: Identify interesting combinations (e.g., a wasteland continent with unique compounds)
 3. **Player Descriptions**: Describe the planet's geography more naturally ("On the eastern archipelago...")
-4. **Regional Adventures**: Focus adventures on specific continents or island groups
+4. **Regional Adventures**: Focus adventures on specific continents
+5. **Improved Readability**: Even planets without landmasses show landmarks nested under territories
 
 ### For Planet Generation
 

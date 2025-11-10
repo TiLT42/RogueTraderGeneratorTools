@@ -365,50 +365,7 @@
         }
     }
     
-    /**
-     * Assign landmarks to territories within landmasses, or to islands.
-     * Landmarks are already part of territories, but we need to decide which landmarks
-     * should be considered as belonging to islands vs their territories' landmasses.
-     * @param {Array} territories - Array of territory objects with landmarks
-     * @param {boolean} hasIslands - Whether the planet has islands
-     * @returns {Array} Array of landmarks assigned to "Islands" group
-     */
-    function assignLandmarksToIslands(territories, hasIslands) {
-        if (!hasIslands || !territories || territories.length === 0) return [];
-        
-        const islandLandmarks = [];
-        
-        // For each territory, there's a chance some of its landmarks are on islands
-        for (const territory of territories) {
-            const landmarkTypes = [
-                { name: 'Canyon', count: territory.landmarkCanyon },
-                { name: 'Cave Network', count: territory.landmarkCaveNetwork },
-                { name: 'Crater', count: territory.landmarkCrater },
-                { name: 'Glacier', count: territory.landmarkGlacier },
-                { name: 'Inland Sea', count: territory.landmarkInlandSea },
-                { name: 'Mountain', count: territory.landmarkMountain },
-                { name: 'Perpetual Storm', count: territory.landmarkPerpetualStorm },
-                { name: 'Reef', count: territory.landmarkReef },
-                { name: 'Volcano', count: territory.landmarkVolcano },
-                { name: 'Whirlpool', count: territory.landmarkWhirlpool }
-            ];
-            
-            for (const landmark of landmarkTypes) {
-                if (landmark.count > 0) {
-                    // 20% chance each landmark is on an island instead
-                    for (let i = 0; i < landmark.count; i++) {
-                        if (RollD10() <= 2) {
-                            islandLandmarks.push(landmark.name);
-                            // Reduce the count in the territory
-                            territory[`landmark${landmark.name.replace(/ /g, '')}`]--;
-                        }
-                    }
-                }
-            }
-        }
-        
-        return islandLandmarks;
-    }
+
     
     /**
      * Organize environment with landmasses for display purposes.
@@ -428,12 +385,8 @@
         // Assign territories to landmasses
         assignTerritoriesToLandmasses(env.territories, landmasses);
         
-        // Determine which landmarks belong to islands
-        const islandLandmarks = assignLandmarksToIslands(env.territories, numIslands > 0);
-        
         // Store in environment for later use
         env.landmasses = landmasses;
-        env.islandLandmarks = islandLandmarks;
     }
 
     // Public API
@@ -447,7 +400,6 @@
         organizeLandmasses,
         generateLandmasses,
         assignTerritoriesToLandmasses,
-        assignLandmarksToIslands,
         // Parity APIs mirroring Environment.cs (naming preserved where possible)
         getNumOrganicCompounds(env){
             if(!env || !env.territories) return 0;
