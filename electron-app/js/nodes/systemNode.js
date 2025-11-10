@@ -18,6 +18,7 @@ class SystemNode extends NodeBase {
 
         // Star & features
         this.star = '';
+        this.starColor = '';
         this.warpStatus = 'Normal'; // Warp Status: Normal, Turbulent, Becalmed, Fully becalmed
         this.systemFeatures = [];
 
@@ -68,6 +69,7 @@ class SystemNode extends NodeBase {
         this.primaryBiosphereZone = null;
         this.outerReachesZone = null;
         this.star = '';
+        this.starColor = '';
         this.warpStatus = 'Normal';
         this.systemFeatures = [];
         this.generateUniquePlanetNames = false; // will be set again on next name generation
@@ -356,6 +358,27 @@ class SystemNode extends NodeBase {
             }
             return 'Unknown';
         };
+        const getStarColor = (v) => {
+            // Generate star color based on type, with scientific basis and Warhammer 40k flair
+            switch (v) {
+                case 1: // Mighty - hot, massive stars (O/B type)
+                    return ChooseFrom(['Blue', 'Blue-white', 'Electric blue', 'Brilliant blue-white']);
+                case 2: case 3: case 4: // Vigorous - hot white stars (A/F type)
+                    return ChooseFrom(['White', 'Pure white', 'Brilliant white', 'Silver-white']);
+                case 5: case 6: case 7: // Luminous - yellow stars like Sol (G/K type)
+                    return ChooseFrom(['Yellow', 'Yellow-orange', 'Golden', 'Pale yellow', 'Orange-yellow']);
+                case 8: // Dull - cool red giants/dwarfs (M type)
+                    return ChooseFrom(['Red', 'Sullen red', 'Deep red', 'Crimson', 'Dark orange-red']);
+                case 9: // Anomalous - unnatural colors
+                    return ChooseFrom([
+                        'Bilious green', 'Sickly green', 'Virulent green',
+                        'Purple', 'Violet', 'Deep violet', 'Barely-visible purple',
+                        'Unnatural teal', 'Ghostly white', 'Pale grey',
+                        'Shifting colours', 'Prismatic', 'Oily black-purple'
+                    ]);
+            }
+            return 'Unknown';
+        };
         const clearStarFlags = () => {
             const r = this.systemCreationRules;
             r.innerCauldronWeak = r.innerCauldronDominant = false;
@@ -396,22 +419,27 @@ class SystemNode extends NodeBase {
         switch (roll) {
             case 1:
                 this.star = getStarText(1);
+                this.starColor = getStarColor(1);
                 setStarEffects(1);
                 break;
             case 2: case 3: case 4:
                 this.star = getStarText(4); // pass aggregate value like C#
+                this.starColor = getStarColor(4);
                 setStarEffects(4);
                 break;
             case 5: case 6: case 7:
                 this.star = getStarText(7);
+                this.starColor = getStarColor(7);
                 setStarEffects(7);
                 break;
             case 8:
                 this.star = getStarText(8);
+                this.starColor = getStarColor(8);
                 setStarEffects(8);
                 break;
             case 9:
                 this.star = getStarText(9);
+                this.starColor = getStarColor(9);
                 setStarEffects(9);
                 break;
             case 10:
@@ -420,6 +448,8 @@ class SystemNode extends NodeBase {
                 if (RollD10() <= 7) {
                     const starLevels = RandBetween(1,8); // 1..8 inclusive
                     this.star += ' - Both stars are ' + getStarText(starLevels);
+                    // Both stars same type, use that type's color
+                    this.starColor = getStarColor(starLevels);
                 } else {
                     const star1 = RandBetween(1,8);
                     const star2 = RandBetween(1,8);
@@ -427,6 +457,14 @@ class SystemNode extends NodeBase {
                     setStarEffects(lowestValue);
                     const s1 = getStarText(star1); const s2 = getStarText(star2);
                     if (s1 === s2) this.star += ' - Both stars are ' + s1; else this.star += ' - ' + s1 + ' and ' + s2;
+                    // For binary systems with different stars, describe both colors
+                    const c1 = getStarColor(star1);
+                    const c2 = getStarColor(star2);
+                    if (c1 === c2) {
+                        this.starColor = c1;
+                    } else {
+                        this.starColor = c1 + ' and ' + c2;
+                    }
                 }
                 break;
         }
@@ -1139,6 +1177,11 @@ class SystemNode extends NodeBase {
         // Star Type - moved to top as introductory content to avoid gap
         desc += `<p><strong>Star Type:</strong> ${this.star}${addPageRef(13,'Table 1-2: Star Generation')}</p>`;
         
+        // Star Colour - displayed right underneath star type
+        if (this.starColor) {
+            desc += `<p><strong>Star Colour:</strong> ${this.starColor}</p>`;
+        }
+        
         // Warp Status - always display, but only include page reference when not Normal
         const warpStatusPageRef = (this.warpStatus && this.warpStatus !== 'Normal') ? addPageRef(12) : '';
         desc += `<p><strong>Warp Status:</strong> ${this.warpStatus || 'Normal'}${warpStatusPageRef}</p>`;
@@ -1289,6 +1332,7 @@ class SystemNode extends NodeBase {
     toJSON() {
         const json = super.toJSON();
         json.star = this.star;
+        json.starColor = this.starColor;
         json.warpStatus = this.warpStatus;
         json.systemFeatures = this.systemFeatures;
         json.systemCreationRules = this.systemCreationRules;
@@ -1316,6 +1360,9 @@ class SystemNode extends NodeBase {
         // Add system-specific data
         if (this.star) {
             data.star = this.star;
+        }
+        if (this.starColor) {
+            data.starColor = this.starColor;
         }
         if (this.warpStatus && this.warpStatus !== 'Normal') {
             data.warpStatus = this.warpStatus;
@@ -1413,6 +1460,7 @@ class SystemNode extends NodeBase {
         // Restore system-specific properties
         Object.assign(node, {
             star: data.star || '',
+            starColor: data.starColor || '', // Backward compatible - older saves won't have this
             warpStatus: data.warpStatus || 'Normal',
             systemFeatures: data.systemFeatures || [],
             systemCreationRules: data.systemCreationRules || {},
