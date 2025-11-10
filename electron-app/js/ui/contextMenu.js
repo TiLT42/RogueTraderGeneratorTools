@@ -73,23 +73,31 @@ class ContextMenu {
         
         const items = this.getContextMenuItems(node);
         
-        for (const item of items) {
-            if (item.type === 'separator') {
-                const separator = document.createElement('div');
-                separator.className = 'context-menu-separator';
-                this.element.appendChild(separator);
-            } else {
-                const menuItem = document.createElement('div');
-                menuItem.className = 'context-menu-item';
-                if (item.enabled === false) {
-                    menuItem.classList.add('disabled');
+        // If no items available, show a disabled placeholder
+        if (items.length === 0) {
+            const menuItem = document.createElement('div');
+            menuItem.className = 'context-menu-item disabled';
+            menuItem.textContent = 'No actions available';
+            this.element.appendChild(menuItem);
+        } else {
+            for (const item of items) {
+                if (item.type === 'separator') {
+                    const separator = document.createElement('div');
+                    separator.className = 'context-menu-separator';
+                    this.element.appendChild(separator);
+                } else {
+                    const menuItem = document.createElement('div');
+                    menuItem.className = 'context-menu-item';
+                    if (item.enabled === false) {
+                        menuItem.classList.add('disabled');
+                    }
+                    menuItem.dataset.action = item.action;
+                    menuItem.textContent = item.label;
+                    if (item.shortcut) {
+                        menuItem.innerHTML += `<span style="float: right; color: #999;">${item.shortcut}</span>`;
+                    }
+                    this.element.appendChild(menuItem);
                 }
-                menuItem.dataset.action = item.action;
-                menuItem.textContent = item.label;
-                if (item.shortcut) {
-                    menuItem.innerHTML += `<span style="float: right; color: #999;">${item.shortcut}</span>`;
-                }
-                this.element.appendChild(menuItem);
             }
         }
 
