@@ -200,6 +200,9 @@ class ContextMenu {
 
         // System node actions
         if (node.type === NodeTypes.System) {
+            // Add "Generate Unique Name" option for system nodes
+            items.push({ label: 'Generate Unique Name', action: 'generate-system-name' });
+            
             // Check if a Pirate Den already exists
             const hasPirateDen = node.children.some(child => child.type === NodeTypes.PirateShips);
             items.push({ 
@@ -503,6 +506,14 @@ class ContextMenu {
             case 'remove-unique-name':
                 if (!this.currentNode) return;
                 this.removeUniqueName(this.currentNode);
+                window.treeView.refresh();
+                window.documentViewer.refresh();
+                markDirty();
+                break;
+
+            case 'generate-system-name':
+                if (!this.currentNode) return;
+                this.generateSystemName(this.currentNode);
                 window.treeView.refresh();
                 window.documentViewer.refresh();
                 markDirty();
@@ -833,6 +844,83 @@ class ContextMenu {
             current = current.parent;
         }
         return null;
+    }
+
+    // Generate a new system name and update all dependent names
+    generateSystemName(systemNode) {
+        if (!systemNode || systemNode.type !== NodeTypes.System) {
+            console.warn('generateSystemName called on non-system node');
+            return;
+        }
+
+        // Store the old system name for comparison
+        const oldSystemName = systemNode.nodeName;
+
+        // Generate a new system name using the system's own generation method
+        if (typeof systemNode.generateSystemName === 'function') {
+            const newSystemName = systemNode.generateSystemName();
+            systemNode.nodeName = newSystemName;
+            console.log(`System renamed from "${oldSystemName}" to "${newSystemName}"`);
+        } else {
+            console.warn('System node does not have generateSystemName method');
+            return;
+        }
+
+        // Clear hasCustomName flag and reset names for planets/moons that used the old astronomical naming
+        // This allows assignSequentialBodyNames to rename them with the new system name
+        this._resetOldAstronomicalNames(systemNode, oldSystemName);
+
+        // Re-run planet naming to update astronomical names
+        // This updates planets, gas giants, moons, lesser moons, and asteroids that use astronomical naming
+        if (typeof systemNode.assignSequentialBodyNames === 'function') {
+            systemNode.assignSequentialBodyNames();
+            console.log('Planet and satellite names updated to reflect new system name');
+        }
+    }
+
+    // Reset names for planets/satellites with old astronomical naming
+    _resetOldAstronomicalNames(systemNode, oldSystemName) {
+        // Helper to check if a name matches the old astronomical pattern
+        const matchesOldAstronomical = (name) => {
+            // Pattern: "OldSystemName [single letter]" or "OldSystemName [single letter]-[Roman/Arabic numeral]"
+            const astronomicalPattern = new RegExp(`^${this._escapeRegex(oldSystemName)} [a-z](-[IVX]+|-\\d+)?$`);
+            return astronomicalPattern.test(name);
+        };
+
+        // Recursively traverse and reset names
+        const resetNames = (node) => {
+            if (!node) return;
+
+            // For planets, gas giants, moons, lesser moons, and asteroids with old astronomical naming
+            if (node.type === NodeTypes.Planet || node.type === NodeTypes.GasGiant || 
+                node.type === NodeTypes.LesserMoon || node.type === NodeTypes.Asteroid) {
+                if (matchesOldAstronomical(node.nodeName)) {
+                    // Reset to default name so assignSequentialBodyNames will rename it
+                    let defaultName = 'Planet';
+                    if (node.type === NodeTypes.GasGiant) defaultName = 'Gas Giant';
+                    else if (node.type === NodeTypes.LesserMoon) defaultName = 'Lesser Moon';
+                    else if (node.type === NodeTypes.Asteroid) defaultName = 'Large Asteroid';
+                    
+                    node.nodeName = defaultName;
+                    node.hasCustomName = false;
+                    console.log(`  Reset ${node.type} to default name for re-naming`);
+                }
+            }
+
+            // Process children recursively (including satellites in orbital features)
+            if (node.children && Array.isArray(node.children)) {
+                for (const child of node.children) {
+                    resetNames(child);
+                }
+            }
+        };
+
+        resetNames(systemNode);
+    }
+
+    // Escape special regex characters in a string
+    _escapeRegex(str) {
+        return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     }
 }
 
