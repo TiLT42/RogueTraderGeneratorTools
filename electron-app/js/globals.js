@@ -43,6 +43,7 @@ const NodeTypes = {
     Xenos: 'xenos',
     PrimitiveXenos: 'primitive-xenos',
     NativeSpecies: 'native-species',
+    NotableSpecies: 'notable-species',
     Ship: 'ship',
     Treasure: 'treasure',
     PirateShips: 'pirate-ships'

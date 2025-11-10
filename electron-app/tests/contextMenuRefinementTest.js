@@ -65,11 +65,13 @@ console.log('✓ Root node movement checks work correctly\n');
 // Test 3: Grouping nodes cannot be renamed
 console.log('Test 3: Grouping nodes cannot be renamed');
 const nativeSpecies = createNode(NodeTypes.NativeSpecies);
+const notableSpecies = createNode(NodeTypes.NotableSpecies);
 const primitiveXenos = createNode(NodeTypes.PrimitiveXenos);
 const orbitalFeatures = createNode(NodeTypes.OrbitalFeatures);
 const regularPlanet = createNode(NodeTypes.Planet);
 
 console.assert(!contextMenu.canRename(nativeSpecies), 'Native Species should not be renamable');
+console.assert(!contextMenu.canRename(notableSpecies), 'Notable Species should not be renamable');
 console.assert(!contextMenu.canRename(primitiveXenos), 'Primitive Species should not be renamable');
 console.assert(!contextMenu.canRename(orbitalFeatures), 'Orbital Features should not be renamable');
 console.assert(contextMenu.canRename(regularPlanet), 'Regular nodes should be renamable');
@@ -78,6 +80,7 @@ console.log('✓ Grouping nodes cannot be renamed\n');
 // Test 4: Grouping nodes cannot regenerate
 console.log('Test 4: Grouping nodes cannot regenerate');
 console.assert(!contextMenu.canGenerate(nativeSpecies), 'Native Species should not have Regenerate');
+console.assert(!contextMenu.canGenerate(notableSpecies), 'Notable Species should not have Regenerate');
 console.assert(!contextMenu.canGenerate(primitiveXenos), 'Primitive Species should not have Regenerate');
 console.assert(!contextMenu.canGenerate(orbitalFeatures), 'Orbital Features should not have Regenerate');
 console.assert(contextMenu.canGenerate(regularPlanet), 'Regular nodes should have Regenerate');
@@ -160,5 +163,22 @@ console.assert(ContextMenu.NON_RENAMABLE_TYPES.includes(NodeTypes.PirateShips), 
 console.assert(ContextMenu.NON_MOVABLE_TYPES.includes(NodeTypes.PirateShips), 'PirateShips should be in NON_MOVABLE_TYPES');
 console.assert(!ContextMenu.NON_GENERATING_TYPES.includes(NodeTypes.PirateShips), 'PirateShips should NOT be in NON_GENERATING_TYPES');
 console.log('✓ Pirate Den type restrictions correct\n');
+
+// Test 10: Notable Species deletion restrictions
+console.log('Test 10: Notable Species deletion restrictions');
+const notableSpeciesContainer = createNode(NodeTypes.NotableSpecies);
+const xenosUnderNotable = createNode(NodeTypes.Xenos);
+const nativeSpeciesContainer = createNode(NodeTypes.NativeSpecies);
+const xenosUnderNative = createNode(NodeTypes.Xenos);
+
+// Add xenos as children
+notableSpeciesContainer.addChild(xenosUnderNotable);
+nativeSpeciesContainer.addChild(xenosUnderNative);
+
+console.assert(!contextMenu.canDelete(notableSpeciesContainer), 'Notable Species container should NOT be deletable');
+console.assert(contextMenu.canDelete(nativeSpeciesContainer), 'Native Species container should be deletable');
+console.assert(!contextMenu.canDelete(xenosUnderNotable), 'Xenos under Notable Species should NOT be deletable');
+console.assert(contextMenu.canDelete(xenosUnderNative), 'Xenos under Native Species should be deletable');
+console.log('✓ Notable Species deletion restrictions work correctly\n');
 
 console.log('=== All Context Menu Refinement Tests Passed ===\n');

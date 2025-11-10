@@ -32,11 +32,13 @@ console.log('Test 1: Organizational nodes should NOT have Edit Notes');
 const zone = createNode(NodeTypes.Zone);
 const orbitalFeatures = createNode(NodeTypes.OrbitalFeatures);
 const nativeSpecies = createNode(NodeTypes.NativeSpecies);
+const notableSpecies = createNode(NodeTypes.NotableSpecies);
 const primitiveXenos = createNode(NodeTypes.PrimitiveXenos);
 
 console.assert(!contextMenu.canEditNotes(zone), 'Zone should NOT have Edit Notes');
 console.assert(!contextMenu.canEditNotes(orbitalFeatures), 'OrbitalFeatures should NOT have Edit Notes');
 console.assert(!contextMenu.canEditNotes(nativeSpecies), 'NativeSpecies should NOT have Edit Notes');
+console.assert(!contextMenu.canEditNotes(notableSpecies), 'NotableSpecies should NOT have Edit Notes');
 console.assert(!contextMenu.canEditNotes(primitiveXenos), 'PrimitiveXenos should NOT have Edit Notes');
 console.log('✓ Organizational nodes correctly excluded from Edit Notes\n');
 

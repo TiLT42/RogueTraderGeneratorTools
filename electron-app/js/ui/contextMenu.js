@@ -5,6 +5,7 @@ class ContextMenu {
     static NON_GENERATING_TYPES = [
         NodeTypes.Zone,              // Zone containers don't generate
         NodeTypes.NativeSpecies,     // Container for Xenos children
+        NodeTypes.NotableSpecies,    // Container for notable Xenos children (no context menu generation)
         NodeTypes.PrimitiveXenos,    // Container header only
         NodeTypes.OrbitalFeatures,   // Container for moons/asteroids
         NodeTypes.Asteroid,          // Static placeholder
@@ -18,6 +19,7 @@ class ContextMenu {
     static NON_RENAMABLE_TYPES = [
         NodeTypes.Zone,
         NodeTypes.NativeSpecies,
+        NodeTypes.NotableSpecies,    // Notable species container not renamable
         NodeTypes.PrimitiveXenos,
         NodeTypes.OrbitalFeatures,
         NodeTypes.PirateShips         // Pirate Den has fixed name
@@ -27,6 +29,7 @@ class ContextMenu {
         NodeTypes.PirateShips,        // Pirate Den always at top of system
         NodeTypes.Zone,               // Zone nodes are fixed in system
         NodeTypes.NativeSpecies,      // Container for Xenos children
+        NodeTypes.NotableSpecies,     // Container for notable Xenos children
         NodeTypes.PrimitiveXenos,     // Container header only
         NodeTypes.OrbitalFeatures     // Container for moons/asteroids
     ];
@@ -35,6 +38,7 @@ class ContextMenu {
         NodeTypes.Zone,              // Organizational container
         NodeTypes.OrbitalFeatures,   // Organizational container for moons/asteroids
         NodeTypes.NativeSpecies,     // Organizational container for Xenos children
+        NodeTypes.NotableSpecies,    // Organizational container for notable Xenos children
         NodeTypes.PrimitiveXenos     // Organizational container header only
     ];
 
@@ -69,23 +73,31 @@ class ContextMenu {
         
         const items = this.getContextMenuItems(node);
         
-        for (const item of items) {
-            if (item.type === 'separator') {
-                const separator = document.createElement('div');
-                separator.className = 'context-menu-separator';
-                this.element.appendChild(separator);
-            } else {
-                const menuItem = document.createElement('div');
-                menuItem.className = 'context-menu-item';
-                if (item.enabled === false) {
-                    menuItem.classList.add('disabled');
+        // If no items available, show a disabled placeholder
+        if (items.length === 0) {
+            const menuItem = document.createElement('div');
+            menuItem.className = 'context-menu-item disabled';
+            menuItem.textContent = 'No actions available';
+            this.element.appendChild(menuItem);
+        } else {
+            for (const item of items) {
+                if (item.type === 'separator') {
+                    const separator = document.createElement('div');
+                    separator.className = 'context-menu-separator';
+                    this.element.appendChild(separator);
+                } else {
+                    const menuItem = document.createElement('div');
+                    menuItem.className = 'context-menu-item';
+                    if (item.enabled === false) {
+                        menuItem.classList.add('disabled');
+                    }
+                    menuItem.dataset.action = item.action;
+                    menuItem.textContent = item.label;
+                    if (item.shortcut) {
+                        menuItem.innerHTML += `<span style="float: right; color: #999;">${item.shortcut}</span>`;
+                    }
+                    this.element.appendChild(menuItem);
                 }
-                menuItem.dataset.action = item.action;
-                menuItem.textContent = item.label;
-                if (item.shortcut) {
-                    menuItem.innerHTML += `<span style="float: right; color: #999;">${item.shortcut}</span>`;
-                }
-                this.element.appendChild(menuItem);
             }
         }
 
@@ -635,8 +647,13 @@ class ContextMenu {
     // Delete permission: allow for any node except Zone nodes (which are structural)
     canDelete(node) {
         if (!node) return false;
-        // Zones are structural and should not be deleted
+        // Zones and Notable Species are structural and should not be deleted
         if (node.type === NodeTypes.Zone) return false;
+        if (node.type === NodeTypes.NotableSpecies) return false;
+        // Xenos under NotableSpecies cannot be deleted (they're tied to territories)
+        if (node.type === NodeTypes.Xenos && node.parent && node.parent.type === NodeTypes.NotableSpecies) {
+            return false;
+        }
         // All other nodes can be deleted, including root nodes
         return true;
     }

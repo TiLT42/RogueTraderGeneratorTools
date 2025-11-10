@@ -37,6 +37,8 @@ window.getNodeClass = function(type) {
             return PrimitiveXenosNode;
         case NodeTypes.NativeSpecies:
             return NativeSpeciesNode;
+        case NodeTypes.NotableSpecies:
+            return NotableSpeciesNode;
         case NodeTypes.Ship:
             return ShipNode;
         case NodeTypes.Treasure:
