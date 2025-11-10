@@ -341,54 +341,60 @@
         const r1 = window.RollD100();
         const r2 = window.RollD100();
         randValue = Math.min(r1, r2);
-        if (randValue <= 4) {
+        // Raiders (30 points total) - most common pirate ships, backbone of fleets
+        if (randValue <= 12) {
             ship.pageNumber = 209; ship.bookSource = RuleBook.CoreRuleBook; ship.shipClass = ShipClass.Raider; ship.shipName = 'Wolfpack Raider';
-        } else if (randValue <= 8) {
-            ship.pageNumber = 194; ship.bookSource = RuleBook.CoreRuleBook; ship.shipClass = ShipClass.Transport; ship.shipName = 'Jericho-class Pilgrim Vessel';
-        } else if (randValue <= 12) {
-            ship.pageNumber = 194; ship.bookSource = RuleBook.CoreRuleBook; ship.shipClass = ShipClass.Transport; ship.shipName = 'Vagabond-class Merchant Trader';
-        } else if (randValue <= 16) {
+        } else if (randValue <= 18) {
             ship.pageNumber = 194; ship.bookSource = RuleBook.CoreRuleBook; ship.shipClass = ShipClass.Raider; ship.shipName = 'Hazeroth-class Privateer';
-        } else if (randValue <= 20) {
+        } else if (randValue <= 24) {
             ship.pageNumber = 195; ship.bookSource = RuleBook.CoreRuleBook; ship.shipClass = ShipClass.Raider; ship.shipName = 'Havoc-class Merchant Raider';
-        } else if (randValue <= 30) {
-            ship.pageNumber = 195; ship.bookSource = RuleBook.CoreRuleBook; ship.shipClass = ShipClass.Frigate; ship.shipName = 'Sword-class Frigate';
-        } else if (randValue <= 36) {
-            ship.pageNumber = 195; ship.bookSource = RuleBook.CoreRuleBook; ship.shipClass = ShipClass.Frigate; ship.shipName = 'Tempest-class Strike Frigate';
-        } else if (randValue <= 43) {
-            ship.pageNumber = 196; ship.bookSource = RuleBook.CoreRuleBook; ship.shipClass = ShipClass.LightCruiser; ship.shipName = 'Dauntless-class Light Cruiser';
-        } else if (randValue <= 49) {
-            ship.pageNumber = 196; ship.bookSource = RuleBook.CoreRuleBook; ship.shipClass = ShipClass.Cruiser; ship.shipName = 'Lunar-class Cruiser';
-        } else if (randValue <= 51) {
-            ship.pageNumber = 30; ship.bookSource = RuleBook.BattlefleetKoronus; ship.shipClass = ShipClass.Transport; ship.shipName = 'Universe-class Mass Conveyor';
-        } else if (randValue <= 54) {
-            ship.pageNumber = 29; ship.bookSource = RuleBook.BattlefleetKoronus; ship.shipClass = ShipClass.Transport; ship.shipName = 'Goliath-class Factory Ship';
-        } else if (randValue <= 58) {
-            ship.pageNumber = 29; ship.bookSource = RuleBook.BattlefleetKoronus; ship.shipClass = ShipClass.Transport; ship.shipName = 'Carrack-class Transport';
-        } else if (randValue <= 61) {
+        } else if (randValue <= 27) {
             ship.pageNumber = 28; ship.bookSource = RuleBook.BattlefleetKoronus; ship.shipClass = ShipClass.Raider; ship.shipName = 'Viper-class Scout Sloop';
-        } else if (randValue <= 65) {
+        } else if (randValue <= 30) {
             ship.pageNumber = 28; ship.bookSource = RuleBook.BattlefleetKoronus; ship.shipClass = ShipClass.Raider; ship.shipName = 'Iconoclast-class Destroyer';
-        } else if (randValue <= 69) {
+        } else if (randValue <= 33) {
             ship.pageNumber = 28; ship.bookSource = RuleBook.BattlefleetKoronus; ship.shipClass = ShipClass.Raider; ship.shipName = 'Meritech Shrike-class Raider';
-        } else if (randValue <= 72) {
+        // Transports (15 points total) - merchant vessels, less common in pirate fleets
+        } else if (randValue <= 37) {
+            ship.pageNumber = 194; ship.bookSource = RuleBook.CoreRuleBook; ship.shipClass = ShipClass.Transport; ship.shipName = 'Jericho-class Pilgrim Vessel';
+        } else if (randValue <= 41) {
+            ship.pageNumber = 194; ship.bookSource = RuleBook.CoreRuleBook; ship.shipClass = ShipClass.Transport; ship.shipName = 'Vagabond-class Merchant Trader';
+        } else if (randValue <= 43) {
+            ship.pageNumber = 30; ship.bookSource = RuleBook.BattlefleetKoronus; ship.shipClass = ShipClass.Transport; ship.shipName = 'Universe-class Mass Conveyor';
+        } else if (randValue <= 45) {
+            ship.pageNumber = 29; ship.bookSource = RuleBook.BattlefleetKoronus; ship.shipClass = ShipClass.Transport; ship.shipName = 'Goliath-class Factory Ship';
+        } else if (randValue <= 48) {
+            ship.pageNumber = 29; ship.bookSource = RuleBook.BattlefleetKoronus; ship.shipClass = ShipClass.Transport; ship.shipName = 'Carrack-class Transport';
+        // Frigates (20 points total) - flagship material, dominate the "large ships" category
+        } else if (randValue <= 60) {
+            ship.pageNumber = 195; ship.bookSource = RuleBook.CoreRuleBook; ship.shipClass = ShipClass.Frigate; ship.shipName = 'Sword-class Frigate';
+        } else if (randValue <= 65) {
+            ship.pageNumber = 195; ship.bookSource = RuleBook.CoreRuleBook; ship.shipClass = ShipClass.Frigate; ship.shipName = 'Tempest-class Strike Frigate';
+        } else if (randValue <= 67) {
             ship.pageNumber = 27; ship.bookSource = RuleBook.BattlefleetKoronus; ship.shipClass = ShipClass.Frigate; ship.shipName = 'Turbulent-class Heavy Frigate';
-        } else if (randValue <= 75) {
+        } else if (randValue <= 69) {
             ship.pageNumber = 27; ship.bookSource = RuleBook.BattlefleetKoronus; ship.shipClass = ShipClass.Frigate; ship.shipName = 'Claymore-class Corvette';
-        } else if (randValue <= 78) {
+        } else if (randValue <= 71) {
             ship.pageNumber = 26; ship.bookSource = RuleBook.BattlefleetKoronus; ship.shipClass = ShipClass.Frigate; ship.shipName = 'Falchion-class Frigate';
+        // Light Cruisers (11 points total) - capital ships, roughly same rarity as before
+        } else if (randValue <= 77) {
+            ship.pageNumber = 196; ship.bookSource = RuleBook.CoreRuleBook; ship.shipClass = ShipClass.LightCruiser; ship.shipName = 'Dauntless-class Light Cruiser';
         } else if (randValue <= 80) {
             ship.pageNumber = 26; ship.bookSource = RuleBook.BattlefleetKoronus; ship.shipClass = ShipClass.LightCruiser; ship.shipName = 'Defiant-class Light Cruiser';
-        } else if (randValue <= 83) {
+        } else if (randValue <= 82) {
             ship.pageNumber = 26; ship.bookSource = RuleBook.BattlefleetKoronus; ship.shipClass = ShipClass.LightCruiser; ship.shipName = 'Endeavour-class Light Cruiser';
+        // Cruisers (10 points total) - heavy capital ships, very rare
         } else if (randValue <= 86) {
+            ship.pageNumber = 196; ship.bookSource = RuleBook.CoreRuleBook; ship.shipClass = ShipClass.Cruiser; ship.shipName = 'Lunar-class Cruiser';
+        } else if (randValue <= 88) {
             ship.pageNumber = 25; ship.bookSource = RuleBook.BattlefleetKoronus; ship.shipClass = ShipClass.Cruiser; ship.shipName = 'Gothic-class Cruiser';
-        } else if (randValue <= 89) {
+        } else if (randValue <= 90) {
             ship.pageNumber = 24; ship.bookSource = RuleBook.BattlefleetKoronus; ship.shipClass = ShipClass.Cruiser; ship.shipName = 'Dictator-class Cruiser';
         } else if (randValue <= 91) {
             ship.pageNumber = 24; ship.bookSource = RuleBook.BattlefleetKoronus; ship.shipClass = ShipClass.Cruiser; ship.shipName = 'Ambition-class Cruiser';
-        } else if (randValue <= 93) {
+        } else if (randValue <= 92) {
             ship.pageNumber = 23; ship.bookSource = RuleBook.BattlefleetKoronus; ship.shipClass = ShipClass.Cruiser; ship.shipName = 'Conquest-class Star Galleon';
+        // Battlecruisers (5 points total) - massive warships, extremely rare
         } else if (randValue <= 94) {
             ship.pageNumber = 23; ship.bookSource = RuleBook.BattlefleetKoronus; ship.shipClass = ShipClass.BattleCruiser; ship.shipName = 'Armageddon-class Battlecruiser';
         } else if (randValue <= 95) {
@@ -397,6 +403,7 @@
             ship.pageNumber = 22; ship.bookSource = RuleBook.BattlefleetKoronus; ship.shipClass = ShipClass.BattleCruiser; ship.shipName = 'Mars-class Battlecruiser';
         } else if (randValue <= 97) {
             ship.pageNumber = 22; ship.bookSource = RuleBook.BattlefleetKoronus; ship.shipClass = ShipClass.BattleCruiser; ship.shipName = 'Overlord-class Battlecruiser';
+        // Grand Cruisers (3 points total) - largest ships, legendary rarity
         } else if (randValue <= 98) {
             ship.pageNumber = 21; ship.bookSource = RuleBook.BattlefleetKoronus; ship.shipClass = ShipClass.GrandCruiser; ship.shipName = 'Exorcist-class Grand Cruiser';
         } else if (randValue <= 99) {
