@@ -877,6 +877,10 @@ class ContextMenu {
             return;
         }
 
+        // Mark planets that had astronomical naming so they don't get unique names during rename
+        // This preserves the naming style: astronomical -> astronomical, unique -> unique
+        this._markAstronomicalPlanets(systemNode, oldSystemName);
+
         // Clear hasCustomName flag and reset names for planets/moons that used the old astronomical naming
         // This allows assignSequentialBodyNames to rename them with the new system name
         this._resetOldAstronomicalNames(systemNode, oldSystemName);
@@ -887,6 +891,9 @@ class ContextMenu {
             systemNode.assignSequentialBodyNames();
             console.log('Planet and satellite names updated to reflect new system name');
         }
+
+        // Clean up temporary markers
+        this._cleanupAstronomicalMarkers(systemNode);
     }
 
     // Reset names for planets/satellites with old astronomical naming
@@ -927,6 +934,55 @@ class ContextMenu {
         };
 
         resetNames(systemNode);
+    }
+
+    // Mark planets that had astronomical naming to preserve naming style during cascade
+    _markAstronomicalPlanets(systemNode, oldSystemName) {
+        // Helper to check if a name matches the old astronomical pattern
+        const matchesOldAstronomical = (name) => {
+            const astronomicalPattern = new RegExp(`^${this._escapeRegex(oldSystemName)} [a-z](-[IVX]+|-\\d+)?$`);
+            return astronomicalPattern.test(name);
+        };
+
+        // Recursively traverse and mark astronomical planets
+        const markNodes = (node) => {
+            if (!node) return;
+
+            // For planets and gas giants with astronomical naming, mark them
+            if ((node.type === NodeTypes.Planet || node.type === NodeTypes.GasGiant) && 
+                matchesOldAstronomical(node.nodeName)) {
+                // Mark this planet to force astronomical naming during rename
+                node._forceAstronomicalNaming = true;
+            }
+
+            // Process children recursively
+            if (node.children && Array.isArray(node.children)) {
+                for (const child of node.children) {
+                    markNodes(child);
+                }
+            }
+        };
+
+        markNodes(systemNode);
+    }
+
+    // Clean up temporary astronomical markers after rename
+    _cleanupAstronomicalMarkers(systemNode) {
+        const cleanup = (node) => {
+            if (!node) return;
+
+            // Remove the temporary marker
+            delete node._forceAstronomicalNaming;
+
+            // Process children recursively
+            if (node.children && Array.isArray(node.children)) {
+                for (const child of node.children) {
+                    cleanup(child);
+                }
+            }
+        };
+
+        cleanup(systemNode);
     }
 
     // Escape special regex characters in a string
