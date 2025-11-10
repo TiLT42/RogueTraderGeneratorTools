@@ -5,6 +5,7 @@ class ContextMenu {
     static NON_GENERATING_TYPES = [
         NodeTypes.Zone,              // Zone containers don't generate
         NodeTypes.NativeSpecies,     // Container for Xenos children
+        NodeTypes.NotableSpecies,    // Container for notable Xenos children (no context menu generation)
         NodeTypes.PrimitiveXenos,    // Container header only
         NodeTypes.OrbitalFeatures,   // Container for moons/asteroids
         NodeTypes.Asteroid,          // Static placeholder
@@ -18,6 +19,7 @@ class ContextMenu {
     static NON_RENAMABLE_TYPES = [
         NodeTypes.Zone,
         NodeTypes.NativeSpecies,
+        NodeTypes.NotableSpecies,    // Notable species container not renamable
         NodeTypes.PrimitiveXenos,
         NodeTypes.OrbitalFeatures,
         NodeTypes.PirateShips         // Pirate Den has fixed name
@@ -27,6 +29,7 @@ class ContextMenu {
         NodeTypes.PirateShips,        // Pirate Den always at top of system
         NodeTypes.Zone,               // Zone nodes are fixed in system
         NodeTypes.NativeSpecies,      // Container for Xenos children
+        NodeTypes.NotableSpecies,     // Container for notable Xenos children
         NodeTypes.PrimitiveXenos,     // Container header only
         NodeTypes.OrbitalFeatures     // Container for moons/asteroids
     ];
@@ -35,6 +38,7 @@ class ContextMenu {
         NodeTypes.Zone,              // Organizational container
         NodeTypes.OrbitalFeatures,   // Organizational container for moons/asteroids
         NodeTypes.NativeSpecies,     // Organizational container for Xenos children
+        NodeTypes.NotableSpecies,    // Organizational container for notable Xenos children
         NodeTypes.PrimitiveXenos     // Organizational container header only
     ];
 
@@ -637,6 +641,10 @@ class ContextMenu {
         if (!node) return false;
         // Zones are structural and should not be deleted
         if (node.type === NodeTypes.Zone) return false;
+        // Xenos under NotableSpecies cannot be deleted (they're tied to territories)
+        if (node.type === NodeTypes.Xenos && node.parent && node.parent.type === NodeTypes.NotableSpecies) {
+            return false;
+        }
         // All other nodes can be deleted, including root nodes
         return true;
     }

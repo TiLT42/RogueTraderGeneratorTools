@@ -27,6 +27,7 @@ class PlanetNode extends NodeBase {
         // Child nodes
         this.orbitalFeaturesNode = null;
         this.nativeSpeciesNode = null;
+        this.notableSpeciesNode = null;
         this.primitiveXenosNode = null;
         
         // Terrain
@@ -86,6 +87,7 @@ class PlanetNode extends NodeBase {
         this.habitability = 'Inhospitable';
         this.orbitalFeaturesNode = null;
         this.nativeSpeciesNode = null;
+        this.notableSpeciesNode = null;
         this.primitiveXenosNode = null;
         this.numContinents = 0;
         this.numIslands = 0;
@@ -1169,62 +1171,151 @@ class PlanetNode extends NodeBase {
     }
 
     generateNativeSpecies() {
-        // Parity NOTE: Rewritten to approximate C# logic using Environment notable species counts + habitability modifiers.
-        // Original C# pipeline:
-        //   - Create NativeSpeciesNode container
-        //   - Base species count = Sum(Notable Species trait across territories)
-        //   - Habitability modifiers: LimitedEcosystem (+d5+1), Verdant (+d5+5)
-        //   - If neither Stars of Inequity nor Koronus Bestiary enabled => 0 species (do not generate)
-        //   - Ordered world types derived from territories; consumed in order when creating Xenos
-    // NOTE (Parity): EnvironmentData.getOrderedWorldTypesForNotableSpecies() now mirrors C# logic exactly.
-    // Territory -> base Temperate; Wasteland+ExtremeTemp -> Ice (Cold planet) / Desert (Hot planet);
-    // Forest + (Hot | Burning | (Temperate & ExtremeTemp)) -> Jungle. One entry per Notable Species count.
-        const env = this.environment; // parity: environment exists only on inhabitable worlds
+        // MODIFIED: Now separates notable species (from territories) from regular native species (from habitability).
+        // Notable species go in NotableSpeciesNode, others go in NativeSpeciesNode.
+        const env = this.environment;
         const { getTotalNotableSpecies, getOrderedWorldTypesForNotableSpecies } = window.EnvironmentData;
-        let speciesCount = 0;
-        if (env) speciesCount = getTotalNotableSpecies(env);
-
-        // Habitability bonuses mirror C# Native species logic (bonus dice added after territory sum)
+        
+        // Count notable species from territories
+        let notableCount = 0;
+        if (env) notableCount = getTotalNotableSpecies(env);
+        
+        // Count non-notable species from habitability bonuses
+        let regularCount = 0;
         if (this.habitability === 'LimitedEcosystem') {
-            speciesCount += (RollD5() + 1);
+            regularCount = RollD5() + 1;
         } else if (this.habitability === 'Verdant') {
-            speciesCount += (RollD5() + 5);
+            regularCount = RollD5() + 5;
         }
 
-        // Match WPF: If both xenos generator sources are disabled, set species count to 0 (PlanetNode.cs lines 798-800)
+        // Match WPF: If both xenos generator sources are disabled, set species count to 0
         const xenosSources = window.APP_STATE.settings.xenosGeneratorSources || {};
         if (!xenosSources.StarsOfInequity && !xenosSources.TheKoronusBestiary) {
-            speciesCount = 0;
+            notableCount = 0;
+            regularCount = 0;
         }
 
-        if (speciesCount <= 0) return; // Nothing to add
+        // Generate Notable Species (from territories)
+        if (notableCount > 0) {
+            this.notableSpeciesNode = createNode(NodeTypes.NotableSpecies);
+            this.notableSpeciesNode.systemCreationRules = this.systemCreationRules || this._findSystemCreationRules?.();
+            this.notableSpeciesNode.generate();
+            this.addChild(this.notableSpeciesNode);
 
-        // Create container
-        this.nativeSpeciesNode = createNode(NodeTypes.NativeSpecies);
-        this.nativeSpeciesNode.systemCreationRules = this.systemCreationRules || this._findSystemCreationRules?.();
-        this.nativeSpeciesNode.generate();
-        this.addChild(this.nativeSpeciesNode);
+            // Get world types for notable species (derived from territories)
+            // Now returns {worldType, territoryIndex} objects
+            let notableWorldTypes = env ? getOrderedWorldTypesForNotableSpecies(env, this) : [];
+            if (notableWorldTypes.length < notableCount) {
+                while (notableWorldTypes.length < notableCount) {
+                    notableWorldTypes.push({worldType: this.worldType, territoryIndex: -1});
+                }
+            } else if (notableWorldTypes.length > notableCount) {
+                notableWorldTypes = notableWorldTypes.slice(0, notableCount);
+            }
 
-        // Ordered world types derived from territories. We intentionally DO NOT pad yet; padding handled only if we still have fewer than required after territory expansion.
-        let orderedWorldTypes = env ? getOrderedWorldTypesForNotableSpecies(env, this) : [];
-        if (orderedWorldTypes.length < speciesCount) {
-            // Pad with planet baseline worldType for any overflow (C# falls back to general world classification)
-            while (orderedWorldTypes.length < speciesCount) orderedWorldTypes.push(this.worldType);
-        } else if (orderedWorldTypes.length > speciesCount) {
-            // In rare case environment produced more (shouldn't happen but defensive): trim
-            orderedWorldTypes = orderedWorldTypes.slice(0, speciesCount);
+            // Generate notable species xenos and track which territory they belong to
+            for (let i = 0; i < notableCount; i++) {
+                const wtInfo = notableWorldTypes[i];
+                const wt = wtInfo.worldType || this.worldType;
+                const xenos = this.notableSpeciesNode.addXenos(wt);
+                
+                // Link this xenos to its territory
+                if (xenos && wtInfo.territoryIndex >= 0 && env && env.territories[wtInfo.territoryIndex]) {
+                    const territory = env.territories[wtInfo.territoryIndex];
+                    if (!territory.notableSpeciesXenos) {
+                        territory.notableSpeciesXenos = [];
+                    }
+                    territory.notableSpeciesXenos.push(xenos);
+                }
+            }
+
+            // Defensive cleanup
+            if (!this.notableSpeciesNode.children.length) {
+                this.removeChild(this.notableSpeciesNode);
+                this.notableSpeciesNode = null;
+            }
         }
 
-        // Generate species nodes
-        for (let i = 0; i < speciesCount; i++) {
-            const wt = orderedWorldTypes[i] || this.worldType;
-            this.nativeSpeciesNode.addXenos(wt);
-        }
+        // Generate regular Native Species (from habitability)
+        if (regularCount > 0) {
+            this.nativeSpeciesNode = createNode(NodeTypes.NativeSpecies);
+            this.nativeSpeciesNode.systemCreationRules = this.systemCreationRules || this._findSystemCreationRules?.();
+            this.nativeSpeciesNode.generate();
+            this.addChild(this.nativeSpeciesNode);
 
-        // Defensive cleanup
-        if (!this.nativeSpeciesNode.children.length) {
-            this.removeChild(this.nativeSpeciesNode);
-            this.nativeSpeciesNode = null;
+            // Regular species use planet's general world type
+            for (let i = 0; i < regularCount; i++) {
+                this.nativeSpeciesNode.addXenos(this.worldType);
+            }
+
+            // Defensive cleanup
+            if (!this.nativeSpeciesNode.children.length) {
+                this.removeChild(this.nativeSpeciesNode);
+                this.nativeSpeciesNode = null;
+            }
+        }
+        
+        // Apply naming to all xenos (both notable and native) to handle duplicates
+        this.applyXenosNaming();
+    }
+    
+    applyXenosNaming() {
+        // Collect all xenos from both Notable Species and Native Species nodes
+        const allXenos = [];
+        
+        if (this.notableSpeciesNode) {
+            for (const child of this.notableSpeciesNode.children) {
+                if (child.type === NodeTypes.Xenos) {
+                    allXenos.push(child);
+                }
+            }
+        }
+        
+        if (this.nativeSpeciesNode) {
+            for (const child of this.nativeSpeciesNode.children) {
+                if (child.type === NodeTypes.Xenos) {
+                    allXenos.push(child);
+                }
+            }
+        }
+        
+        if (allXenos.length === 0) return;
+        
+        // Group xenos by their base name (strip any existing suffix like " A", " B")
+        const nameGroups = new Map();
+        for (const xenos of allXenos) {
+            // Get base name by removing any existing " X" suffix pattern
+            const baseName = xenos.nodeName.replace(/\s+[A-Z]$/, '').trim();
+            if (!nameGroups.has(baseName)) {
+                nameGroups.set(baseName, []);
+            }
+            nameGroups.get(baseName).push(xenos);
+        }
+        
+        // Assign suffixes to groups with multiple xenos
+        for (const [baseName, xenosList] of nameGroups) {
+            if (xenosList.length > 1) {
+                // Sort by current order to maintain stability
+                xenosList.sort((a, b) => {
+                    // Use the order they appear in their parent's children array
+                    const parentA = a.parent;
+                    const parentB = b.parent;
+                    if (parentA !== parentB) {
+                        // Notable species come before native species (if both exist)
+                        if (parentA === this.notableSpeciesNode) return -1;
+                        if (parentB === this.notableSpeciesNode) return 1;
+                    }
+                    const indexA = a.parent.children.indexOf(a);
+                    const indexB = b.parent.children.indexOf(b);
+                    return indexA - indexB;
+                });
+                
+                // Assign A, B, C... suffixes
+                for (let i = 0; i < xenosList.length; i++) {
+                    const suffix = String.fromCharCode(65 + i); // 65 = 'A'
+                    xenosList[i].nodeName = `${baseName} ${suffix}`;
+                }
+            }
         }
     }
 
@@ -1294,8 +1385,9 @@ class PlanetNode extends NodeBase {
                             
                             // Display landmarks for this territory (indented)
                             const lm = window.EnvironmentData.buildLandmarkList(t);
-                            if (lm.length > 0) {
+                            if (lm.length > 0 || (t.notableSpeciesXenos && t.notableSpeciesXenos.length > 0)) {
                                 desc += '<ul>';
+                                // Show landmarks first
                                 lm.forEach(landmark => {
                                     if (window.APP_STATE.settings.showPageNumbers) {
                                         // Look up page reference for this landmark
@@ -1310,6 +1402,11 @@ class PlanetNode extends NodeBase {
                                         desc += `<li>${landmark}</li>`;
                                     }
                                 });
+                                // Show notable species
+                                if (t.notableSpeciesXenos && t.notableSpeciesXenos.length > 0) {
+                                    const speciesNames = t.notableSpeciesXenos.map(x => x.nodeName).join(', ');
+                                    desc += `<li><strong>Notable Species:</strong> ${speciesNames}</li>`;
+                                }
                                 desc += '</ul>';
                             }
                         }
@@ -1340,8 +1437,9 @@ class PlanetNode extends NodeBase {
                     
                     // Display landmarks for this territory (indented)
                     const lm = window.EnvironmentData.buildLandmarkList(t);
-                    if (lm.length > 0) {
+                    if (lm.length > 0 || (t.notableSpeciesXenos && t.notableSpeciesXenos.length > 0)) {
                         desc += '<ul>';
+                        // Show landmarks first
                         lm.forEach(landmark => {
                             if (window.APP_STATE.settings.showPageNumbers) {
                                 // Look up page reference for this landmark
@@ -1356,6 +1454,11 @@ class PlanetNode extends NodeBase {
                                 desc += `<li>${landmark}</li>`;
                             }
                         });
+                        // Show notable species
+                        if (t.notableSpeciesXenos && t.notableSpeciesXenos.length > 0) {
+                            const speciesNames = t.notableSpeciesXenos.map(x => x.nodeName).join(', ');
+                            desc += `<li><strong>Notable Species:</strong> ${speciesNames}</li>`;
+                        }
                         desc += '</ul>';
                     }
                 });
@@ -1604,6 +1707,8 @@ class PlanetNode extends NodeBase {
                     node.orbitalFeaturesNode = restoredChild;
                 } else if (restoredChild.type === NodeTypes.NativeSpecies) {
                     node.nativeSpeciesNode = restoredChild;
+                } else if (restoredChild.type === NodeTypes.NotableSpecies) {
+                    node.notableSpeciesNode = restoredChild;
                 } else if (restoredChild.type === NodeTypes.PrimitiveXenos) {
                     node.primitiveXenosNode = restoredChild;
                 }
@@ -1623,6 +1728,29 @@ class PlanetNode extends NodeBase {
                     node._environmentReferences = (node.environment.references||[]).slice();
                 }
             } catch(e) { /* ignore */ }
+            
+            // Rebuild territory->xenos links for notable species
+            // This is needed because xenos nodes are stored separately in the tree
+            if (node.notableSpeciesNode && node.environment.territories) {
+                // Collect all notable species xenos in order
+                const notableXenos = [];
+                for (const child of node.notableSpeciesNode.children) {
+                    if (child.type === NodeTypes.Xenos) {
+                        notableXenos.push(child);
+                    }
+                }
+                
+                // Distribute them to territories based on notableSpecies counts
+                let xenosIndex = 0;
+                for (const territory of node.environment.territories) {
+                    const count = territory.notableSpecies || 0;
+                    territory.notableSpeciesXenos = [];
+                    for (let i = 0; i < count && xenosIndex < notableXenos.length; i++) {
+                        territory.notableSpeciesXenos.push(notableXenos[xenosIndex]);
+                        xenosIndex++;
+                    }
+                }
+            }
         }
         
         return node;

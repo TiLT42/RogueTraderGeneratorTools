@@ -72,7 +72,9 @@
             landmarkPerpetualStorm: 0,
             landmarkReef: 0,
             landmarkVolcano: 0,
-            landmarkWhirlpool: 0
+            landmarkWhirlpool: 0,
+            // Notable species xenos nodes associated with this territory
+            notableSpeciesXenos: []
         };
     }
 
@@ -447,9 +449,11 @@
             //  Wasteland + ExtremeTemperature>0 -> IceWorld if planet ColdWorld, DesertWorld if HotWorld.
             //  Forest + (planet HotWorld or BurningWorld) OR (TemperateWorld + ExtremeTemperature>0) -> JungleWorld.
             // Each territory contributes one world type entry per Notable Species count in that territory.
+            // MODIFIED: Now returns array of {worldType, territoryIndex} objects to track mapping
             if(!env || !env.territories) return [];
             const worldTypes = [];
-            for(const terr of env.territories){
+            for(let tIdx = 0; tIdx < env.territories.length; tIdx++){
+                const terr = env.territories[tIdx];
                 let territoryType = 'TemperateWorld';
                 if(terr.baseTerrain === TerritoryBaseTerrain.Wasteland){
                     if(terr.extremeTemperature > 0 && planet){
@@ -463,7 +467,7 @@
                     }
                 }
                 const n = terr.notableSpecies || 0;
-                for(let i=0;i<n;i++) worldTypes.push(territoryType);
+                for(let i=0;i<n;i++) worldTypes.push({worldType: territoryType, territoryIndex: tIdx});
             }
             return worldTypes;
         }
