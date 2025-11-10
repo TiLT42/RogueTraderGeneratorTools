@@ -41,6 +41,7 @@
     const RollD5 = () => window.RollD5();
     const RollD10 = () => window.RollD10();
     const RollD100 = () => window.RollD100();
+    const RandBetween = (min, max) => window.RandBetween(min, max);
 
     // Territory factory
     function createEmptyTerritory() {
@@ -296,6 +297,145 @@
         });
     }
 
+    // Landmass generation and assignment for evocative planet descriptions
+    // This implements the feature request to organize territories and landmarks by landmass
+    
+    /**
+     * Generate landmass classifications for a planet with multiple landmasses.
+     * Each major landmass (continent count) is classified as either Continent or Archipelago
+     * based on planet characteristics. Islands are tracked separately as a group.
+     * @param {number} numContinents - Number of major landmasses
+     * @param {number} numIslands - Number of smaller islands
+     * @param {object} planet - Planet object with habitability and other properties
+     * @returns {Array} Array of landmass objects with type and name
+     */
+    function generateLandmasses(numContinents, numIslands, planet) {
+        if (!numContinents || numContinents <= 0) return [];
+        
+        const landmasses = [];
+        const hasWater = planet && ['LiquidWater', 'LimitedEcosystem', 'Verdant'].includes(planet.habitability);
+        
+        // Determine continent vs archipelago for each major landmass
+        // Archipelagos are more likely on water-rich worlds
+        for (let i = 0; i < numContinents; i++) {
+            let type = 'Continent';
+            
+            // Higher chance of archipelago on water-rich worlds
+            if (hasWater) {
+                // 30% chance for archipelago on water-rich worlds
+                if (RollD10() <= 3) {
+                    type = 'Archipelago';
+                }
+            } else {
+                // 10% chance for archipelago on dry worlds
+                if (RollD10() === 1) {
+                    type = 'Archipelago';
+                }
+            }
+            
+            // Generate letter designation (A, B, C, ...)
+            const letter = String.fromCharCode(65 + i); // 65 is 'A'
+            
+            landmasses.push({
+                type: type,
+                letter: letter,
+                name: `${type} ${letter}`,
+                territories: [],
+                landmarks: [] // Landmarks are tracked separately per territory but we'll organize display here
+            });
+        }
+        
+        return landmasses;
+    }
+    
+    /**
+     * Assign territories to landmasses randomly.
+     * Each territory must be assigned to a major landmass (not islands).
+     * @param {Array} territories - Array of territory objects
+     * @param {Array} landmasses - Array of landmass objects
+     */
+    function assignTerritoriesToLandmasses(territories, landmasses) {
+        if (!territories || territories.length === 0) return;
+        if (!landmasses || landmasses.length === 0) return;
+        
+        // Randomly assign each territory to a landmass
+        for (const territory of territories) {
+            const landmassIndex = RandBetween(0, landmasses.length - 1);
+            landmasses[landmassIndex].territories.push(territory);
+        }
+    }
+    
+    /**
+     * Assign landmarks to territories within landmasses, or to islands.
+     * Landmarks are already part of territories, but we need to decide which landmarks
+     * should be considered as belonging to islands vs their territories' landmasses.
+     * @param {Array} territories - Array of territory objects with landmarks
+     * @param {boolean} hasIslands - Whether the planet has islands
+     * @returns {Array} Array of landmarks assigned to "Islands" group
+     */
+    function assignLandmarksToIslands(territories, hasIslands) {
+        if (!hasIslands || !territories || territories.length === 0) return [];
+        
+        const islandLandmarks = [];
+        
+        // For each territory, there's a chance some of its landmarks are on islands
+        for (const territory of territories) {
+            const landmarkTypes = [
+                { name: 'Canyon', count: territory.landmarkCanyon },
+                { name: 'Cave Network', count: territory.landmarkCaveNetwork },
+                { name: 'Crater', count: territory.landmarkCrater },
+                { name: 'Glacier', count: territory.landmarkGlacier },
+                { name: 'Inland Sea', count: territory.landmarkInlandSea },
+                { name: 'Mountain', count: territory.landmarkMountain },
+                { name: 'Perpetual Storm', count: territory.landmarkPerpetualStorm },
+                { name: 'Reef', count: territory.landmarkReef },
+                { name: 'Volcano', count: territory.landmarkVolcano },
+                { name: 'Whirlpool', count: territory.landmarkWhirlpool }
+            ];
+            
+            for (const landmark of landmarkTypes) {
+                if (landmark.count > 0) {
+                    // 20% chance each landmark is on an island instead
+                    for (let i = 0; i < landmark.count; i++) {
+                        if (RollD10() <= 2) {
+                            islandLandmarks.push(landmark.name);
+                            // Reduce the count in the territory
+                            territory[`landmark${landmark.name.replace(/ /g, '')}`]--;
+                        }
+                    }
+                }
+            }
+        }
+        
+        return islandLandmarks;
+    }
+    
+    /**
+     * Organize environment with landmasses for display purposes.
+     * This creates a structured representation that includes landmass assignments.
+     * @param {object} env - Environment object with territories
+     * @param {number} numContinents - Number of major landmasses
+     * @param {number} numIslands - Number of smaller islands
+     * @param {object} planet - Planet object
+     */
+    function organizeLandmasses(env, numContinents, numIslands, planet) {
+        if (!env || !env.territories || env.territories.length === 0) return;
+        if (!numContinents || numContinents <= 0) return;
+        
+        // Generate landmass classifications
+        const landmasses = generateLandmasses(numContinents, numIslands, planet);
+        
+        // Assign territories to landmasses
+        assignTerritoriesToLandmasses(env.territories, landmasses);
+        
+        // Determine which landmarks belong to islands
+        const islandLandmarks = assignLandmarksToIslands(env.territories, numIslands > 0);
+        
+        // Store in environment for later use
+        env.landmasses = landmasses;
+        env.islandLandmarks = islandLandmarks;
+    }
+
     // Public API
     window.EnvironmentData = {
         TerritoryBaseTerrain,
@@ -304,6 +444,10 @@
         generateLandmarksForEnvironment,
         buildLandmarkList,
         buildLandmarkReferences,
+        organizeLandmasses,
+        generateLandmasses,
+        assignTerritoriesToLandmasses,
+        assignLandmarksToIslands,
         // Parity APIs mirroring Environment.cs (naming preserved where possible)
         getNumOrganicCompounds(env){
             if(!env || !env.territories) return 0;

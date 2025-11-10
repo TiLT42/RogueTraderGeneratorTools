@@ -159,6 +159,8 @@ class PlanetNode extends NodeBase {
         this.generateResourcesParity();
         // 10. Landmarks / references (if environment present)
         this.buildEnvironmentReferences();
+        // 10b. Organize landmasses (if environment and landmasses present)
+        this.organizeLandmasses();
         // 11. Native Species (was previously omitted from pipeline causing absence of native species nodes)
         //     Parity: In WPF native species are generated alongside inhabitants for habitable worlds.
         //     We invoke before inhabitants so development logic (future enhancement) could react to species count if needed.
@@ -785,6 +787,21 @@ class PlanetNode extends NodeBase {
         }
     }
 
+    organizeLandmasses() {
+        // Only organize landmasses if we have an environment, territories, and multiple landmasses
+        if (this.environment && this.environment.territories && this.environment.territories.length > 0 &&
+            this.numContinents > 0 && window.EnvironmentData) {
+            try {
+                window.EnvironmentData.organizeLandmasses(
+                    this.environment,
+                    this.numContinents,
+                    this.numIslands,
+                    this
+                );
+            } catch (e) { /* ignore */ }
+        }
+    }
+
     /* ===================== LEGACY SIMPLE GENERATORS (unused after parity) ===================== */
     // Keeping original methods in case external callers rely; now wrappers or unused.
     generateBody() { return this.generateBodyParity(); }
@@ -1245,29 +1262,97 @@ class PlanetNode extends NodeBase {
         // Territories & Landmarks
         if (this.environment) {
             const territories = this.environment.territories || [];
-            desc += `<h4>Territories</h4>`;
-            if (territories.length === 0) desc += '<p>None</p>'; else {
-                desc += '<ul>';
-                territories.forEach(t => {
-                    let base = t.baseTerrain;
-                    const traits = window.EnvironmentData.getTerritoryTraitList(t);
-                    if (traits.length>0) base += ' ('+traits.join(', ')+')';
-                    if (window.APP_STATE.settings.showPageNumbers) {
-                        const ref = this._environmentReferences.find(r => r.content.startsWith(base.split(' (')[0]));
-                        if (ref) {
-                            const pr = createPageReference(ref.pageNumber, '', Object.keys(RuleBook).find(k=>window.CommonData.RuleBooks[k]===ref.book)||RuleBook.StarsOfInequity);
-                            desc += `<li>${base} <span class="page-reference">${pr}</span></li>`;
+            const landmasses = this.environment.landmasses || [];
+            const islandLandmarks = this.environment.islandLandmarks || [];
+            
+            // Check if we have organized landmasses (new format)
+            if (landmasses.length > 0) {
+                // New format: organized by landmass
+                for (const landmass of landmasses) {
+                    desc += `<h3>${landmass.name}</h3>`;
+                    
+                    // Display territories in this landmass
+                    if (landmass.territories && landmass.territories.length > 0) {
+                        desc += `<h4>Territories</h4>`;
+                        desc += '<ul>';
+                        for (const t of landmass.territories) {
+                            let base = t.baseTerrain;
+                            const traits = window.EnvironmentData.getTerritoryTraitList(t);
+                            if (traits.length > 0) base += ' (' + traits.join(', ') + ')';
+                            
+                            // Add page reference if enabled
+                            if (window.APP_STATE.settings.showPageNumbers) {
+                                const ref = this._environmentReferences.find(r => r.content.startsWith(base.split(' (')[0]));
+                                if (ref) {
+                                    const pr = createPageReference(ref.pageNumber, '', Object.keys(RuleBook).find(k => window.CommonData.RuleBooks[k] === ref.book) || RuleBook.StarsOfInequity);
+                                    desc += `<li>${base} <span class="page-reference">${pr}</span></li>`;
+                                } else {
+                                    desc += `<li>${base}</li>`;
+                                }
+                            } else {
+                                desc += `<li>${base}</li>`;
+                            }
+                            
+                            // Display landmarks for this territory (indented)
+                            const lm = window.EnvironmentData.buildLandmarkList(t);
+                            if (lm.length > 0) {
+                                desc += '<ul>';
+                                lm.forEach(landmark => desc += `<li>${landmark}</li>`);
+                                desc += '</ul>';
+                            }
+                        }
+                        desc += '</ul>';
+                    } else {
+                        desc += '<p><em>No territories</em></p>';
+                    }
+                }
+                
+                // Display islands section if there are island landmarks
+                if (islandLandmarks.length > 0) {
+                    desc += `<h3>Islands</h3>`;
+                    desc += '<ul>';
+                    // Count and group landmarks
+                    const landmarkCounts = {};
+                    islandLandmarks.forEach(lm => {
+                        landmarkCounts[lm] = (landmarkCounts[lm] || 0) + 1;
+                    });
+                    for (const [name, count] of Object.entries(landmarkCounts)) {
+                        if (count === 1) {
+                            desc += `<li>${name}</li>`;
+                        } else {
+                            desc += `<li>${count}x ${name}</li>`;
+                        }
+                    }
+                    desc += '</ul>';
+                }
+            } else {
+                // Old format: flat list (backward compatibility)
+                desc += `<h4>Territories</h4>`;
+                if (territories.length === 0) {
+                    desc += '<p>None</p>';
+                } else {
+                    desc += '<ul>';
+                    territories.forEach(t => {
+                        let base = t.baseTerrain;
+                        const traits = window.EnvironmentData.getTerritoryTraitList(t);
+                        if (traits.length > 0) base += ' (' + traits.join(', ') + ')';
+                        if (window.APP_STATE.settings.showPageNumbers) {
+                            const ref = this._environmentReferences.find(r => r.content.startsWith(base.split(' (')[0]));
+                            if (ref) {
+                                const pr = createPageReference(ref.pageNumber, '', Object.keys(RuleBook).find(k => window.CommonData.RuleBooks[k] === ref.book) || RuleBook.StarsOfInequity);
+                                desc += `<li>${base} <span class="page-reference">${pr}</span></li>`;
+                            } else desc += `<li>${base}</li>`;
                         } else desc += `<li>${base}</li>`;
-                    } else desc += `<li>${base}</li>`;
-                });
-                desc += '</ul>';
+                    });
+                    desc += '</ul>';
+                }
+                const landmarkBlocks = territories.map(t => {
+                    const lm = window.EnvironmentData.buildLandmarkList(t);
+                    if (lm.length === 0) return null;
+                    return lm.map(x => `<li>${x}</li>`).join('');
+                }).filter(Boolean);
+                if (landmarkBlocks.length > 0) desc += `<h4>Landmarks</h4><ul>${landmarkBlocks.join('')}</ul>`;
             }
-            const landmarkBlocks = territories.map(t => {
-                const lm = window.EnvironmentData.buildLandmarkList(t);
-                if (lm.length === 0) return null;
-                return lm.map(x=>`<li>${x}</li>`).join('');
-            }).filter(Boolean);
-            if (landmarkBlocks.length>0) desc += `<h4>Landmarks</h4><ul>${landmarkBlocks.join('')}</ul>`;
         }
 
         // Resources
