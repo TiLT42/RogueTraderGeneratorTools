@@ -866,6 +866,17 @@ class ContextMenu {
             return;
         }
 
+        // Apply cascading rename to update all dependent astronomical names
+        this.cascadeSystemRename(systemNode, oldSystemName);
+    }
+
+    // Cascade a system rename to update all dependent astronomical names
+    // This is used both when generating a new system name and when manually renaming
+    cascadeSystemRename(systemNode, oldSystemName) {
+        if (!systemNode || systemNode.type !== NodeTypes.System) {
+            return;
+        }
+
         // Clear hasCustomName flag and reset names for planets/moons that used the old astronomical naming
         // This allows assignSequentialBodyNames to rename them with the new system name
         this._resetOldAstronomicalNames(systemNode, oldSystemName);
