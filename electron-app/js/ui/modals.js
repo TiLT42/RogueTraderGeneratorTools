@@ -217,6 +217,9 @@ class Modals {
         this.okButton.onclick = () => {
             const newName = document.getElementById('node-name').value.trim();
             if (newName) {
+                // Store old name for system cascade logic
+                const oldName = node.nodeName;
+                
                 node.nodeName = newName;
                 // Mark this node as having a custom name to prevent automatic renaming
                 node.hasCustomName = true;
@@ -226,6 +229,11 @@ class Modals {
                     node._assignNamesToOrbitalFeatures();
                 } else if (node.type === NodeTypes.GasGiant && typeof node.assignNamesForOrbitalFeatures === 'function') {
                     node.assignNamesForOrbitalFeatures();
+                }
+                
+                // If this is a system node, cascade the rename to all dependent astronomical names
+                if (node.type === NodeTypes.System && window.contextMenu && typeof window.contextMenu.cascadeSystemRename === 'function') {
+                    window.contextMenu.cascadeSystemRename(node, oldName);
                 }
                 
                 window.treeView.refresh();

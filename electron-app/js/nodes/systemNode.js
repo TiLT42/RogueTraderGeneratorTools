@@ -980,7 +980,9 @@ class SystemNode extends NodeBase {
                     }
                     
                     // Determine if THIS specific planet should get a unique name
-                    const shouldBeUnique = this.shouldPlanetHaveUniqueName(child);
+                    // BUT if the planet is marked to force astronomical naming (during cascade rename),
+                    // skip unique name generation to preserve naming style
+                    const shouldBeUnique = child._forceAstronomicalNaming ? false : this.shouldPlanetHaveUniqueName(child);
                     
                     if (shouldBeUnique) {
                         const generatedName = getGeneratedName(zone, child.type);
