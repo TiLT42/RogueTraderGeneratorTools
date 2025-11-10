@@ -64,7 +64,9 @@ Represents a complete star system with zones and orbital bodies.
   "name": "Koronus Expanse System Alpha",
   "description": "<p>A system in the Koronus Expanse...</p>",
   "star": "Red Giant",
-  "systemFeatures": ["Bountiful", "Haven"],
+  "starColor": "Deep red",
+  "warpStatus": "Turbulent",
+  "systemFeatures": ["Bountiful", "Haven", "Warp Turbulence"],
   "systemCreationRules": {
     "innerCauldronWeak": false,
     "innerCauldronDominant": false,
@@ -95,7 +97,11 @@ Represents a complete star system with zones and orbital bodies.
     "gravityTidesGravityWellsAroundPlanets": true,
     "illOmenedFickleFatePoints": true,
     "warpStasisNoPush": true,
-    "numPlanetsInWarpStorms": 2
+    "numPlanetsInWarpStorms": 2,
+    "warpTurbulenceNavigationPenalty": true,
+    "warpTurbulencePsychicPhenomenaBonus": true,
+    "warpTurbulenceCorruptionIncrease": true,
+    "warpTurbulencePsyRatingBonus": true
   },
   "children": [
     // Zone nodes, see Zone Node section
@@ -105,13 +111,16 @@ Represents a complete star system with zones and orbital bodies.
 
 **Fields:**
 - `star` (string, optional): Star type (e.g., "Red Giant", "Blue Star")
+- `starColor` (string, optional): Descriptive color of the star (e.g., "Deep red", "Yellow-orange", "Blue-white")
+- `warpStatus` (string, optional): Warp condition of the system (only present if not "Normal")
+  - Possible values: "Turbulent", "Becalmed", "Fully becalmed"
 - `systemFeatures` (array, optional): Array of system feature names that were rolled
 - `systemCreationRules` (object, optional): Detailed rule modifiers that affect system generation
 - `featureEffects` (object, optional): Active system-wide effects from features
   - Gravity Tides effects: `gravityTidesGravityWellsAroundPlanets`, `gravityTidesTravelTimeBetweenPlanetsHalves`
   - Ill-Omened effects: `illOmenedFickleFatePoints`, `illOmenedWillPowerPenalty`, `illOmenedDoubledInsanity`, `illOmenedFearFromPsychicExploration`
   - Warp Stasis effects: `warpStasisFocusPowerPenalties`, `warpStasisNoPush`, `warpStasisReducedPsychicPhenomena`
-  - Warp Turbulence: `numPlanetsInWarpStorms` (number)
+  - Warp Turbulence effects: `warpTurbulenceNavigationPenalty`, `warpTurbulencePsychicPhenomenaBonus`, `warpTurbulenceCorruptionIncrease`, `warpTurbulencePsyRatingBonus`, `numPlanetsInWarpStorms` (number)
 
 ### Zone Node
 
@@ -161,6 +170,37 @@ Represents a planet or large moon.
     "Ancient ruins",
     "Volcanic caldera"
   ],
+  "landmasses": [
+    {
+      "type": "Continent",
+      "letter": "A",
+      "name": "Continent A",
+      "territories": [
+        {
+          "baseTerrain": "Forest",
+          "traits": ["Dense Vegetation", "Ancient Ruins"],
+          "landmarks": ["Crashed starship"]
+        },
+        {
+          "baseTerrain": "Mountains",
+          "traits": ["High Peaks"],
+          "landmarks": []
+        }
+      ]
+    },
+    {
+      "type": "Archipelago",
+      "letter": "B",
+      "name": "Archipelago B",
+      "territories": [
+        {
+          "baseTerrain": "Ocean",
+          "traits": ["Deep Waters"],
+          "landmarks": ["Underwater city"]
+        }
+      ]
+    }
+  ],
   "mineralResources": [
     { "type": "Industrial Metals", "abundance": 45 },
     { "type": "Ornamentals", "abundance": 30 }
@@ -181,7 +221,7 @@ Represents a planet or large moon.
   "maidenWorld": false,
   "warpStorm": false,
   "children": [
-    // Orbital Features, Lesser Moons, etc.
+    // Orbital Features, Lesser Moons, Native Species, Notable Species, etc.
   ]
 }
 ```
@@ -198,6 +238,15 @@ Represents a planet or large moon.
 - `islands` (number, optional): Number of islands
 - `terrain` (array, optional): Array of terrain type strings
 - `landmarks` (array, optional): Array of landmark descriptions
+- `landmasses` (array, optional): Organized landmass structure (new feature)
+  - Each landmass object has:
+    - `type` (string): "Continent" or "Archipelago"
+    - `letter` (string): Letter designation (A, B, C, etc.)
+    - `name` (string): Display name (e.g., "Continent A")
+    - `territories` (array): Array of territory objects with:
+      - `baseTerrain` (string): Primary terrain type
+      - `traits` (array): Array of territory trait strings
+      - `landmarks` (array): Array of landmark strings for this territory
 - `mineralResources` (array, optional): Array of `{type, abundance}` objects
 - `organicCompounds` (array, optional): Array of `{type, abundance}` objects
 - `archeotechCaches` (array, optional): Array of `{type, abundance}` objects
@@ -437,6 +486,25 @@ Represents an alien creature or species.
 - `weapons` (array, optional): Weapon descriptions
 - `armour` (string, optional): Armour description
 
+### Notable Species Node
+
+**Type**: `"notable-species"`
+
+Represents a container for notable species that are tied to specific territories on a planet. This is a separate node from the regular Native Species node.
+
+```json
+{
+  "type": "notable-species",
+  "name": "Notable Species",
+  "description": "",
+  "children": [
+    // Xenos nodes (species tied to territories)
+  ]
+}
+```
+
+**Note**: Notable Species nodes are organizational containers similar to Native Species nodes. The notable species are generated from territory traits and are displayed separately to distinguish them from regular native species. This node typically contains Xenos child nodes.
+
 ### Treasure Node
 
 **Type**: `"treasure"`
@@ -570,6 +638,7 @@ The export format includes an `exportDate` but no version number. The structure 
       "name": "Koronus Expanse",
       "description": "<p>A remote star system...</p>",
       "star": "Red Giant",
+      "starColor": "Deep red",
       "systemFeatures": ["Bountiful"],
       "children": [
         {
@@ -630,7 +699,18 @@ For questions or issues with the Export JSON format:
 
 ## Version History
 
-### Current Version
+### Current Version (November 2025)
+- **System Nodes**: Added `starColor` field (descriptive color of the star)
+- **System Nodes**: Added `warpStatus` field (Warp condition: Normal, Turbulent, Becalmed, Fully becalmed)
+- **System Nodes**: Added Warp Turbulence effects to `featureEffects` object:
+  - `warpTurbulenceNavigationPenalty`
+  - `warpTurbulencePsychicPhenomenaBonus`
+  - `warpTurbulenceCorruptionIncrease`
+  - `warpTurbulencePsyRatingBonus`
+- **Planet Nodes**: Added `landmasses` array field for organized landmass structure
+  - Continents and archipelagos with letter designations
+  - Territories grouped by landmass with terrain, traits, and landmarks
+- **New Node Type**: `notable-species` - Container for species tied to territories
 - Complete data export for all node types
 - System nodes include `systemCreationRules` and `featureEffects`
 - Asteroid Belts include detailed resource data
