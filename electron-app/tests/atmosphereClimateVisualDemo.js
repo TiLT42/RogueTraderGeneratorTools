@@ -48,25 +48,51 @@ function printPlanetExample(title, planet) {
     // Extract and display relevant sections
     const desc = planet.description;
     
-    // Parse out the atmosphere and climate sections
-    const sections = desc.split('</p>');
-    sections.forEach(section => {
-        if (section.includes('Atmospheric Presence') || 
-            section.includes('Atmospheric Composition') || 
-            section.includes('Climate')) {
-            // Clean HTML tags for console display
-            let clean = section
-                .replace(/<[^>]*>/g, '') // Remove HTML tags
-                .replace(/&ndash;/g, '–')
-                .replace(/&mdash;/g, '—')
-                .replace(/&rsquo;/g, "'")
-                .trim();
-            
-            if (clean) {
-                console.log(colors.bright + clean + colors.reset);
+    // First, display basic attributes (without rules)
+    const lines = desc.split('</p>');
+    lines.forEach(line => {
+        if (line.includes('Atmospheric Presence') || 
+            line.includes('Atmospheric Composition') || 
+            line.includes('Climate:')) {
+            // Only show the basic attribute line, not the rules section header
+            if (!line.includes('Special Rules')) {
+                let clean = line
+                    .replace(/<[^>]*>/g, '')
+                    .replace(/&ndash;/g, '–')
+                    .replace(/&mdash;/g, '—')
+                    .replace(/&rsquo;/g, "'")
+                    .trim();
+                if (clean) {
+                    console.log(colors.bright + clean + colors.reset);
+                }
             }
         }
     });
+    
+    // Now display the special rules section if it exists
+    if (desc.includes('Atmosphere and Climate Special Rules')) {
+        console.log(colors.bright + 'Atmosphere and Climate Special Rules:' + colors.reset);
+        
+        // Extract just the <ul>...</ul> content
+        const ulStart = desc.indexOf('<ul>');
+        const ulEnd = desc.indexOf('</ul>', ulStart);
+        if (ulStart !== -1 && ulEnd !== -1) {
+            const listContent = desc.substring(ulStart + 4, ulEnd);
+            // Split by </li> and process each item
+            const items = listContent.split('</li>');
+            items.forEach(item => {
+                const cleaned = item
+                    .replace(/<li>/g, '')
+                    .replace(/&ndash;/g, '–')
+                    .replace(/&mdash;/g, '—')
+                    .replace(/&rsquo;/g, "'")
+                    .trim();
+                if (cleaned) {
+                    console.log(colors.bright + '  • ' + cleaned + colors.reset);
+                }
+            });
+        }
+    }
     
     console.log('');
 }

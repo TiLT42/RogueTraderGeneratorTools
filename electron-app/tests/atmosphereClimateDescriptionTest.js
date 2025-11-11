@@ -170,12 +170,17 @@ planet6.numIslands = 0;
 planet6.updateDescription();
 
 const desc6 = planet6.description;
-// Check that rules come after the keyword with " - " separator (page ref span may come between)
-// The pattern should be: keyword <span...>page ref</span> - rules
-assert(desc6.includes('Thin') && desc6.includes(' - Any time an Explorer'), 'Atmospheric presence rules should be present with dash separator');
-assert(desc6.includes('Deadly') && desc6.includes(' - Anyone not protected'), 'Atmospheric composition rules should be present with dash separator');
-assert(desc6.includes('Hot World') && desc6.includes(' - Outside of sheltered'), 'Climate rules should be present with dash separator');
+// Check NEW format: rules should NOT be inline with dash, but in separate section
+assert(!desc6.includes('Thin') || !desc6.includes(' - Any time an Explorer'), 'Atmospheric presence rules should NOT be inline with dash separator');
+assert(!desc6.includes('Deadly') || !desc6.includes(' - Anyone not protected'), 'Atmospheric composition rules should NOT be inline with dash separator');
+assert(!desc6.includes('Hot World') || !desc6.includes(' - Outside of sheltered'), 'Climate rules should NOT be inline with dash separator');
 
-console.log('✓ Format structure is correct (keyword - rules)\n');
+// Check that rules appear in the special rules section instead
+assert(desc6.includes('Atmosphere and Climate Special Rules'), 'Should have special rules section');
+assert(desc6.includes('<li>Any time an Explorer'), 'Presence rules should be in special section');
+assert(desc6.includes('<li>Anyone not protected'), 'Composition rules should be in special section');
+assert(desc6.includes('<li>Outside of sheltered'), 'Climate rules should be in special section');
+
+console.log('✓ Format structure is correct (separate rules section)\n');
 
 console.log('=== All Description Tests Passed ===');

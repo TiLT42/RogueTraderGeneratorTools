@@ -58,11 +58,11 @@ for (let i = 0; i < 10; i++) {
     assert(planet.description.includes('Atmospheric Composition'), 'Description should include atmospheric composition');
     assert(planet.description.includes('Climate'), 'Description should include climate');
     
-    // If the planet has hazardous conditions, verify rules are present
+    // If the planet has hazardous conditions, verify rules are present in special section
     if (planet.atmosphericPresence === 'None' || planet.atmosphericPresence === 'Thin' || planet.atmosphericPresence === 'Heavy') {
         const presenceRules = planet.getAtmosphericPresenceRules();
         assert(presenceRules.length > 0, `Planet with ${planet.atmosphericPresence} should have presence rules`);
-        assert(planet.description.includes(' - '), 'Description should include rule separator');
+        assert(planet.description.includes('Atmosphere and Climate Special Rules'), 'Description should include special rules section');
     }
     
     if (planet.atmosphericComposition === 'Deadly' || planet.atmosphericComposition === 'Corrosive' || planet.atmosphericComposition === 'Toxic') {

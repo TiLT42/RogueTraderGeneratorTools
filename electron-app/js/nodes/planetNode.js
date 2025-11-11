@@ -1413,30 +1413,28 @@ class PlanetNode extends NodeBase {
         desc += `<p><strong>Classification:</strong> ${this.isMoon ? 'Moon' : 'Planet'}</p>`;
         desc += `<p><strong>Body:</strong> ${this.body}${addPageRef(19,'Table 1-6: Body')}</p>`;
         desc += `<p><strong>Gravity:</strong> ${this.gravity}${addPageRef(20,'Table 1-7: Gravity')}</p>`;
+        desc += `<p><strong>Atmospheric Presence:</strong> ${this.atmosphericPresence}${addPageRef(21,'Table 1-9: Atmospheric Presence')}</p>`;
+        desc += `<p><strong>Atmospheric Composition:</strong> ${this.atmosphericComposition}${addPageRef(21,'Table 1-10: Atmospheric Composition')}</p>`;
+        desc += `<p><strong>Climate:</strong> ${this.climate}${addPageRef(22,'Table 1-11: Climate')}</p>`;
         
-        // Atmospheric Presence with rules
-        desc += `<p><strong>Atmospheric Presence:</strong> ${this.atmosphericPresence}${addPageRef(21,'Table 1-9: Atmospheric Presence')}`;
+        // Atmosphere and Climate Special Rules section
         const presenceRules = this.getAtmosphericPresenceRules();
-        if (presenceRules) {
-            desc += ` - ${presenceRules}`;
-        }
-        desc += `</p>`;
-        
-        // Atmospheric Composition with rules
-        desc += `<p><strong>Atmospheric Composition:</strong> ${this.atmosphericComposition}${addPageRef(21,'Table 1-10: Atmospheric Composition')}`;
         const compositionRules = this.getAtmosphericCompositionRules();
-        if (compositionRules) {
-            desc += ` - ${compositionRules}`;
-        }
-        desc += `</p>`;
-        
-        // Climate with rules
-        desc += `<p><strong>Climate:</strong> ${this.climate}${addPageRef(22,'Table 1-11: Climate')}`;
         const climateRules = this.getClimateRules();
-        if (climateRules) {
-            desc += ` - ${climateRules}`;
+        
+        if (presenceRules || compositionRules || climateRules) {
+            desc += `<p><strong>Atmosphere and Climate Special Rules:</strong></p><ul>`;
+            if (presenceRules) {
+                desc += `<li>${presenceRules}</li>`;
+            }
+            if (compositionRules) {
+                desc += `<li>${compositionRules}</li>`;
+            }
+            if (climateRules) {
+                desc += `<li>${climateRules}</li>`;
+            }
+            desc += `</ul>`;
         }
-        desc += `</p>`;
         
         desc += `<p><strong>Habitability:</strong> ${this.getHabitabilityDisplay()}${addPageRef(23,'Table 1-12: Habitability')}</p>`;
         desc += `<p><strong>Major Continents or Archipelagos:</strong> ${this.numContinents === 0 ? 'None' : this.numContinents}${addPageRef(23,'Landmasses')}</p>`;
