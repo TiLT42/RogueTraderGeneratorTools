@@ -10,13 +10,41 @@ The release pipeline is fully automated via GitHub Actions. You only need:
 
 ## Release Steps
 
-### 1. Navigate to GitHub Actions
+### 1. Update Version Number
+
+Before creating a release, update the version number in the codebase:
+
+1. Navigate to the `electron-app` directory:
+   ```bash
+   cd electron-app
+   ```
+
+2. Update the version number using npm:
+   ```bash
+   npm version <newversion>
+   ```
+   Where `<newversion>` is one of: `major`, `minor`, `patch`, or an explicit version like `2.1.0`
+
+   Examples:
+   - For a patch release (bug fixes): `npm version patch` (2.0.3 → 2.0.4)
+   - For a minor release (new features): `npm version minor` (2.0.3 → 2.1.0)
+   - For a major release (breaking changes): `npm version major` (2.0.3 → 3.0.0)
+   - For a specific version: `npm version 2.1.0`
+
+3. Push the version update to the master branch:
+   ```bash
+   git push origin master --tags
+   ```
+
+This ensures the version in `package.json` is updated and committed before triggering the release build.
+
+### 2. Navigate to GitHub Actions
 
 1. Go to the repository on GitHub: https://github.com/TiLT42/RogueTraderGeneratorTools
 2. Click on the "Actions" tab
 3. Select "Release Electron App" from the workflow list on the left
 
-### 2. Trigger a Release Build
+### 3. Trigger a Release Build
 
 1. Click the "Run workflow" button (top right)
 2. Fill in the required inputs:
@@ -25,7 +53,7 @@ The release pipeline is fully automated via GitHub Actions. You only need:
    - **Mark as pre-release** (optional): Check this for beta/alpha releases
 3. Click "Run workflow" to start the build
 
-### 3. Monitor the Build
+### 4. Monitor the Build
 
 The workflow will:
 - Build the application for Windows, macOS, and Linux in parallel
@@ -38,7 +66,7 @@ The workflow will:
 
 Build time: Typically 10-20 minutes depending on GitHub Actions queue
 
-### 4. Review and Publish the Release
+### 5. Review and Publish the Release
 
 1. Once the workflow completes, go to the "Releases" page
 2. Find the new draft release (it will be marked as "Draft")
