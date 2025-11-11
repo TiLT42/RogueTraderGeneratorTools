@@ -1,6 +1,6 @@
 {
   "name": "rogue-trader-generator-tools",
-  "version": "2.0.2",
+  "version": "2.0.3",
   "description": "Electron-based Rogue Trader RPG system and content generator",
   "main": "main.js",
   "scripts": {
