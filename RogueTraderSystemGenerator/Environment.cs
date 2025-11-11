@@ -589,10 +589,12 @@ namespace RogueTraderSystemGenerator
                     LandmarkMountain++;
                 else if (randValue <= 75)
                     LandmarkVolcano++;
-                else
+                else // Exceptional landmark path (76-100 = 25% chance)
                 {
-                    if (!GenerateExceptionalLandmark(planet))
-                        i--;
+                    // Attempt to generate exceptional landmark
+                    // If it fails due to planet conditions, that's OK - move on without retry
+                    GenerateExceptionalLandmark(planet);
+                    // No retry (removed i--) - if planet conditions don't support exceptional landmarks, so be it
                 }
             }
         }

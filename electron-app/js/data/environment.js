@@ -198,8 +198,11 @@
             else if (randValue <= 45) t.landmarkCrater++;
             else if (randValue <= 65) t.landmarkMountain++;
             else if (randValue <= 75) t.landmarkVolcano++;
-            else { // Exceptional landmark path
-                if(!_generateExceptionalLandmark(t, planet)) i--; // retry if failure (mirrors C#)
+            else { // Exceptional landmark path (76-100 = 25% chance)
+                // Attempt to generate exceptional landmark
+                // If it fails due to planet conditions, that's OK - move on without retry
+                _generateExceptionalLandmark(t, planet);
+                // No retry (removed i--) - if planet conditions don't support exceptional landmarks, so be it
             }
         }
     }
@@ -210,19 +213,25 @@
             switch(RollD5()){
                 case 1: // Glacier
                     // RULEBOOK: Only on Ice World OR planets with Trapped Water or higher habitability
+                    // GM discretion: Allow very rare glaciers on inhospitable worlds (ancient ice deposits, shadow regions)
                     if (planet.climateType !== 'IceWorld' && 
                         !['TrappedWater', 'LiquidWater', 'LimitedEcosystem', 'Verdant'].includes(planet.habitability)) {
-                        continue; // Invalid placement per rulebook
-                    }
-                    
-                    // Base probability depends on climate and water availability
-                    switch(planet.climateType){
-                        case 'BurningWorld': chance = 0; break; // Impossible even with trapped water
-                        case 'HotWorld': chance = 5; break; // Very rare, only polar regions
-                        case 'TemperateWorld': chance = 25; break; // Polar regions likely
-                        case 'ColdWorld': chance = 60; break; // Common in cold regions
-                        case 'IceWorld': chance = 95; break; // Almost certain to have glaciers
-                        default: chance = 10; break;
+                        // Give inhospitable worlds a small chance if conditions are right
+                        if (planet.climateType === 'BurningWorld') {
+                            continue; // Still impossible on burning worlds
+                        }
+                        // 5% base chance for "shadow glaciers" or ancient deposits on other inhospitable worlds
+                        chance = 5;
+                    } else {
+                        // Base probability depends on climate and water availability
+                        switch(planet.climateType){
+                            case 'BurningWorld': chance = 0; break; // Impossible even with trapped water
+                            case 'HotWorld': chance = 5; break; // Very rare, only polar regions
+                            case 'TemperateWorld': chance = 25; break; // Polar regions likely
+                            case 'ColdWorld': chance = 60; break; // Common in cold regions
+                            case 'IceWorld': chance = 95; break; // Almost certain to have glaciers
+                            default: chance = 10; break;
+                        }
                     }
                     
                     // Mountain terrain increases likelihood (high altitude = colder)
@@ -244,13 +253,14 @@
                 case 2: // Inland Sea
                     // RULEBOOK: Normally only on Liquid Water, Limited Ecosystem, or Verdant
                     // Can be frozen on Trapped Water (GM discretion)
-                    // Can represent non-water fluids like quicksilver reservoirs
+                    // Can represent non-water fluids like quicksilver reservoirs, lava lakes, chemical pools
                     const hasWaterHabitability = ['LiquidWater', 'LimitedEcosystem', 'Verdant'].includes(planet.habitability);
                     const hasTrappedWater = planet.habitability === 'TrappedWater';
                     
                     if (!hasWaterHabitability && !hasTrappedWater) {
-                        // Very rare non-water inland seas (quicksilver, other fluids)
-                        if (RollD100() > 5) continue; // Only 5% chance on dry worlds
+                        // Non-water inland seas (quicksilver, lava lakes, chemical pools)
+                        // Increased from 5% to 15% to allow more variety on inhospitable worlds
+                        if (RollD100() > 15) continue;
                     }
                     
                     chance = 50;
@@ -286,9 +296,17 @@
                     
                 case 3: // Perpetual Storm
                     // RULEBOOK: Only on Moderate or Heavy atmosphere
-                    if(planet.atmosphereType === 'None' || planet.atmosphereType === 'Thin') continue;
+                    // GM discretion: Thin atmospheres can have dust storms or ionized particle storms
+                    if(planet.atmosphereType === 'None') {
+                        continue; // No atmosphere = no storms
+                    }
                     
                     chance = 30;
+                    
+                    // Thin atmosphere: allow dust/particle storms with reduced chance
+                    if (planet.atmosphereType === 'Thin') {
+                        chance = 10; // Reduced from normal but not impossible
+                    }
                     
                     // Heavy atmospheres make storms more likely and persistent
                     if (planet.atmosphereType === 'Heavy') chance += 25;
@@ -314,12 +332,14 @@
                 case 4: // Reef
                     // RULEBOOK: Only on Liquid Water, Limited Ecosystem, or Verdant
                     // Extinct reefs can be found on planets without water (ancient oceans)
+                    // Crystal formations, mineral deposits can mimic reef structures
                     const hasActiveWater = ['LiquidWater', 'LimitedEcosystem', 'Verdant'].includes(planet.habitability);
                     let isExtinctReef = false;
                     
                     if (!hasActiveWater) {
-                        // Extinct reef - very rare remnants of ancient oceans
-                        if (RollD100() > 2) continue; // Only 2% chance on dry worlds (very rare)
+                        // Extinct reef or reef-like structures (ancient oceans, crystal formations)
+                        // Increased from 2% to 10% to allow more variety
+                        if (RollD100() > 10) continue;
                         isExtinctReef = true;
                     }
                     
@@ -356,8 +376,17 @@
                 case 5: // Whirlpool
                     // RULEBOOK: Only on Liquid Water, Limited Ecosystem, or Verdant
                     // Rarely found without at least 2 orbital features (tidal forces)
-                    if (!['LiquidWater', 'LimitedEcosystem', 'Verdant'].includes(planet.habitability)) {
-                        continue; // Invalid placement per rulebook
+                    // GM discretion: Atmospheric vortices, dust whirls, or gravitational anomalies on dry worlds
+                    const hasLiquidWater = ['LiquidWater', 'LimitedEcosystem', 'Verdant'].includes(planet.habitability);
+                    
+                    if (!hasLiquidWater) {
+                        // Alternative "whirlpool-like" phenomena on dry worlds
+                        // Atmospheric vortices, dust storms, gravitational anomalies
+                        if (planet.atmosphereType === 'None') {
+                            continue; // Need at least some atmosphere for dust/particle whirls
+                        }
+                        // 8% chance for atmospheric or dust whirlpools
+                        if (RollD100() > 8) continue;
                     }
                     
                     chance = 50;
