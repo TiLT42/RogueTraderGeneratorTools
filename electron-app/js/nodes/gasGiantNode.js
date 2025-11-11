@@ -217,15 +217,17 @@ class GasGiantNode extends NodeBase {
         desc += `<p><strong>Body:</strong> ${this.body}${addPageRef(19,'Table 1-6: Body')}</p>`;
         desc += `<p><strong>Gravity:</strong> ${this.gravity}${addPageRef(20,'Table 1-7: Gravity')}</p>`;
         if (this.planetaryRingsDebris>0) {
-            if (this.planetaryRingsDebris===1) desc += `<p><strong>Planetary Rings (Debris):</strong> No additional Pilot penalty (baseline).${addPageRef(20,'Table 1-8: Orbital Features')}</p>`;
-            else {
+            if (this.planetaryRingsDebris===1) {
+                desc += `<p><strong>Planetary Rings (Debris):</strong> A vessel with cause to pass directly through the ring must make a Challenging (+0) Pilot (Space Craft)+Manoeuvrability Test as if passing through an Asteroid Field (RT Core p226-227). Avoiding the field requires a detour.${addPageRef(20,'Table 1-8: Orbital Features')}</p>`;
+            } else {
                 const penalty = -10 * (this.planetaryRingsDebris - 1);
-                desc += `<p><strong>Planetary Rings (Debris):</strong> ${penalty} penalty to required Pilot Test when passing through the Rings.${addPageRef(20,'Table 1-8: Orbital Features')}</p>`;
+                desc += `<p><strong>Planetary Rings (Debris):</strong> A vessel with cause to pass directly through the ring must make a Challenging (+0) Pilot (Space Craft)+Manoeuvrability Test as if passing through an Asteroid Field (RT Core p226-227), suffering a ${penalty} penalty. Avoiding the field requires a detour.${addPageRef(20,'Table 1-8: Orbital Features')}</p>`;
             }
         }
         if (this.planetaryRingsDust>0) {
-            const penalty = ((-5*(this.planetaryRingsDust -1)) -20); // matches C# calc
-            desc += `<p><strong>Planetary Rings (Dust):</strong> ${penalty} penalty to use augers through or within the Rings.${addPageRef(20,'Table 1-8: Orbital Features')}</p>`;
+            // Two steps more difficult = -20 base, then -5 per every TWO additional instances
+            const penalty = -20 + (-5 * Math.floor((this.planetaryRingsDust - 1) / 2));
+            desc += `<p><strong>Planetary Rings (Dust):</strong> Any Tests using the ship's auger arrays on a target within, on, or directly through the ring suffer a ${penalty} penalty.${addPageRef(20,'Table 1-8: Orbital Features')}</p>`;
         }
         // Gas giants in WPF do not list Base Mineral Resources; include a consistent placeholder for clarity
         if (this.inhabitants !== 'None') {

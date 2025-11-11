@@ -50,18 +50,18 @@ namespace RogueTraderSystemGenerator.Nodes
             DocBuilder.AddContentLine(ref _flowDocument, "Body", new DocContentItem(_body, 19, "Table 1-6: Body"));
             DocBuilder.AddContentLine(ref _flowDocument, "Gravity", new DocContentItem(_gravity, 20, "Table 1-7: Gravity"));
             if(_planetaryRingsDebris == 1)
-                DocBuilder.AddContentLine(ref _flowDocument, "Planetary Rings (Debris)", new DocContentItem("No additional penalty to required Pilot Test when passing through the Rings", 20, "Table 1-8: Orbital Features"));
+                DocBuilder.AddContentLine(ref _flowDocument, "Planetary Rings (Debris)", new DocContentItem("A vessel with cause to pass directly through the ring must make a Challenging (+0) Pilot (Space Craft)+Manoeuvrability Test as if passing through an Asteroid Field (RT Core p226-227). Avoiding the field requires a detour", 20, "Table 1-8: Orbital Features"));
             else if(_planetaryRingsDebris > 1)
             {
                 int multiplier = _planetaryRingsDebris - 1;
                 int penalty = -10 * multiplier;
-                DocBuilder.AddContentLine(ref _flowDocument, "Planetary Rings (Debris)", new DocContentItem(penalty + " penalty to required Pilot Test when passing through the Rings", 20, "Table 1-8: Orbital Features"));
+                DocBuilder.AddContentLine(ref _flowDocument, "Planetary Rings (Debris)", new DocContentItem("A vessel with cause to pass directly through the ring must make a Challenging (+0) Pilot (Space Craft)+Manoeuvrability Test as if passing through an Asteroid Field (RT Core p226-227), suffering a " + penalty + " penalty. Avoiding the field requires a detour", 20, "Table 1-8: Orbital Features"));
             }
             if (_planetaryRingsDust > 0)
             {
-                int multiplier = _planetaryRingsDust - 1;
-                int penalty = (-5*multiplier) - 20;
-                DocBuilder.AddContentLine(ref _flowDocument, "Planetary Rings (Dust)", new DocContentItem(penalty + " penalty to use augers through or within the Rings", 20, "Table 1-8: Orbital Features"));
+                // Two steps more difficult = -20 base, then -5 per every TWO additional instances
+                int penalty = -20 + (-5 * ((_planetaryRingsDust - 1) / 2));
+                DocBuilder.AddContentLine(ref _flowDocument, "Planetary Rings (Dust)", new DocContentItem("Any Tests using the ship's auger arrays on a target within, on, or directly through the ring suffer a " + penalty + " penalty", 20, "Table 1-8: Orbital Features"));
             }
 
             if (_inhabitants != Species.None)
