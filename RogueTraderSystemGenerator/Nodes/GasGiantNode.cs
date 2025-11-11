@@ -61,7 +61,7 @@ namespace RogueTraderSystemGenerator.Nodes
             {
                 // Two steps more difficult = -20 base, then -5 per every TWO additional instances
                 int penalty = -20 + (-5 * ((_planetaryRingsDust - 1) / 2));
-                DocBuilder.AddContentLine(ref _flowDocument, "Planetary Rings (Dust)", new DocContentItem("Tests using auger arrays on targets within, on, or through the Rings suffer " + penalty + " penalty (two steps more difficult)", 20, "Table 1-8: Orbital Features"));
+                DocBuilder.AddContentLine(ref _flowDocument, "Planetary Rings (Dust)", new DocContentItem("Tests using auger arrays on targets within, on, or through the Rings suffer " + penalty + " penalty", 20, "Table 1-8: Orbital Features"));
             }
 
             if (_inhabitants != Species.None)

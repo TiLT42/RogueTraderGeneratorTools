@@ -227,7 +227,7 @@ class GasGiantNode extends NodeBase {
         if (this.planetaryRingsDust>0) {
             // Two steps more difficult = -20 base, then -5 per every TWO additional instances
             const penalty = -20 + (-5 * Math.floor((this.planetaryRingsDust - 1) / 2));
-            desc += `<p><strong>Planetary Rings (Dust):</strong> Tests using auger arrays on targets within, on, or through the Rings suffer ${penalty} penalty (two steps more difficult).${addPageRef(20,'Table 1-8: Orbital Features')}</p>`;
+            desc += `<p><strong>Planetary Rings (Dust):</strong> Tests using auger arrays on targets within, on, or through the Rings suffer ${penalty} penalty.${addPageRef(20,'Table 1-8: Orbital Features')}</p>`;
         }
         // Gas giants in WPF do not list Base Mineral Resources; include a consistent placeholder for clarity
         if (this.inhabitants !== 'None') {
