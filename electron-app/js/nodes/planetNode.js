@@ -1561,17 +1561,21 @@ class PlanetNode extends NodeBase {
 
         // Resources
         desc += `<h4>Base Mineral Resources</h4>`;
-        if (this.mineralResources.length === 0) desc += '<p>None</p>'; else {
-            desc += '<ul>' + this.mineralResources.map(r=> (typeof r === 'string'? `<li>${r}</li>` : `<li>${r.type} (Abundance ${r.abundance})</li>`)).join('') + '</ul>';
+        const mineralResourcesFiltered = this.mineralResources.filter(r => typeof r === 'string' || r.abundance > 0);
+        if (mineralResourcesFiltered.length === 0) desc += '<p>None</p>'; else {
+            desc += '<ul>' + mineralResourcesFiltered.map(r=> (typeof r === 'string'? `<li>${r}</li>` : `<li>${r.type} (Abundance ${r.abundance})</li>`)).join('') + '</ul>';
         }
         desc += `<h4>Organic Compounds</h4>`;
-        if (this.organicCompounds.length === 0) desc += '<p>None</p>'; else {
-            desc += '<ul>' + this.organicCompounds.map(c=> typeof c==='string'? `<li>${c}</li>` : `<li>${c.type} (Abundance ${c.abundance})</li>`).join('') + '</ul>';
+        const organicCompoundsFiltered = this.organicCompounds.filter(c => typeof c === 'string' || c.abundance > 0);
+        if (organicCompoundsFiltered.length === 0) desc += '<p>None</p>'; else {
+            desc += '<ul>' + organicCompoundsFiltered.map(c=> typeof c==='string'? `<li>${c}</li>` : `<li>${c.type} (Abundance ${c.abundance})</li>`).join('') + '</ul>';
         }
         desc += `<h4>Archeotech Caches</h4>`;
-        if (this.archeotechCaches.length === 0) desc += '<p>None</p>'; else desc += '<ul>'+this.archeotechCaches.map(a=> (typeof a==='string'? `<li>${a}</li>` : `<li>${a.type} (Abundance ${a.abundance})</li>`)).join('')+'</ul>';
+        const archeotechCachesFiltered = this.archeotechCaches.filter(a => typeof a === 'string' || a.abundance > 0);
+        if (archeotechCachesFiltered.length === 0) desc += '<p>None</p>'; else desc += '<ul>'+archeotechCachesFiltered.map(a=> (typeof a==='string'? `<li>${a}</li>` : `<li>${a.type} (Abundance ${a.abundance})</li>`)).join('')+'</ul>';
         desc += `<h4>Xenos Ruins</h4>`;
-        if (this.xenosRuins.length === 0) desc += '<p>None</p>'; else desc += '<ul>'+this.xenosRuins.map(x=> (typeof x==='string'? `<li>${x}</li>` : `<li>${x.type} (Abundance ${x.abundance})</li>`)).join('')+'</ul>';
+        const xenosRuinsFiltered = this.xenosRuins.filter(x => typeof x === 'string' || x.abundance > 0);
+        if (xenosRuinsFiltered.length === 0) desc += '<p>None</p>'; else desc += '<ul>'+xenosRuinsFiltered.map(x=> (typeof x==='string'? `<li>${x}</li>` : `<li>${x.type} (Abundance ${x.abundance})</li>`)).join('')+'</ul>';
 
         // Inhabitants (simplified model retained)
     desc += `<h4>Inhabitants</h4>`;
