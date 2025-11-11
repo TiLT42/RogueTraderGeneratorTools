@@ -1333,6 +1333,79 @@ class PlanetNode extends NodeBase {
         }
     }
 
+    // Dynamically generate atmospheric presence rules description
+    getAtmosphericPresenceRules() {
+        switch (this.atmosphericPresence) {
+            case 'None':
+                return 'Activity on the Planet is treated as being in vacuum, as covered on pages 262–263 of the Rogue Trader Core Rulebook.';
+            case 'Thin':
+                return 'Any time an Explorer relying on the outside air gains Fatigue, he gains the normal amount plus one additional level of Fatigue instead.';
+            case 'Heavy':
+                return 'The oppressive weight of the planet\'s air imposes a –5 penalty on Strength or Toughness Tests, at the GM\'s discretion. A full hour of relying on such an atmosphere for air inflicts a single level of Fatigue. This effect is not cumulative, no matter how long a character relies on the air. However, recovery from this level of Fatigue cannot occur while relying on such an atmosphere.';
+            default:
+                return '';
+        }
+    }
+
+    // Dynamically generate atmospheric composition rules description
+    getAtmosphericCompositionRules() {
+        let rules = '';
+        
+        switch (this.atmosphericComposition) {
+            case 'Deadly':
+                rules = 'Anyone not protected by a full environmental seal suffers 1d5+1 Damage each Round that ignore Toughness Bonus and Armour.';
+                // Additional rule if Heavy atmosphere
+                if (this.atmosphericPresence === 'Heavy') {
+                    rules += ' The heavy atmosphere wears away at resistance, breaking into environmental seals after 1d10+2 hours.';
+                }
+                break;
+            case 'Corrosive':
+                {
+                    let difficulty = 'Difficult (-10)';
+                    if (this.atmosphericPresence === 'Thin') {
+                        difficulty = 'Challenging (+0)';
+                    } else if (this.atmosphericPresence === 'Heavy') {
+                        difficulty = 'Hard (-20)';
+                    }
+                    rules = `Anyone not protected by a full environmental seal must make a ${difficulty} Toughness Test each Round, or suffer 1d5 Damage that ignores Armour and Toughness Bonus. Continued exposure results in suffocation, as per page 261 of the Rogue Trader Core Rulebook.`;
+                }
+                break;
+            case 'Toxic':
+                {
+                    let difficulty = 'Challenging (+0)';
+                    if (this.atmosphericPresence === 'Thin') {
+                        difficulty = 'Ordinary (+10)';
+                    } else if (this.atmosphericPresence === 'Heavy') {
+                        difficulty = 'Difficult (-10)';
+                    }
+                    rules = `Simply breathing the air requires a ${difficulty} Toughness Test each Round to avoid suffering 1 Damage that ignores Toughness Bonus and Armour. Additionally, continued exposure results in suffocation, as per the rules on page 261 of the Rogue Trader Core Rulebook.`;
+                }
+                break;
+            default:
+                rules = '';
+        }
+        
+        return rules;
+    }
+
+    // Dynamically generate climate rules description
+    getClimateRules() {
+        switch (this.climateType) {
+            case 'BurningWorld':
+                return 'Tests made to resist the heat are Very Hard (-30).';
+            case 'HotWorld':
+                return 'Outside of sheltered regions, tests made to resist the heat generally range from Challenging (+0) to Hard (-20). In some cases, the sheltered regions are also afflicted by extreme heat, but of a less severe degree than the rest of the Planet.';
+            case 'TemperateWorld':
+                return 'Tests made to resist temperature extremes on this Planet rarely exceed Difficult (-10).';
+            case 'ColdWorld':
+                return 'Outside of sheltered regions, tests made to resist the cold generally range from Challenging (+0) to Hard (-20). In some cases, the sheltered regions are also afflicted by extreme cold, but of a less severe degree than the rest of the Planet.';
+            case 'IceWorld':
+                return 'Tests made to resist the cold are Very Hard (-30).';
+            default:
+                return '';
+        }
+    }
+
     updateDescription() {
         // Start with classification to identify planet vs moon
         let desc = '';
@@ -1340,9 +1413,31 @@ class PlanetNode extends NodeBase {
         desc += `<p><strong>Classification:</strong> ${this.isMoon ? 'Moon' : 'Planet'}</p>`;
         desc += `<p><strong>Body:</strong> ${this.body}${addPageRef(19,'Table 1-6: Body')}</p>`;
         desc += `<p><strong>Gravity:</strong> ${this.gravity}${addPageRef(20,'Table 1-7: Gravity')}</p>`;
-        desc += `<p><strong>Atmospheric Presence:</strong> ${this.atmosphericPresence}${addPageRef(21,'Table 1-9: Atmospheric Presence')}</p>`;
-        desc += `<p><strong>Atmospheric Composition:</strong> ${this.atmosphericComposition}${addPageRef(21,'Table 1-10: Atmospheric Composition')}</p>`;
-        desc += `<p><strong>Climate:</strong> ${this.climate}${addPageRef(22,'Table 1-11: Climate')}</p>`;
+        
+        // Atmospheric Presence with rules
+        desc += `<p><strong>Atmospheric Presence:</strong> ${this.atmosphericPresence}${addPageRef(21,'Table 1-9: Atmospheric Presence')}`;
+        const presenceRules = this.getAtmosphericPresenceRules();
+        if (presenceRules) {
+            desc += ` - ${presenceRules}`;
+        }
+        desc += `</p>`;
+        
+        // Atmospheric Composition with rules
+        desc += `<p><strong>Atmospheric Composition:</strong> ${this.atmosphericComposition}${addPageRef(21,'Table 1-10: Atmospheric Composition')}`;
+        const compositionRules = this.getAtmosphericCompositionRules();
+        if (compositionRules) {
+            desc += ` - ${compositionRules}`;
+        }
+        desc += `</p>`;
+        
+        // Climate with rules
+        desc += `<p><strong>Climate:</strong> ${this.climate}${addPageRef(22,'Table 1-11: Climate')}`;
+        const climateRules = this.getClimateRules();
+        if (climateRules) {
+            desc += ` - ${climateRules}`;
+        }
+        desc += `</p>`;
+        
         desc += `<p><strong>Habitability:</strong> ${this.getHabitabilityDisplay()}${addPageRef(23,'Table 1-12: Habitability')}</p>`;
         desc += `<p><strong>Major Continents or Archipelagos:</strong> ${this.numContinents === 0 ? 'None' : this.numContinents}${addPageRef(23,'Landmasses')}</p>`;
         desc += `<p><strong>Smaller Islands:</strong> ${this.numIslands === 0 ? 'None' : this.numIslands}${addPageRef(23,'Landmasses')}</p>`;
