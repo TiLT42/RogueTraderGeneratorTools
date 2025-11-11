@@ -30,6 +30,7 @@
         Crater: { page: 32, book: RuleBooks.StarsOfInequity },
         Glacier: { page: 32, book: RuleBooks.StarsOfInequity },
         'Inland Sea': { page: 32, book: RuleBooks.StarsOfInequity },
+        'Frozen Inland Sea': { page: 32, book: RuleBooks.StarsOfInequity }, // Same page as Inland Sea
         Mountain: { page: 32, book: RuleBooks.StarsOfInequity },
         'Perpetual Storm': { page: 32, book: RuleBooks.StarsOfInequity },
         Reef: { page: 33, book: RuleBooks.StarsOfInequity },
@@ -273,7 +274,14 @@
                     chance -= t.stagnant * 30; // Stagnant reduces likelihood of large water bodies
                     chance -= t.desolate * 20; // Desolate regions unlikely to have seas
                     
-                    if(RollD100() <= chance){ t.landmarkInlandSea++; return true; }
+                    if(RollD100() <= chance){ 
+                        t.landmarkInlandSea++; 
+                        // Mark as frozen if on cold/ice world or trapped water
+                        if (planet.climateType === 'IceWorld' || planet.climateType === 'ColdWorld' || hasTrappedWater) {
+                            t.landmarkInlandSeaIsFrozen = true;
+                        }
+                        return true; 
+                    }
                     break;
                     
                 case 3: // Perpetual Storm
@@ -391,7 +399,11 @@
         pushLandmark(list, 'Cave Network', t.landmarkCaveNetwork);
         pushLandmark(list, 'Crater', t.landmarkCrater);
         pushLandmark(list, 'Glacier', t.landmarkGlacier);
-        pushLandmark(list, 'Inland Sea', t.landmarkInlandSea);
+        // Handle frozen inland seas specially
+        if (t.landmarkInlandSea > 0) {
+            const seaName = t.landmarkInlandSeaIsFrozen ? 'Frozen Inland Sea' : 'Inland Sea';
+            pushLandmark(list, seaName, t.landmarkInlandSea);
+        }
         pushLandmark(list, 'Mountain', t.landmarkMountain);
         pushLandmark(list, 'Perpetual Storm', t.landmarkPerpetualStorm);
         // Handle extinct reefs specially
