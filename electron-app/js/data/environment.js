@@ -30,9 +30,11 @@
         Crater: { page: 32, book: RuleBooks.StarsOfInequity },
         Glacier: { page: 32, book: RuleBooks.StarsOfInequity },
         'Inland Sea': { page: 32, book: RuleBooks.StarsOfInequity },
+        'Frozen Inland Sea': { page: 32, book: RuleBooks.StarsOfInequity }, // Same page as Inland Sea
         Mountain: { page: 32, book: RuleBooks.StarsOfInequity },
         'Perpetual Storm': { page: 32, book: RuleBooks.StarsOfInequity },
         Reef: { page: 33, book: RuleBooks.StarsOfInequity },
+        'Extinct Reef': { page: 33, book: RuleBooks.StarsOfInequity }, // Same page as Reef
         Volcano: { page: 33, book: RuleBooks.StarsOfInequity },
         Whirlpool: { page: 33, book: RuleBooks.StarsOfInequity }
     });
@@ -207,59 +209,183 @@
             let chance = 0;
             switch(RollD5()){
                 case 1: // Glacier
-                    switch(planet.climateType){
-                        case 'BurningWorld': chance -= 100; break;
-                        case 'HotWorld': chance -= 20; break;
-                        case 'TemperateWorld': chance += 10; break;
-                        case 'ColdWorld': chance += 50; break;
-                        case 'IceWorld': chance += 100; break;
-                        default: break;
+                    // RULEBOOK: Only on Ice World OR planets with Trapped Water or higher habitability
+                    if (planet.climateType !== 'IceWorld' && 
+                        !['TrappedWater', 'LiquidWater', 'LimitedEcosystem', 'Verdant'].includes(planet.habitability)) {
+                        continue; // Invalid placement per rulebook
                     }
+                    
+                    // Base probability depends on climate and water availability
+                    switch(planet.climateType){
+                        case 'BurningWorld': chance = 0; break; // Impossible even with trapped water
+                        case 'HotWorld': chance = 5; break; // Very rare, only polar regions
+                        case 'TemperateWorld': chance = 25; break; // Polar regions likely
+                        case 'ColdWorld': chance = 60; break; // Common in cold regions
+                        case 'IceWorld': chance = 95; break; // Almost certain to have glaciers
+                        default: chance = 10; break;
+                    }
+                    
+                    // Mountain terrain increases likelihood (high altitude = colder)
                     if(t.baseTerrain === TerritoryBaseTerrain.Mountain) chance += 25;
-                    chance += t.extremeTemperature*15;
+                    
+                    // Extreme temperature trait affects probability
+                    // On cold/ice worlds, makes glaciers more likely; on hot worlds, less likely
+                    if (planet.climateType === 'ColdWorld' || planet.climateType === 'IceWorld') {
+                        chance += t.extremeTemperature * 15;
+                    } else if (planet.climateType === 'HotWorld' || planet.climateType === 'BurningWorld') {
+                        chance -= t.extremeTemperature * 15;
+                    } else {
+                        chance += t.extremeTemperature * 10; // Neutral impact on temperate worlds
+                    }
+                    
                     if(RollD100() <= chance){ t.landmarkGlacier++; return true; }
                     break;
+                    
                 case 2: // Inland Sea
+                    // RULEBOOK: Normally only on Liquid Water, Limited Ecosystem, or Verdant
+                    // Can be frozen on Trapped Water (GM discretion)
+                    // Can represent non-water fluids like quicksilver reservoirs
+                    const hasWaterHabitability = ['LiquidWater', 'LimitedEcosystem', 'Verdant'].includes(planet.habitability);
+                    const hasTrappedWater = planet.habitability === 'TrappedWater';
+                    
+                    if (!hasWaterHabitability && !hasTrappedWater) {
+                        // Very rare non-water inland seas (quicksilver, other fluids)
+                        if (RollD100() > 5) continue; // Only 5% chance on dry worlds
+                    }
+                    
                     chance = 50;
-                    if (t.baseTerrain === TerritoryBaseTerrain.Mountain) chance -= 50;
-                    if (t.baseTerrain === TerritoryBaseTerrain.Wasteland) chance -= 60;
-                    if (planet.climateType === 'BurningWorld') chance -= 100;
-                    if (planet.climateType === 'HotWorld') chance -= 40;
-                    chance += t.expansive*15;
-                    chance += t.fertile*35;
-                    chance -= t.stagnant*30;
-                    if(RollD100() <= chance){ t.landmarkInlandSea++; return true; }
+                    
+                    // Trapped water = frozen seas, less likely than liquid
+                    if (hasTrappedWater) chance -= 30;
+                    
+                    // Terrain considerations
+                    if (t.baseTerrain === TerritoryBaseTerrain.Mountain) chance -= 50; // Mountainous regions unlikely to contain seas
+                    if (t.baseTerrain === TerritoryBaseTerrain.Wasteland) chance -= 60; // Wastelands unlikely to support large bodies of water
+                    if (t.baseTerrain === TerritoryBaseTerrain.Plains) chance += 20; // Plains are ideal for inland seas
+                    
+                    // Climate considerations
+                    if (planet.climateType === 'BurningWorld') chance -= 100; // Water would evaporate
+                    if (planet.climateType === 'HotWorld') chance -= 40; // Hot climates reduce water retention
+                    if (planet.climateType === 'IceWorld' && hasTrappedWater) chance += 20; // Frozen seas common
+                    
+                    // Territory traits
+                    chance += t.expansive * 15; // Large territories more likely to have inland seas
+                    chance += t.fertile * 35; // Fertile regions suggest water availability
+                    chance -= t.stagnant * 30; // Stagnant reduces likelihood of large water bodies
+                    chance -= t.desolate * 20; // Desolate regions unlikely to have seas
+                    
+                    if(RollD100() <= chance){ 
+                        t.landmarkInlandSea++; 
+                        // Mark as frozen if on cold/ice world or trapped water
+                        if (planet.climateType === 'IceWorld' || planet.climateType === 'ColdWorld' || hasTrappedWater) {
+                            t.landmarkInlandSeaIsFrozen = true;
+                        }
+                        return true; 
+                    }
                     break;
+                    
                 case 3: // Perpetual Storm
+                    // RULEBOOK: Only on Moderate or Heavy atmosphere
                     if(planet.atmosphereType === 'None' || planet.atmosphereType === 'Thin') continue;
+                    
                     chance = 30;
+                    
+                    // Heavy atmospheres make storms more likely and persistent
                     if (planet.atmosphereType === 'Heavy') chance += 25;
+                    
+                    // Extreme climates create more persistent weather patterns
                     if (planet.climateType === 'IceWorld') chance += 20;
                     if (planet.climateType === 'BurningWorld') chance += 20;
                     if (planet.climateType === 'ColdWorld') chance += 10;
                     if (planet.climateType === 'HotWorld') chance += 10;
-                    chance += t.boundary*20;
-                    chance += t.desolate*10;
-                    chance += t.extremeTemperature*15;
-                    chance -= t.fertile*15;
-                    chance -= t.notableSpecies*10;
-                    chance += t.ruined*50;
-                    chance -= t.stagnant*20;
+                    
+                    // Territory traits
+                    chance += t.boundary * 20; // Boundaries between regions create weather conflicts
+                    chance += t.desolate * 10; // Harsh conditions support persistent storms
+                    chance += t.extremeTemperature * 15; // Temperature extremes drive weather
+                    chance -= t.fertile * 15; // Fertile regions suggest stable, benign weather
+                    chance -= t.notableSpecies * 10; // Life suggests less hostile conditions
+                    chance += t.ruined * 50; // Ruins might be caused by or attract storms
+                    chance -= t.stagnant * 20; // Stagnant air less likely to form persistent storms
+                    
                     if(RollD100() <= chance){ t.landmarkPerpetualStorm++; return true; }
                     break;
+                    
                 case 4: // Reef
+                    // RULEBOOK: Only on Liquid Water, Limited Ecosystem, or Verdant
+                    // Extinct reefs can be found on planets without water (ancient oceans)
+                    const hasActiveWater = ['LiquidWater', 'LimitedEcosystem', 'Verdant'].includes(planet.habitability);
+                    let isExtinctReef = false;
+                    
+                    if (!hasActiveWater) {
+                        // Extinct reef - very rare remnants of ancient oceans
+                        if (RollD100() > 2) continue; // Only 2% chance on dry worlds (very rare)
+                        isExtinctReef = true;
+                    }
+                    
                     chance = 50;
-                    if (planet.climateType === 'BurningWorld') chance -= 50;
-                    if (t.baseTerrain === TerritoryBaseTerrain.Mountain) chance -= 40;
-                    if (t.baseTerrain === TerritoryBaseTerrain.Wasteland) chance -= 40;
-                    if(RollD100() <= chance){ t.landmarkReef++; return true; }
+                    
+                    // Terrain considerations - reefs are coastal/oceanic features
+                    if (t.baseTerrain === TerritoryBaseTerrain.Mountain) chance -= 40; // Mountains unlikely to have reefs
+                    if (t.baseTerrain === TerritoryBaseTerrain.Wasteland) chance -= 40; // Wastelands unlikely
+                    if (t.baseTerrain === TerritoryBaseTerrain.Plains) chance += 20; // Coastal plains ideal for reefs
+                    if (t.baseTerrain === TerritoryBaseTerrain.Swamp) chance += 15; // Swamps near water
+                    
+                    // Climate considerations
+                    if (planet.climateType === 'BurningWorld' && !isExtinctReef) chance -= 50; // Too hot for living reefs
+                    if (planet.climateType === 'IceWorld' && !isExtinctReef) chance -= 30; // Ice covers reefs
+                    if (planet.climateType === 'TemperateWorld' || planet.climateType === 'HotWorld') chance += 15; // Ideal for reef growth
+                    
+                    // Territory traits
+                    chance += t.expansive * 15; // Large territories more likely to have extensive reefs
+                    chance += t.notableSpecies * 20; // Life suggests reef-supporting conditions
+                    chance -= t.desolate * 30; // Desolate regions unlikely to support reefs
+                    
+                    // Mark as extinct reef if on dry planet
+                    if(RollD100() <= chance){ 
+                        if (isExtinctReef) {
+                            t.landmarkReef++; 
+                            t.landmarkReefIsExtinct = true; // Flag for display
+                        } else {
+                            t.landmarkReef++; 
+                        }
+                        return true; 
+                    }
                     break;
+                    
                 case 5: // Whirlpool
+                    // RULEBOOK: Only on Liquid Water, Limited Ecosystem, or Verdant
+                    // Rarely found without at least 2 orbital features (tidal forces)
+                    if (!['LiquidWater', 'LimitedEcosystem', 'Verdant'].includes(planet.habitability)) {
+                        continue; // Invalid placement per rulebook
+                    }
+                    
                     chance = 50;
-                    if (planet.climateType === 'BurningWorld') chance -= 50;
-                    if (t.baseTerrain === TerritoryBaseTerrain.Mountain) chance -= 40;
-                    if (t.baseTerrain === TerritoryBaseTerrain.Wasteland) chance -= 40;
-                    if ((planet.numOrbitalFeatures||0) < 2) chance -= 45; else chance += (planet.numOrbitalFeatures - 2)*50;
+                    
+                    // Terrain considerations - whirlpools are oceanic features
+                    if (t.baseTerrain === TerritoryBaseTerrain.Mountain) chance -= 40; // Mountains unlikely
+                    if (t.baseTerrain === TerritoryBaseTerrain.Wasteland) chance -= 40; // Wastelands unlikely
+                    if (t.baseTerrain === TerritoryBaseTerrain.Plains) chance += 15; // Coastal regions
+                    if (t.baseTerrain === TerritoryBaseTerrain.Swamp) chance -= 20; // Shallow water, less likely
+                    
+                    // Climate considerations
+                    if (planet.climateType === 'BurningWorld') chance -= 50; // Extreme heat disrupts stable vortices
+                    
+                    // CRITICAL: Orbital features affect tidal forces
+                    // Rulebook states whirlpools are "rarely found" without at least 2 orbital features
+                    const numOrbitalFeatures = planet.numOrbitalFeatures || 0;
+                    if (numOrbitalFeatures < 2) {
+                        chance -= 45; // Greatly reduced without sufficient tidal forces
+                    } else {
+                        // Each additional orbital feature beyond 2 increases tidal complexity
+                        chance += (numOrbitalFeatures - 2) * 50;
+                    }
+                    
+                    // Territory traits
+                    chance += t.boundary * 15; // Boundaries near coasts create complex currents
+                    chance += t.extremeTemperature * 10; // Temperature differences drive currents
+                    chance -= t.stagnant * 40; // Stagnant water unlikely to form whirlpools
+                    
                     if(RollD100() <= chance){ t.landmarkWhirlpool++; return true; }
                     break;
             }
@@ -273,10 +399,18 @@
         pushLandmark(list, 'Cave Network', t.landmarkCaveNetwork);
         pushLandmark(list, 'Crater', t.landmarkCrater);
         pushLandmark(list, 'Glacier', t.landmarkGlacier);
-        pushLandmark(list, 'Inland Sea', t.landmarkInlandSea);
+        // Handle frozen inland seas specially
+        if (t.landmarkInlandSea > 0) {
+            const seaName = t.landmarkInlandSeaIsFrozen ? 'Frozen Inland Sea' : 'Inland Sea';
+            pushLandmark(list, seaName, t.landmarkInlandSea);
+        }
         pushLandmark(list, 'Mountain', t.landmarkMountain);
         pushLandmark(list, 'Perpetual Storm', t.landmarkPerpetualStorm);
-        pushLandmark(list, 'Reef', t.landmarkReef);
+        // Handle extinct reefs specially
+        if (t.landmarkReef > 0) {
+            const reefName = t.landmarkReefIsExtinct ? 'Extinct Reef' : 'Reef';
+            pushLandmark(list, reefName, t.landmarkReef);
+        }
         pushLandmark(list, 'Volcano', t.landmarkVolcano);
         pushLandmark(list, 'Whirlpool', t.landmarkWhirlpool);
         return list;
