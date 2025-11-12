@@ -350,14 +350,10 @@
         }
     }
 
-    // Each of the following replicate identical probability tables from C# (copy structure for clarity even if identical)
-    function generateForestTrait(t){ _genericTraitRoll(t); }
-    function generateMountainTrait(t){ _genericTraitRoll(t); }
-    function generatePlainsTrait(t){ _genericTraitRoll(t); }
-    function generateSwampTrait(t){ _genericTraitRoll(t); }
-    function generateWastelandTrait(t){ _genericTraitRoll(t); }
-
-    function _genericTraitRoll(t){
+    // Territory trait generation functions using correct tables from Stars of Inequity Table 1-15
+    
+    // Forests: Table 1-15
+    function generateForestTrait(t){
         const randValue = RollD100();
         if (randValue <= 5) t.exoticNature++;
         else if (randValue <= 25) t.expansive++;
@@ -366,8 +362,68 @@
         else if (randValue <= 80) t.uniqueCompound++;
         else if (randValue <= 95) t.unusualLocation++;
         else { // 96-100 -> two more rolls
-            _genericTraitRoll(t);
-            _genericTraitRoll(t);
+            generateForestTrait(t);
+            generateForestTrait(t);
+        }
+    }
+    
+    // Mountain Ranges: Table 1-15
+    function generateMountainTrait(t){
+        const randValue = RollD100();
+        if (randValue <= 25) t.boundary++;
+        else if (randValue <= 50) t.expansive++;
+        else if (randValue <= 65) t.extremeTemperature++;
+        else if (randValue <= 75) t.foothills++;
+        else if (randValue <= 85) t.notableSpecies++;
+        else if (randValue <= 95) t.unusualLocation++;
+        else { // 96-100 -> two more rolls
+            generateMountainTrait(t);
+            generateMountainTrait(t);
+        }
+    }
+    
+    // Plains: Table 1-15
+    function generatePlainsTrait(t){
+        const randValue = RollD100();
+        if (randValue <= 10) t.brokenGround++;
+        else if (randValue <= 30) t.expansive++;
+        else if (randValue <= 45) t.extremeTemperature++;
+        else if (randValue <= 70) t.fertile++;
+        else if (randValue <= 85) t.notableSpecies++;
+        else if (randValue <= 95) t.unusualLocation++;
+        else { // 96-100 -> two more rolls
+            generatePlainsTrait(t);
+            generatePlainsTrait(t);
+        }
+    }
+    
+    // Swamps: Table 1-15
+    function generateSwampTrait(t){
+        const randValue = RollD100();
+        if (randValue <= 10) t.expansive++;
+        else if (randValue <= 30) t.extremeTemperature++;
+        else if (randValue <= 45) t.notableSpecies++;
+        else if (randValue <= 65) t.stagnant++;
+        else if (randValue <= 75) t.unusualLocation++;
+        else if (randValue <= 95) t.virulent++;
+        else { // 96-100 -> two more rolls
+            generateSwampTrait(t);
+            generateSwampTrait(t);
+        }
+    }
+    
+    // Wastelands: Table 1-15
+    function generateWastelandTrait(t){
+        const randValue = RollD100();
+        if (randValue <= 20) t.desolate++;
+        else if (randValue <= 40) t.expansive++;
+        else if (randValue <= 70) t.extremeTemperature++;
+        else if (randValue <= 75) t.notableSpecies++;
+        else if (randValue <= 80) t.ruined++;
+        else if (randValue <= 95) t.unusualLocation++;
+        else { // 96-100 -> two more rolls
+            generateWastelandTrait(t);
+            generateWastelandTrait(t);
         }
     }
 
