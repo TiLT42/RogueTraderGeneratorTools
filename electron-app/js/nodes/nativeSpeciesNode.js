@@ -8,7 +8,6 @@ class NativeSpeciesNode extends NodeBase {
         this.fontForeground = '#95a5a6';
         this.headerLevel = 1; // H1: Organizational node for xenos species
         this.systemCreationRules = null; // optional reference when passed in
-        this.pageReference = createPageReference(0); // C# just adds a header; page 0 placeholder (no explicit table)
     }
 
     generate() {
@@ -57,7 +56,7 @@ class NativeSpeciesNode extends NodeBase {
             nodeName: data.nodeName || 'Native Species',
             description: data.description || '',
             customDescription: data.customDescription || '',
-            pageReference: data.pageReference || createPageReference(0),
+            pageReference: data.pageReference || '',
             isGenerated: data.isGenerated || false,
             fontWeight: data.fontWeight || 'normal',
             fontStyle: data.fontStyle || 'normal',

@@ -10,7 +10,6 @@ class SolarFlaresNode extends NodeBase {
         this.fontWeight = 'bold';
         this.headerLevel = 3; // H3: Feature/hazard node
         this.numSolarFlaresInThisZone = 0; // parity field
-        this.pageReference = createPageReference(16, 'Solar Flares');
     }
 
     // Parity: no random generation; count is set externally by System/Zone logic after all zone children are added.

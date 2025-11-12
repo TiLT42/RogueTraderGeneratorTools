@@ -13,8 +13,7 @@ class LesserMoonNode extends NodeBase {
         this.resourceExoticMaterial = 0;
         this.inhabitants = 'None';
         this.inhabitantDevelopment = '';
-        // WPF display uses page 16 (Stars of Inequity) when listing Type line
-        this.pageReference = createPageReference(16);
+        // WPF display uses page 16 inline in the Type field description
     }
 
     generate() {

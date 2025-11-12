@@ -45,7 +45,7 @@ class TreasureNode extends NodeBase {
     // Generation entry
     generate() {
         super.generate();
-        this.pageReference = createPageReference(84); // Base tables start at p.84 per C# references
+        // Page references shown inline in description fields
         this._resetForRegeneration();
         this._determineOriginIfNeeded();
         this._generateTreasureCategory();

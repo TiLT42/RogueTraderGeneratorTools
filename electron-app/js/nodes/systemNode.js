@@ -121,7 +121,7 @@ class SystemNode extends NodeBase {
     generate() {
         this.reset();
         super.generate();
-        this.pageReference = createPageReference(12);
+        // Page references shown inline in description fields
         this.nodeName = this.generateSystemName();
         
         // Match WPF generation order exactly:

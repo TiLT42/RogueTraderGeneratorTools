@@ -38,7 +38,7 @@ class StarshipGraveyardNode extends NodeBase {
     generate() {
         this.reset();
         super.generate();
-        this.pageReference = createPageReference(17, 'Table 1-5: Starship Graveyard Origins');
+        // Page reference shown inline in Fleet Composition field
         // Fallback injection: if systemCreationRules not provided by ZoneNode (edge cases like manual insertion)
         if (!this.systemCreationRules) {
             let p = this.parent; while (p && !this.systemCreationRules) { if (p.systemCreationRules) this.systemCreationRules = p.systemCreationRules; p = p.parent; }

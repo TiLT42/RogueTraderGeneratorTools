@@ -18,7 +18,7 @@ class DerelictStationNode extends NodeBase {
 
     generate() {
         super.generate();
-        this.pageReference = createPageReference(15, 'Table 1-4: Derelict Station Origins');
+        // Page reference shown inline in Station Type field
         // Reset per-regeneration state
         this.xenosRuins = [];
         this.archeotechCaches = [];

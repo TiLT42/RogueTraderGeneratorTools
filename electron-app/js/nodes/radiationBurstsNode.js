@@ -7,7 +7,6 @@ class RadiationBurstsNode extends NodeBase {
         this.headerLevel = 3; // H3: Feature/hazard node
         // Parity field with C#: NumRadiationBurstsInThisZone
         this.numRadiationBurstsInThisZone = 0;
-        this.pageReference = createPageReference(16, 'Radiation Bursts');
     }
 
     generate() {
