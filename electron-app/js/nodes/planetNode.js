@@ -810,8 +810,8 @@ class PlanetNode extends NodeBase {
         // Use passed species if provided, otherwise fall back to this.inhabitants
         const inhabitants = species || this.inhabitants || 'None';
         if (inhabitants === 'Human' || inhabitants === 'Other') {
-            if (dev === 'Advanced Industry' || dev === 'Basic Industry') this.inhabitantDevelopmentPage = 40;
-            else if (dev.startsWith('Colony') || dev.startsWith('Orbital') || dev.startsWith('Pre-Industrial')) this.inhabitantDevelopmentPage = 41;
+            if (dev === 'Advanced Industry') this.inhabitantDevelopmentPage = 40;
+            else if (dev === 'Basic Industry' || dev.startsWith('Colony') || dev.startsWith('Orbital') || dev.startsWith('Pre-Industrial')) this.inhabitantDevelopmentPage = 41;
             else if (dev.startsWith('Primitive') || dev.startsWith('Voidfarers')) this.inhabitantDevelopmentPage = 42;
         } else if (inhabitants === 'Eldar') {
             if (dev.includes('Exodites')) this.inhabitantDevelopmentPage = 42;
