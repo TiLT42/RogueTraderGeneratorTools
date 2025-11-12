@@ -792,6 +792,7 @@ class PlanetNode extends NodeBase {
                     climateType: this.climateType,
                     atmosphereType: this.atmosphereType,
                     effectivePlanetSize: this.effectivePlanetSize,
+                    habitability: this.habitability,
                     numOrbitalFeatures: this.orbitalFeaturesNode ? this.orbitalFeaturesNode.children.length : 0
                 });
                 window.EnvironmentData.buildLandmarkReferences(this.environment);
@@ -1470,7 +1471,8 @@ class PlanetNode extends NodeBase {
                         desc += `<h4>Territories</h4>`;
                         desc += '<ul>';
                         for (const t of landmass.territories) {
-                            let base = t.baseTerrain;
+                            // Include exotic prefix if present (for inhospitable world territories)
+                            let base = t.exoticPrefix ? (t.exoticPrefix + ' ' + t.baseTerrain) : t.baseTerrain;
                             const traits = window.EnvironmentData.getTerritoryTraitList(t);
                             if (traits.length > 0) base += ' (' + traits.join(', ') + ')';
                             
@@ -1524,7 +1526,8 @@ class PlanetNode extends NodeBase {
                 desc += `<h4>Territories</h4>`;
                 desc += '<ul>';
                 territories.forEach(t => {
-                    let base = t.baseTerrain;
+                    // Include exotic prefix if present (for inhospitable world territories)
+                    let base = t.exoticPrefix ? (t.exoticPrefix + ' ' + t.baseTerrain) : t.baseTerrain;
                     const traits = window.EnvironmentData.getTerritoryTraitList(t);
                     if (traits.length > 0) base += ' (' + traits.join(', ') + ')';
                     if (window.APP_STATE.settings.showPageNumbers) {

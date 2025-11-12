@@ -382,14 +382,36 @@
         let numLandmarks = RollD5();
         if (planet.effectivePlanetSize === 'Large') numLandmarks += 2;
         else if (planet.effectivePlanetSize === 'Vast') numLandmarks += 3;
+        
+        // Check if this is an inhospitable planet (not ecosystem planet)
+        const isInhospitable = planet.habitability && 
+            !['LimitedEcosystem', 'Verdant'].includes(planet.habitability);
+        
+        // Adjust volcano roll ranges for inhospitable Ice/Cold Worlds
+        // Default: 66-75 (10% chance per landmark)
+        let volcanoMin = 66;
+        let volcanoMax = 75;
+        
+        if (isInhospitable) {
+            if (planet.climateType === 'IceWorld') {
+                // Ice Worlds: 74-75 only (2% chance per landmark) - very rare, mostly dormant
+                volcanoMin = 74;
+                volcanoMax = 75;
+            } else if (planet.climateType === 'ColdWorld') {
+                // Cold Worlds: 70-75 (6% chance per landmark) - reduced but still possible
+                volcanoMin = 70;
+                volcanoMax = 75;
+            }
+        }
+        
         for(let i=0;i<numLandmarks;i++){
             const randValue = RollD100();
             if (randValue <= 20) t.landmarkCanyon++;
             else if (randValue <= 35) t.landmarkCaveNetwork++;
             else if (randValue <= 45) t.landmarkCrater++;
             else if (randValue <= 65) t.landmarkMountain++;
-            else if (randValue <= 75) t.landmarkVolcano++;
-            else { // Exceptional landmark path (76-100 = 25% chance)
+            else if (randValue >= volcanoMin && randValue <= volcanoMax) t.landmarkVolcano++;
+            else { // Exceptional landmark path (76-100 or adjusted range = ~25% chance)
                 // Attempt to generate exceptional landmark
                 // If it fails due to planet conditions, that's OK - move on without retry
                 _generateExceptionalLandmark(t, planet);
