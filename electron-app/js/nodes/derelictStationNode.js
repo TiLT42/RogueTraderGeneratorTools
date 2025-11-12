@@ -158,14 +158,27 @@ class DerelictStationNode extends NodeBase {
         desc += `<p><strong>Armour:</strong> ${this.armor}${statRef}</p>`;
         desc += `<p><strong>Hull Integrity:</strong> ${this.hullIntegrity}${statRef}</p>`;
 
-        // Resources
+        // Resources (WPF parity formatting)
         const archeo = (this.archeotechCaches || []).filter(a=>a.abundance>0);
         const xenos = (this.xenosRuins || []).filter(r=>r.abundance>0);
         if (archeo.length>0) {
-            desc += '<h4>Archeotech Resources</h4><ul>' + archeo.map(a=>`<li>${a.type} (Abundance ${a.abundance})</li>`).join('') + '</ul>';
+            const pageRef = showPages ? ` <span class="page-reference">${createPageReference(28)}</span>` : '';
+            desc += '<h4>Archeotech Resources</h4><ul>' + archeo.map(a=>{
+                const abundanceText = window.CommonData.getResourceAbundanceText(a.abundance);
+                return `<li>${abundanceText} (${a.abundance})${pageRef}</li>`;
+            }).join('') + '</ul>';
         }
         if (xenos.length>0) {
-            desc += '<h4>Xenotech Resources</h4><ul>' + xenos.map(r=>`<li>${r.type} (Abundance ${r.abundance})</li>`).join('') + '</ul>';
+            desc += '<h4>Xenotech Resources</h4><ul>' + xenos.map(r=>{
+                const abundanceText = window.CommonData.getResourceAbundanceText(r.abundance);
+                let speciesName = 'unknown';
+                if (r.type.includes('Eldar')) speciesName = 'Eldar';
+                else if (r.type.includes('Egarian')) speciesName = 'Egarian';
+                else if (r.type.includes("Yu'Vath")) speciesName = "Yu'Vath";
+                else if (r.type.includes('Ork')) speciesName = 'Ork';
+                else if (r.type.includes('Kroot')) speciesName = 'Kroot';
+                return `<li>${abundanceText} (${r.abundance}) ruins of ${speciesName}</li>`;
+            }).join('') + '</ul>';
         }
         if (archeo.length===0 && xenos.length===0) {
             desc += '<p><strong>Resources:</strong> None</p>';

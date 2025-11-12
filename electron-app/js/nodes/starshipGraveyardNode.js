@@ -208,15 +208,6 @@ class StarshipGraveyardNode extends NodeBase {
         this._resourceXenosTotal += val;
     }
 
-    _getResourceAbundanceText(total) {
-        if (total <= 15) return 'Minimal';
-        if (total <= 40) return 'Limited';
-        if (total <= 65) return 'Sustainable';
-        if (total <= 85) return 'Significant';
-        if (total <= 98) return 'Major';
-        return 'Plentiful';
-    }
-
     // ----- Dominant Ruined Species Bias / Adoption -----
     _getRandomSpeciesWithDominantBias(applyBias) {
         let species = window.StarshipToolsData.getRandomSpecies();
@@ -319,12 +310,12 @@ class StarshipGraveyardNode extends NodeBase {
     const xenoTotal = this._resourceXenosTotal;
         if (archeoTotal>0 || xenoTotal>0) {
             if (archeoTotal>0) {
-                const cat = this._getResourceAbundanceText(archeoTotal);
+                const cat = window.CommonData.getResourceAbundanceText(archeoTotal);
                 const ref = showPages ? ` <span class="page-reference">${createPageReference(28,'', RuleBook.StarsOfInequity)}</span>` : '';
                 desc += `<p><strong>Archeotech Resources:</strong> ${cat} (${archeoTotal})${ref}</p>`;
             }
             if (xenoTotal>0) {
-                const cat2 = this._getResourceAbundanceText(xenoTotal);
+                const cat2 = window.CommonData.getResourceAbundanceText(xenoTotal);
                 const ref2 = showPages ? ` <span class="page-reference">${createPageReference(31,'', RuleBook.StarsOfInequity)}</span>` : '';
                 desc += `<p><strong>Xenotech Resources:</strong> ${cat2} (${xenoTotal})${ref2}</p>`;
             }

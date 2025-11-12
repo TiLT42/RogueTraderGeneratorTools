@@ -50,19 +50,9 @@ class AsteroidClusterNode extends NodeBase {
         }
     }
 
-    _getResourceAbundanceText(val) {
-        if (val <= 0) return '';
-        if (val <= 15) return 'Minimal';
-        if (val <= 40) return 'Limited';
-        if (val <= 65) return 'Sustainable';
-        if (val <= 85) return 'Significant';
-        if (val <= 98) return 'Major';
-        return 'Plentiful';
-    }
-
     _buildMineralListItems() {
         const items = [];
-        const pushIf = (val, label) => { if (val > 0) items.push(`${this._getResourceAbundanceText(val)} (${val}) ${label}`); };
+        const pushIf = (val, label) => { if (val > 0) items.push(`${window.CommonData.getResourceAbundanceText(val)} (${val}) ${label}`); };
         pushIf(this.resourceIndustrialMetal, 'industrial metals');
         pushIf(this.resourceOrnamental, 'ornamentals');
         pushIf(this.resourceRadioactive, 'radioactives');
@@ -108,25 +98,25 @@ class AsteroidClusterNode extends NodeBase {
         if (this.resourceIndustrialMetal > 0) {
             resources.industrialMetals = {
                 abundance: this.resourceIndustrialMetal,
-                category: this._getResourceAbundanceText(this.resourceIndustrialMetal)
+                category: window.CommonData.getResourceAbundanceText(this.resourceIndustrialMetal)
             };
         }
         if (this.resourceOrnamental > 0) {
             resources.ornamentals = {
                 abundance: this.resourceOrnamental,
-                category: this._getResourceAbundanceText(this.resourceOrnamental)
+                category: window.CommonData.getResourceAbundanceText(this.resourceOrnamental)
             };
         }
         if (this.resourceRadioactive > 0) {
             resources.radioactives = {
                 abundance: this.resourceRadioactive,
-                category: this._getResourceAbundanceText(this.resourceRadioactive)
+                category: window.CommonData.getResourceAbundanceText(this.resourceRadioactive)
             };
         }
         if (this.resourceExoticMaterial > 0) {
             resources.exoticMaterials = {
                 abundance: this.resourceExoticMaterial,
-                category: this._getResourceAbundanceText(this.resourceExoticMaterial)
+                category: window.CommonData.getResourceAbundanceText(this.resourceExoticMaterial)
             };
         }
         
