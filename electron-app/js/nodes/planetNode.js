@@ -737,13 +737,13 @@ class PlanetNode extends NodeBase {
     _generateHuman(forcedLevel='Undefined') {
         let roll = RollD10();
         if (forcedLevel==='Voidfarers') roll=10; else if (forcedLevel==='Colony') roll=5; else if (forcedLevel==='OrbitalHabitation') roll=6;
-        if (roll <=2) { this._setDev('Advanced Industry'); for(let i=0;i<3;i++) this._reduceRandomResource(RollD10()+RollD10()+RollD10()+5); }
-        else if (roll <=4) { if (this._isPlanetInhabitable()) { this._setDev('Basic Industry'); for(let i=0;i<5;i++) this._reduceRandomResource(RollD10()+RollD10()+5); return;} }
-        else if (roll ===5) { this._setDev('Colony'); this._reduceAllResources(RollD5()); }
-        else if (roll ===6) { this._setDev('Orbital Habitation'); }
-        else if (roll <=8) { if (this._isPlanetInhabitable()) { this._setDev('Pre-Industrial'); const rn = RandBetween(0,2); for(let i=0;i<rn;i++) this._reduceRandomResource(RollD10()+5); return;} }
-        else if (roll ===9) { if (this._isPlanetInhabitable()) { this._setDev('Primitive Clans'); this._reduceRandomResource(RollD10()+2); return;} }
-        else { this._setDev('Voidfarers'); for(let i=0;i<5;i++) this._reduceRandomResource(RollD10()+RollD10()+RollD10()+RollD10()+5); }
+        if (roll <=2) { this._setDev('Advanced Industry', 'Human'); for(let i=0;i<3;i++) this._reduceRandomResource(RollD10()+RollD10()+RollD10()+5); }
+        else if (roll <=4) { if (this._isPlanetInhabitable()) { this._setDev('Basic Industry', 'Human'); for(let i=0;i<5;i++) this._reduceRandomResource(RollD10()+RollD10()+5); return;} }
+        else if (roll ===5) { this._setDev('Colony', 'Human'); this._reduceAllResources(RollD5()); }
+        else if (roll ===6) { this._setDev('Orbital Habitation', 'Human'); }
+        else if (roll <=8) { if (this._isPlanetInhabitable()) { this._setDev('Pre-Industrial', 'Human'); const rn = RandBetween(0,2); for(let i=0;i<rn;i++) this._reduceRandomResource(RollD10()+5); return;} }
+        else if (roll ===9) { if (this._isPlanetInhabitable()) { this._setDev('Primitive Clans', 'Human'); this._reduceRandomResource(RollD10()+2); return;} }
+        else { this._setDev('Voidfarers', 'Human'); for(let i=0;i<5;i++) this._reduceRandomResource(RollD10()+RollD10()+RollD10()+RollD10()+5); }
         if (this.inhabitantDevelopment==='') this._generateHuman(); // retry branch if invalid
     }
     _generateEldar() {
@@ -754,29 +754,29 @@ class PlanetNode extends NodeBase {
             this.organicCompounds.forEach(o=> { if (typeof o!=='string' && o.abundance>0) o.abundance += RollD10()+RollD10(); });
         }
         const roll = RollD10();
-        if (roll <=3) { if (this._isPlanetInhabitable()) { this._setDev('Primitive Clans (Exodites)'); this._reduceRandomResource(RollD10()+2); return;} }
-        else if (roll <=8) { this._setDev('Orbital Habitation'); return; }
-        else { this._setDev('Voidfarers'); return; }
+        if (roll <=3) { if (this._isPlanetInhabitable()) { this._setDev('Primitive Clans (Exodites)', 'Eldar'); this._reduceRandomResource(RollD10()+2); return;} }
+        else if (roll <=8) { this._setDev('Orbital Habitation', 'Eldar'); return; }
+        else { this._setDev('Voidfarers', 'Eldar'); return; }
         this._generateEldar();
     }
     _generateKroot() {
         const roll = RollD10();
-        if (roll <=7) { if (this._isPlanetInhabitable()) { this._setDev('Primitive Clans'); this._reduceRandomResource(RollD10()+2); return; } }
-        else { this._setDev('Colony'); this._reduceAllResources(RollD5()); return; }
+        if (roll <=7) { if (this._isPlanetInhabitable()) { this._setDev('Primitive Clans', 'Kroot'); this._reduceRandomResource(RollD10()+2); return; } }
+        else { this._setDev('Colony', 'Kroot'); this._reduceAllResources(RollD5()); return; }
         this._generateKroot();
     }
     _generateOrk() {
         const roll = RollD10();
-        if (roll <=4) { this._setDev('Advanced Industry'); for(let i=0;i<3;i++) this._reduceRandomResource(RollD10()+RollD10()+RollD10()+5); }
-        else if (roll ===5) { this._setDev('Colony'); this._reduceAllResources(RollD5()); }
-        else if (roll <=8) { this._setDev('Primitive Clans'); this._reduceRandomResource(RollD10()+2); }
-        else { this._setDev('Voidfarers'); for(let i=0;i<5;i++) this._reduceRandomResource(RollD10()+RollD10()+RollD10()+RollD10()+5); }
+        if (roll <=4) { this._setDev('Advanced Industry', 'Ork'); for(let i=0;i<3;i++) this._reduceRandomResource(RollD10()+RollD10()+RollD10()+5); }
+        else if (roll ===5) { this._setDev('Colony', 'Ork'); this._reduceAllResources(RollD5()); }
+        else if (roll <=8) { this._setDev('Primitive Clans', 'Ork'); this._reduceRandomResource(RollD10()+2); }
+        else { this._setDev('Voidfarers', 'Ork'); for(let i=0;i<5;i++) this._reduceRandomResource(RollD10()+RollD10()+RollD10()+RollD10()+5); }
     }
     _generateRakGol() {
         const roll = RollD10();
-        if (roll <=2) { this._setDev('Colony'); this._reduceAllResources(RollD5()); }
-        else if (roll <=4) { this._setDev('Orbital Habitation'); }
-        else { this._setDev('Voidfarers'); for(let i=0;i<5;i++) this._reduceRandomResource(RollD10()+RollD10()+RollD10()+RollD10()+5); }
+        if (roll <=2) { this._setDev('Colony', "Rak'Gol"); this._reduceAllResources(RollD5()); }
+        else if (roll <=4) { this._setDev('Orbital Habitation', "Rak'Gol"); }
+        else { this._setDev('Voidfarers', "Rak'Gol"); for(let i=0;i<5;i++) this._reduceRandomResource(RollD10()+RollD10()+RollD10()+RollD10()+5); }
     }
     _generateXenosOther(forcedLevel='Undefined') {
         let roll = RollD10();
@@ -794,20 +794,21 @@ class PlanetNode extends NodeBase {
                 if (node.children.length>0) { this.primitiveXenosNode = node; this.addChild(node); }
             }
         };
-        if (roll <=1) { this._setDev('Advanced Industry'); for(let i=0;i<3;i++) this._reduceRandomResource(RollD10()+RollD10()+RollD10()+5); return; }
-        if (roll <=3) { if (this._isPlanetInhabitable()) { this._setDev('Basic Industry'); for(let i=0;i<5;i++) this._reduceRandomResource(RollD10()+RollD10()+5); return; } }
-        else if (roll ===4) { this._setDev('Colony'); this._reduceAllResources(RollD5()); return; }
-        else if (roll ===5) { this._setDev('Orbital Habitation'); return; }
-        else if (roll <=7) { if (this._isPlanetInhabitable()) { this._setDev('Pre-Industrial'); const rn = RandBetween(0,2); for(let i=0;i<rn;i++) this._reduceRandomResource(RollD10()+5); maybeAddPrimitive(); return; } }
-        else if (roll <=9) { if (this._isPlanetInhabitable()) { this._setDev('Primitive Clans'); this._reduceRandomResource(RollD10()+2); maybeAddPrimitive(); return; } }
-        else { this._setDev('Voidfarers'); for(let i=0;i<5;i++) this._reduceRandomResource(RollD10()+RollD10()+RollD10()+RollD10()+5); return; }
+        if (roll <=1) { this._setDev('Advanced Industry', 'Other'); for(let i=0;i<3;i++) this._reduceRandomResource(RollD10()+RollD10()+RollD10()+5); return; }
+        if (roll <=3) { if (this._isPlanetInhabitable()) { this._setDev('Basic Industry', 'Other'); for(let i=0;i<5;i++) this._reduceRandomResource(RollD10()+RollD10()+5); return; } }
+        else if (roll ===4) { this._setDev('Colony', 'Other'); this._reduceAllResources(RollD5()); return; }
+        else if (roll ===5) { this._setDev('Orbital Habitation', 'Other'); return; }
+        else if (roll <=7) { if (this._isPlanetInhabitable()) { this._setDev('Pre-Industrial', 'Other'); const rn = RandBetween(0,2); for(let i=0;i<rn;i++) this._reduceRandomResource(RollD10()+5); maybeAddPrimitive(); return; } }
+        else if (roll <=9) { if (this._isPlanetInhabitable()) { this._setDev('Primitive Clans', 'Other'); this._reduceRandomResource(RollD10()+2); maybeAddPrimitive(); return; } }
+        else { this._setDev('Voidfarers', 'Other'); for(let i=0;i<5;i++) this._reduceRandomResource(RollD10()+RollD10()+RollD10()+RollD10()+5); return; }
         this._generateXenosOther();
     }
-    _setDev(dev) { 
+    _setDev(dev, species = null) { 
         this.inhabitantDevelopment = dev; 
         // Store page reference based on development level and species (WPF parity)
         // Human/Xenos Other: 40-42, Eldar: 42-43, Kroot: 44-45, Ork: 46-47, Rak'Gol: 49
-        const inhabitants = this.inhabitants || 'None';
+        // Use passed species if provided, otherwise fall back to this.inhabitants
+        const inhabitants = species || this.inhabitants || 'None';
         if (inhabitants === 'Human' || inhabitants === 'Other') {
             if (dev === 'Advanced Industry' || dev === 'Basic Industry') this.inhabitantDevelopmentPage = 40;
             else if (dev.startsWith('Colony') || dev.startsWith('Orbital') || dev.startsWith('Pre-Industrial')) this.inhabitantDevelopmentPage = 41;
