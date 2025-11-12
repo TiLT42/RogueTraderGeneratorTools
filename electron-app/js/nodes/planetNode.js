@@ -66,6 +66,7 @@ class PlanetNode extends NodeBase {
         // Inhabitants
         this.inhabitants = 'None';
         this.inhabitantDevelopment = '';
+        this.inhabitantDevelopmentPage = null;
         this.techLevel = '';
         this.population = '';
         
@@ -801,7 +802,28 @@ class PlanetNode extends NodeBase {
         else { this._setDev('Voidfarers'); for(let i=0;i<5;i++) this._reduceRandomResource(RollD10()+RollD10()+RollD10()+RollD10()+5); return; }
         this._generateXenosOther();
     }
-    _setDev(dev) { this.inhabitantDevelopment = dev; }
+    _setDev(dev) { 
+        this.inhabitantDevelopment = dev; 
+        // Store page reference based on development level and species (WPF parity)
+        // Human/Xenos Other: 40-42, Eldar: 42-43, Kroot: 44-45, Ork: 46-47, Rak'Gol: 49
+        const inhabitants = this.inhabitants || 'None';
+        if (inhabitants === 'Human' || inhabitants === 'Other') {
+            if (dev === 'Advanced Industry' || dev === 'Basic Industry') this.inhabitantDevelopmentPage = 40;
+            else if (dev.startsWith('Colony') || dev.startsWith('Orbital') || dev.startsWith('Pre-Industrial')) this.inhabitantDevelopmentPage = 41;
+            else if (dev.startsWith('Primitive') || dev.startsWith('Voidfarers')) this.inhabitantDevelopmentPage = 42;
+        } else if (inhabitants === 'Eldar') {
+            if (dev.includes('Exodites')) this.inhabitantDevelopmentPage = 42;
+            else this.inhabitantDevelopmentPage = 43;
+        } else if (inhabitants === 'Kroot') {
+            if (dev.startsWith('Primitive')) this.inhabitantDevelopmentPage = 45;
+            else this.inhabitantDevelopmentPage = 44;
+        } else if (inhabitants === 'Ork') {
+            if (dev.startsWith('Advanced') || dev.startsWith('Colony') || dev.startsWith('Primitive')) this.inhabitantDevelopmentPage = 46;
+            else this.inhabitantDevelopmentPage = 47;
+        } else if (inhabitants === "Rak'Gol") {
+            this.inhabitantDevelopmentPage = 49;
+        }
+    }
 
     buildEnvironmentReferences() {
         if (this.environment && window.EnvironmentData) {
@@ -1436,6 +1458,59 @@ class PlanetNode extends NodeBase {
         }
     }
 
+    // Helper to format mineral resource with abundance text (WPF parity)
+    formatMineralResource(resource) {
+        if (typeof resource === 'string') return resource;
+        const abundanceText = window.CommonData.getResourceAbundanceText(resource.abundance);
+        const resourceName = resource.type.toLowerCase();
+        return `${abundanceText} (${resource.abundance}) ${resourceName}`;
+    }
+
+    // Helper to format organic compound with abundance text and page reference (WPF parity)
+    formatOrganicCompound(compound) {
+        if (typeof compound === 'string') return compound;
+        const abundanceText = window.CommonData.getResourceAbundanceText(compound.abundance);
+        let compoundName = compound.type.toLowerCase();
+        let pageNumber = 30;
+        
+        // Match WPF page numbers for specific compound types
+        if (compound.type === 'Vivid Accessories') {
+            pageNumber = 31;
+        }
+        
+        const pageRef = window.APP_STATE.settings.showPageNumbers 
+            ? ` <span class="page-reference">${createPageReference(pageNumber)}</span>` 
+            : '';
+        return `${abundanceText} (${compound.abundance}) ${compoundName}${pageRef}`;
+    }
+
+    // Helper to format archeotech cache with abundance text and page reference (WPF parity)
+    formatArcheotechCache(cache) {
+        if (typeof cache === 'string') return cache;
+        const abundanceText = window.CommonData.getResourceAbundanceText(cache.abundance);
+        const pageRef = window.APP_STATE.settings.showPageNumbers 
+            ? ` <span class="page-reference">${createPageReference(28)}</span>` 
+            : '';
+        return `${abundanceText} (${cache.abundance})${pageRef}`;
+    }
+
+    // Helper to format xenos ruins with abundance text and species (WPF parity)
+    formatXenosRuins(ruins) {
+        if (typeof ruins === 'string') return ruins;
+        const abundanceText = window.CommonData.getResourceAbundanceText(ruins.abundance);
+        let speciesName = 'unknown';
+        
+        // Extract species name from type
+        if (ruins.type.includes('Eldar')) speciesName = 'Eldar';
+        else if (ruins.type.includes('Egarian')) speciesName = 'Egarian';
+        else if (ruins.type.includes("Yu'Vath")) speciesName = "Yu'Vath";
+        else if (ruins.type.includes('Ork')) speciesName = 'Ork';
+        else if (ruins.type.includes('Kroot')) speciesName = 'Kroot';
+        
+        return `${abundanceText} (${ruins.abundance}) ruins of ${speciesName}`;
+    }
+
+
     updateDescription() {
         // Start with classification to identify planet vs moon
         let desc = '';
@@ -1623,26 +1698,35 @@ class PlanetNode extends NodeBase {
         desc += `<h4>Base Mineral Resources</h4>`;
         const mineralResourcesFiltered = this.mineralResources.filter(r => typeof r === 'string' || r.abundance > 0);
         if (mineralResourcesFiltered.length === 0) desc += '<p>None</p>'; else {
-            desc += '<ul>' + mineralResourcesFiltered.map(r=> (typeof r === 'string'? `<li>${r}</li>` : `<li>${r.type} (Abundance ${r.abundance})</li>`)).join('') + '</ul>';
+            desc += '<ul>' + mineralResourcesFiltered.map(r => `<li>${this.formatMineralResource(r)}</li>`).join('') + '</ul>';
         }
         desc += `<h4>Organic Compounds</h4>`;
         const organicCompoundsFiltered = this.organicCompounds.filter(c => typeof c === 'string' || c.abundance > 0);
         if (organicCompoundsFiltered.length === 0) desc += '<p>None</p>'; else {
-            desc += '<ul>' + organicCompoundsFiltered.map(c=> typeof c==='string'? `<li>${c}</li>` : `<li>${c.type} (Abundance ${c.abundance})</li>`).join('') + '</ul>';
+            desc += '<ul>' + organicCompoundsFiltered.map(c => `<li>${this.formatOrganicCompound(c)}</li>`).join('') + '</ul>';
         }
         desc += `<h4>Archeotech Caches</h4>`;
         const archeotechCachesFiltered = this.archeotechCaches.filter(a => typeof a === 'string' || a.abundance > 0);
-        if (archeotechCachesFiltered.length === 0) desc += '<p>None</p>'; else desc += '<ul>'+archeotechCachesFiltered.map(a=> (typeof a==='string'? `<li>${a}</li>` : `<li>${a.type} (Abundance ${a.abundance})</li>`)).join('')+'</ul>';
+        if (archeotechCachesFiltered.length === 0) desc += '<p>None</p>'; else {
+            desc += '<ul>' + archeotechCachesFiltered.map(a => `<li>${this.formatArcheotechCache(a)}</li>`).join('') + '</ul>';
+        }
         desc += `<h4>Xenos Ruins</h4>`;
         const xenosRuinsFiltered = this.xenosRuins.filter(x => typeof x === 'string' || x.abundance > 0);
-        if (xenosRuinsFiltered.length === 0) desc += '<p>None</p>'; else desc += '<ul>'+xenosRuinsFiltered.map(x=> (typeof x==='string'? `<li>${x}</li>` : `<li>${x.type} (Abundance ${x.abundance})</li>`)).join('')+'</ul>';
+        if (xenosRuinsFiltered.length === 0) desc += '<p>None</p>'; else {
+            desc += '<ul>' + xenosRuinsFiltered.map(x => `<li>${this.formatXenosRuins(x)}</li>`).join('') + '</ul>';
+        }
 
         // Inhabitants (simplified model retained)
     desc += `<h4>Inhabitants</h4>`;
     let speciesLine = this.inhabitants;
     if (this.isInhabitantHomeWorld && this.inhabitants !== 'None') speciesLine += ' (Home World)';
     desc += `<p><strong>Species:</strong> ${speciesLine}</p>`;
-        if (this.inhabitantDevelopment) desc += `<p><strong>Development:</strong> ${this.inhabitantDevelopment}</p>`;
+        if (this.inhabitantDevelopment) {
+            const devPageRef = this.inhabitantDevelopmentPage && window.APP_STATE.settings.showPageNumbers
+                ? ` <span class="page-reference">${createPageReference(this.inhabitantDevelopmentPage)}</span>`
+                : '';
+            desc += `<p><strong>Development:</strong> ${this.inhabitantDevelopment}${devPageRef}</p>`;
+        }
         if (this.techLevel) desc += `<p><strong>Technology Level:</strong> ${this.techLevel}</p>`;
         if (this.population) desc += `<p><strong>Population:</strong> ${this.population}</p>`;
 
@@ -1693,6 +1777,7 @@ class PlanetNode extends NodeBase {
         json.effectiveSystemZoneCloserToSun = this.effectiveSystemZoneCloserToSun;
         json.inhabitants = this.inhabitants;
         json.inhabitantDevelopment = this.inhabitantDevelopment;
+        json.inhabitantDevelopmentPage = this.inhabitantDevelopmentPage;
         json.techLevel = this.techLevel;
         json.population = this.population;
         json.numContinents = this.numContinents;
@@ -1836,6 +1921,7 @@ class PlanetNode extends NodeBase {
             effectiveSystemZoneCloserToSun: data.effectiveSystemZoneCloserToSun || false,
             inhabitants: data.inhabitants || 'None',
             inhabitantDevelopment: data.inhabitantDevelopment || '',
+            inhabitantDevelopmentPage: data.inhabitantDevelopmentPage || null,
             techLevel: data.techLevel || '',
             population: data.population || '',
             numContinents: data.numContinents || 0,

@@ -23,6 +23,16 @@
         return 'Rare Earth Elements';
     }
 
+    // Get abundance description from numeric value (WPF parity: NodeBase.GetResourceAbundanceText)
+    function getResourceAbundanceText(resourceValue) {
+        if (resourceValue <= 15) return 'Minimal';
+        if (resourceValue <= 40) return 'Limited';
+        if (resourceValue <= 65) return 'Sustainable';
+        if (resourceValue <= 85) return 'Significant';
+        if (resourceValue <= 98) return 'Major';
+        return 'Plentiful';
+    }
+
     // Utility functions for naming of star systems. These are additions from the WPF code and deliberately do not have parity.
     function rollTable(table) {
         // table: [{w: weight, fn: () => string}, ...]
@@ -149,6 +159,6 @@
     }    
 
     // Namespace export (non-breaking: extend existing object or create new)
-    window.CommonData = Object.assign({}, window.CommonData || {}, { RuleBooks, DocReference, generateMineralResource, rollTable, roman, titleCase, buildRootWord, makeOrdinalLatin, saintName, dynastyName, ROOT_A, ROOT_B, ROOT_C, SUF });
+    window.CommonData = Object.assign({}, window.CommonData || {}, { RuleBooks, DocReference, generateMineralResource, getResourceAbundanceText, rollTable, roman, titleCase, buildRootWord, makeOrdinalLatin, saintName, dynastyName, ROOT_A, ROOT_B, ROOT_C, SUF });
 
 })();
