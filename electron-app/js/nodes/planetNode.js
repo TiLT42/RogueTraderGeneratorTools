@@ -115,7 +115,6 @@ class PlanetNode extends NodeBase {
     generate() {
         this.reset();
         super.generate();
-        this.pageReference = createPageReference(16);
 
         // Parity: Determine effectiveSystemZone from parent (WPF lines 298-317)
         // This is crucial for Haven feature and climate modifiers
