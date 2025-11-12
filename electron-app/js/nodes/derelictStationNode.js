@@ -166,7 +166,7 @@ class DerelictStationNode extends NodeBase {
                 else if (r.type.includes("Yu'Vath")) speciesName = "Yu'Vath";
                 else if (r.type.includes('Ork')) speciesName = 'Ork';
                 else if (r.type.includes('Kroot')) speciesName = 'Kroot';
-                return `<li>${abundanceText} (${r.abundance}) ruins of ${speciesName}</li>`;
+                return `<li>${abundanceText} (${r.abundance}) ruins of ${speciesName} origin</li>`;
             }).join('') + '</ul>';
         }
         if (archeo.length===0 && xenos.length===0) {
