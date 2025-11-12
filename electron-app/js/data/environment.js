@@ -268,8 +268,14 @@
             const roll = RollD100();
             
             // Weighted toward harsh/unusual traits for inhospitable worlds
+            // NOTE: Exotic Nature can ONLY appear on Forests per rulebook Table 1-15
             if (roll <= 10) {
-                territory.exoticNature++; // More common on inhospitable worlds with exotic features
+                // Exotic Nature only for Forests, otherwise give Unusual Location
+                if (territory.baseTerrain === TerritoryBaseTerrain.Forest) {
+                    territory.exoticNature++;
+                } else {
+                    territory.unusualLocation++;
+                }
             } else if (roll <= 20) {
                 territory.expansive++;
             } else if (roll <= 50) {
