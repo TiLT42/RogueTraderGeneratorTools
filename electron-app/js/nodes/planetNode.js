@@ -541,17 +541,28 @@ class PlanetNode extends NodeBase {
     }
 
     generateEnvironmentParity() {
-        if (!(this.habitability === 'LimitedEcosystem' || this.habitability === 'Verdant')) {
-            this.environment = null;
+        // Standard environment generation for ecosystem planets (Limited Ecosystem / Verdant)
+        if (this.habitability === 'LimitedEcosystem' || this.habitability === 'Verdant') {
+            let numTerritories = RollD5();
+            if (this.effectivePlanetSize === 'Small') numTerritories -= 2;
+            if (this.effectivePlanetSize === 'Vast') numTerritories += 3;
+            if (this.habitability === 'Verdant') numTerritories += 2;
+            if (numTerritories < 1) numTerritories = 1;
+            if (window.EnvironmentData && typeof window.EnvironmentData.generateEnvironment === 'function') {
+                this.environment = window.EnvironmentData.generateEnvironment(numTerritories);
+            } else {
+                this.environment = null;
+            }
             return;
         }
-        let numTerritories = RollD5();
-        if (this.effectivePlanetSize === 'Small') numTerritories -= 2;
-        if (this.effectivePlanetSize === 'Vast') numTerritories += 3;
-        if (this.habitability === 'Verdant') numTerritories += 2;
-        if (numTerritories < 1) numTerritories = 1;
-        if (window.EnvironmentData && typeof window.EnvironmentData.generateEnvironment === 'function') {
-            this.environment = window.EnvironmentData.generateEnvironment(numTerritories);
+        
+        // Alternate territory generation for non-ecosystem planets
+        // Per Stars of Inequity: "Planets without a Habitability result of Limited Ecosystem or Verdant 
+        // do not generate Territories randomly, although they can include one or more appropriately 
+        // selected examples, at the GM's discretion."
+        // This generates 0-2 territories (~50% chance) with appropriate types for inhospitable worlds
+        if (window.EnvironmentData && typeof window.EnvironmentData.generateInhospitableEnvironment === 'function') {
+            this.environment = window.EnvironmentData.generateInhospitableEnvironment(this);
         } else {
             this.environment = null;
         }
@@ -781,6 +792,7 @@ class PlanetNode extends NodeBase {
                     climateType: this.climateType,
                     atmosphereType: this.atmosphereType,
                     effectivePlanetSize: this.effectivePlanetSize,
+                    habitability: this.habitability,
                     numOrbitalFeatures: this.orbitalFeaturesNode ? this.orbitalFeaturesNode.children.length : 0
                 });
                 window.EnvironmentData.buildLandmarkReferences(this.environment);
@@ -1459,7 +1471,8 @@ class PlanetNode extends NodeBase {
                         desc += `<h4>Territories</h4>`;
                         desc += '<ul>';
                         for (const t of landmass.territories) {
-                            let base = t.baseTerrain;
+                            // Include exotic prefix if present (for inhospitable world territories)
+                            let base = t.exoticPrefix ? (t.exoticPrefix + ' ' + t.baseTerrain) : t.baseTerrain;
                             const traits = window.EnvironmentData.getTerritoryTraitList(t);
                             if (traits.length > 0) base += ' (' + traits.join(', ') + ')';
                             
@@ -1513,7 +1526,8 @@ class PlanetNode extends NodeBase {
                 desc += `<h4>Territories</h4>`;
                 desc += '<ul>';
                 territories.forEach(t => {
-                    let base = t.baseTerrain;
+                    // Include exotic prefix if present (for inhospitable world territories)
+                    let base = t.exoticPrefix ? (t.exoticPrefix + ' ' + t.baseTerrain) : t.baseTerrain;
                     const traits = window.EnvironmentData.getTerritoryTraitList(t);
                     if (traits.length > 0) base += ' (' + traits.join(', ') + ')';
                     if (window.APP_STATE.settings.showPageNumbers) {

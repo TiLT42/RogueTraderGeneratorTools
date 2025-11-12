@@ -44,11 +44,13 @@
     const RollD10 = () => window.RollD10();
     const RollD100 = () => window.RollD100();
     const RandBetween = (min, max) => window.RandBetween(min, max);
+    const ChooseFrom = (array) => window.ChooseFrom(array);
 
     // Territory factory
     function createEmptyTerritory() {
         return {
             baseTerrain: TerritoryBaseTerrain.Forest,
+            exoticPrefix: null, // Optional exotic descriptor for inhospitable worlds (e.g., "Crystal", "Clay")
             // trait counters
             boundary: 0,
             brokenGround: 0,
@@ -105,6 +107,197 @@
         return env;
     }
 
+    // Generate limited territories for inhospitable worlds (non-ecosystem planets)
+    // Based on Stars of Inequity: "Planets without a Habitability result of Limited Ecosystem or Verdant 
+    // do not generate Territories randomly, although they can include one or more appropriately selected 
+    // examples, at the GM's discretion."
+    function generateInhospitableEnvironment(planet) {
+        if (!planet) throw new Error('Planet required for inhospitable environment generation');
+        
+        // Determine if this inhospitable world should have territories (~50% chance)
+        // Factors: atmosphere, climate, and general habitability affect likelihood
+        let territoryChance = 50; // Base 50% chance
+        
+        // Climate factors
+        if (planet.climateType === 'BurningWorld') territoryChance -= 20; // Extreme heat reduces interesting features
+        if (planet.climateType === 'IceWorld') territoryChance -= 10; // Ice worlds are less varied
+        if (planet.climateType === 'TemperateWorld') territoryChance += 10; // More temperate = more interesting
+        
+        // Atmosphere factors
+        if (planet.atmosphereType === 'None') territoryChance -= 15; // No atmosphere = less weathering/features
+        if (planet.atmosphereType === 'Heavy') territoryChance += 10; // Heavy atmosphere = more geological activity
+        
+        // Habitability factors
+        if (planet.habitability === 'TrappedWater') territoryChance += 15; // Ice suggests some geological interest
+        if (planet.habitability === 'LiquidWater') territoryChance += 20; // Water suggests more dynamic environment
+        
+        // Size factors
+        if (planet.effectivePlanetSize === 'Vast') territoryChance += 10; // Larger planets = more likely to have notable regions
+        if (planet.effectivePlanetSize === 'Small') territoryChance -= 10; // Smaller planets = less variety
+        
+        // Roll for territory presence
+        if (RollD100() > territoryChance) {
+            return null; // No territories on this inhospitable world
+        }
+        
+        // Determine number of territories (1-2 only for inhospitable worlds)
+        const numTerritories = RollD10() <= 6 ? 1 : 2; // 60% chance of 1, 40% chance of 2
+        
+        const env = { territories: [], references: [] };
+        for (let i = 0; i < numTerritories; i++) {
+            const territory = createEmptyTerritory();
+            
+            // Territory type selection heavily weighted toward Mountains and Wasteland
+            // with rare exotic variations of Forest, Plains, and Swamp
+            const roll = RollD100();
+            
+            if (roll <= 40) { // 40% - Mountain
+                territory.baseTerrain = TerritoryBaseTerrain.Mountain;
+            } else if (roll <= 80) { // 40% - Wasteland
+                territory.baseTerrain = TerritoryBaseTerrain.Wasteland;
+                // Wastelands often have extreme temperatures on inhospitable worlds
+                if (RollD10() <= 7) territory.extremeTemperature++;
+            } else if (roll <= 88) { // 8% - Exotic Forest (crystal, bone, etc.)
+                territory.baseTerrain = TerritoryBaseTerrain.Forest;
+                territory.exoticPrefix = _getExoticForestPrefix(planet);
+                territory.exoticNature++; // Always has Exotic Nature trait
+            } else if (roll <= 94) { // 6% - Exotic Plains (clay, salt, etc.)
+                territory.baseTerrain = TerritoryBaseTerrain.Plains;
+                territory.exoticPrefix = _getExoticPlainsPrefix(planet);
+            } else { // 6% - Exotic Swamp (chemical, tar, etc.)
+                territory.baseTerrain = TerritoryBaseTerrain.Swamp;
+                territory.exoticPrefix = _getExoticSwampPrefix(planet);
+            }
+            
+            // Generate traits (fewer than normal for inhospitable worlds)
+            generateInhospitableTerritoryTraits(territory, planet);
+            
+            env.territories.push(territory);
+        }
+        
+        // References for base terrains
+        env.territories.forEach(t => addTerrainReference(env, t));
+        return env;
+    }
+
+    // Get exotic prefix for Forest territories on inhospitable worlds
+    function _getExoticForestPrefix(planet) {
+        const prefixes = [
+            'Crystal',     // Crystal groves (ice worlds, mineral-rich)
+            'Bone',        // Spires of bone (dead worlds, ancient remains)
+            'Chitin',      // Chitin formations (worlds with past insect life)
+            'Metal',       // Metal trees (industrial waste, rich minerals)
+            'Stone',       // Stone pillars (heavily eroded, geological)
+            'Obsidian',    // Obsidian shards (volcanic, cooling lava)
+            'Salt',        // Salt pillars (dried seas, mineral deposits)
+            'Fungal'       // Fungal structures (minimal life, spores)
+        ];
+        
+        // Climate-influenced selection
+        if (planet.climateType === 'IceWorld') {
+            // Favor Crystal, Salt on ice worlds
+            return ChooseFrom(['Crystal', 'Salt', 'Stone', 'Metal']);
+        } else if (planet.climateType === 'BurningWorld') {
+            // Favor Obsidian, Metal, Stone on burning worlds
+            return ChooseFrom(['Obsidian', 'Metal', 'Stone', 'Crystal']);
+        }
+        
+        // Default: random selection
+        return ChooseFrom(prefixes);
+    }
+
+    // Get exotic prefix for Plains territories on inhospitable worlds
+    function _getExoticPlainsPrefix(planet) {
+        const prefixes = [
+            'Salt',        // Salt flats (dried seas)
+            'Clay',        // Clay plains (sedimentary, ancient water)
+            'Ash',         // Ash plains (volcanic)
+            'Dust',        // Dust plains (erosion, no atmosphere)
+            'Crystalline', // Crystalline plains (mineral formations)
+            'Basalt',      // Basalt plains (volcanic rock)
+            'Metallic',    // Metallic plains (ore deposits)
+            'Frozen'       // Frozen plains (ice worlds)
+        ];
+        
+        // Climate-influenced selection
+        if (planet.climateType === 'IceWorld') {
+            return ChooseFrom(['Frozen', 'Salt', 'Crystalline']);
+        } else if (planet.climateType === 'BurningWorld') {
+            return ChooseFrom(['Ash', 'Basalt', 'Dust', 'Metallic']);
+        }
+        
+        return ChooseFrom(prefixes);
+    }
+
+    // Get exotic prefix for Swamp territories on inhospitable worlds
+    function _getExoticSwampPrefix(planet) {
+        const prefixes = [
+            'Chemical',    // Chemical pools (toxic worlds)
+            'Tar',         // Tar pits (hydrocarbon deposits)
+            'Mercury',     // Quicksilver pools (heavy metals)
+            'Acid',        // Acid bogs (corrosive atmosphere)
+            'Frozen',      // Frozen bogs (trapped water, ice worlds)
+            'Sulfuric',    // Sulfuric pools (volcanic)
+            'Oil',         // Oil seeps (hydrocarbon-rich)
+            'Brine'        // Brine pools (salt concentrations)
+        ];
+        
+        // Climate-influenced selection
+        if (planet.climateType === 'IceWorld') {
+            return ChooseFrom(['Frozen', 'Brine', 'Chemical']);
+        } else if (planet.climateType === 'BurningWorld') {
+            return ChooseFrom(['Sulfuric', 'Tar', 'Acid', 'Chemical']);
+        }
+        
+        // Atmosphere-influenced selection
+        if (planet.atmosphereType === 'None') {
+            // Without atmosphere, "swamp" becomes pools of settled materials
+            return ChooseFrom(['Tar', 'Oil', 'Frozen', 'Mercury']);
+        }
+        
+        return ChooseFrom(prefixes);
+    }
+
+    // Generate territory traits for inhospitable world territories
+    // Fewer traits than normal, weighted toward harsher conditions
+    function generateInhospitableTerritoryTraits(territory, planet) {
+        // Inhospitable worlds have 1-2 traits (less than the 1-3 of normal worlds)
+        let numTraits = RollD5() <= 3 ? 1 : 2;
+        
+        for (let i = 0; i < numTraits; i++) {
+            const roll = RollD100();
+            
+            // Weighted toward harsh/unusual traits for inhospitable worlds
+            // NOTE: Exotic Nature can ONLY appear on Forests per rulebook Table 1-15
+            if (roll <= 10) {
+                // Exotic Nature only for Forests, otherwise give Unusual Location
+                if (territory.baseTerrain === TerritoryBaseTerrain.Forest) {
+                    territory.exoticNature++;
+                } else {
+                    territory.unusualLocation++;
+                }
+            } else if (roll <= 20) {
+                territory.expansive++;
+            } else if (roll <= 50) {
+                territory.extremeTemperature++; // Very common on inhospitable worlds
+            } else if (roll <= 60) {
+                territory.desolate++; // Common on lifeless worlds
+            } else if (roll <= 70) {
+                territory.brokenGround++; // Geological instability
+            } else if (roll <= 85) {
+                territory.uniqueCompound++; // Unusual minerals/chemicals
+            } else {
+                territory.unusualLocation++; // Strange geological formations
+            }
+        }
+        
+        // Exotic forests on inhospitable worlds ALWAYS have Exotic Nature (ensured in generation)
+        // Just validate it's present
+        if (territory.baseTerrain === TerritoryBaseTerrain.Forest && territory.exoticPrefix && territory.exoticNature === 0) {
+            territory.exoticNature = 1;
+        }
+    }
+
     function addTerrainReference(env, territory){
         const terrainMeta = TerrainPageMap[territory.baseTerrain];
         if(!terrainMeta) return;
@@ -114,6 +307,10 @@
 
     function buildTerritoryLabel(territory){
         let text = getBaseTerrainName(territory.baseTerrain);
+        // Add exotic prefix if present (for inhospitable world territories)
+        if (territory.exoticPrefix) {
+            text = territory.exoticPrefix + ' ' + text;
+        }
         const traitList = getTerritoryTraitList(territory);
         if(traitList.length > 0){
             text += ' (' + traitList.join(', ') + ')';
@@ -159,14 +356,10 @@
         }
     }
 
-    // Each of the following replicate identical probability tables from C# (copy structure for clarity even if identical)
-    function generateForestTrait(t){ _genericTraitRoll(t); }
-    function generateMountainTrait(t){ _genericTraitRoll(t); }
-    function generatePlainsTrait(t){ _genericTraitRoll(t); }
-    function generateSwampTrait(t){ _genericTraitRoll(t); }
-    function generateWastelandTrait(t){ _genericTraitRoll(t); }
-
-    function _genericTraitRoll(t){
+    // Territory trait generation functions using correct tables from Stars of Inequity Table 1-15
+    
+    // Forests: Table 1-15
+    function generateForestTrait(t){
         const randValue = RollD100();
         if (randValue <= 5) t.exoticNature++;
         else if (randValue <= 25) t.expansive++;
@@ -175,8 +368,68 @@
         else if (randValue <= 80) t.uniqueCompound++;
         else if (randValue <= 95) t.unusualLocation++;
         else { // 96-100 -> two more rolls
-            _genericTraitRoll(t);
-            _genericTraitRoll(t);
+            generateForestTrait(t);
+            generateForestTrait(t);
+        }
+    }
+    
+    // Mountain Ranges: Table 1-15
+    function generateMountainTrait(t){
+        const randValue = RollD100();
+        if (randValue <= 25) t.boundary++;
+        else if (randValue <= 50) t.expansive++;
+        else if (randValue <= 65) t.extremeTemperature++;
+        else if (randValue <= 75) t.foothills++;
+        else if (randValue <= 85) t.notableSpecies++;
+        else if (randValue <= 95) t.unusualLocation++;
+        else { // 96-100 -> two more rolls
+            generateMountainTrait(t);
+            generateMountainTrait(t);
+        }
+    }
+    
+    // Plains: Table 1-15
+    function generatePlainsTrait(t){
+        const randValue = RollD100();
+        if (randValue <= 10) t.brokenGround++;
+        else if (randValue <= 30) t.expansive++;
+        else if (randValue <= 45) t.extremeTemperature++;
+        else if (randValue <= 70) t.fertile++;
+        else if (randValue <= 85) t.notableSpecies++;
+        else if (randValue <= 95) t.unusualLocation++;
+        else { // 96-100 -> two more rolls
+            generatePlainsTrait(t);
+            generatePlainsTrait(t);
+        }
+    }
+    
+    // Swamps: Table 1-15
+    function generateSwampTrait(t){
+        const randValue = RollD100();
+        if (randValue <= 10) t.expansive++;
+        else if (randValue <= 30) t.extremeTemperature++;
+        else if (randValue <= 45) t.notableSpecies++;
+        else if (randValue <= 65) t.stagnant++;
+        else if (randValue <= 75) t.unusualLocation++;
+        else if (randValue <= 95) t.virulent++;
+        else { // 96-100 -> two more rolls
+            generateSwampTrait(t);
+            generateSwampTrait(t);
+        }
+    }
+    
+    // Wastelands: Table 1-15
+    function generateWastelandTrait(t){
+        const randValue = RollD100();
+        if (randValue <= 20) t.desolate++;
+        else if (randValue <= 40) t.expansive++;
+        else if (randValue <= 70) t.extremeTemperature++;
+        else if (randValue <= 75) t.notableSpecies++;
+        else if (randValue <= 80) t.ruined++;
+        else if (randValue <= 95) t.unusualLocation++;
+        else { // 96-100 -> two more rolls
+            generateWastelandTrait(t);
+            generateWastelandTrait(t);
         }
     }
 
@@ -191,14 +444,36 @@
         let numLandmarks = RollD5();
         if (planet.effectivePlanetSize === 'Large') numLandmarks += 2;
         else if (planet.effectivePlanetSize === 'Vast') numLandmarks += 3;
+        
+        // Check if this is an inhospitable planet (not ecosystem planet)
+        const isInhospitable = planet.habitability && 
+            !['LimitedEcosystem', 'Verdant'].includes(planet.habitability);
+        
+        // Adjust volcano roll ranges for inhospitable Ice/Cold Worlds
+        // Default: 66-75 (10% chance per landmark)
+        let volcanoMin = 66;
+        let volcanoMax = 75;
+        
+        if (isInhospitable) {
+            if (planet.climateType === 'IceWorld') {
+                // Ice Worlds: 74-75 only (2% chance per landmark) - very rare, mostly dormant
+                volcanoMin = 74;
+                volcanoMax = 75;
+            } else if (planet.climateType === 'ColdWorld') {
+                // Cold Worlds: 70-75 (6% chance per landmark) - reduced but still possible
+                volcanoMin = 70;
+                volcanoMax = 75;
+            }
+        }
+        
         for(let i=0;i<numLandmarks;i++){
             const randValue = RollD100();
             if (randValue <= 20) t.landmarkCanyon++;
             else if (randValue <= 35) t.landmarkCaveNetwork++;
             else if (randValue <= 45) t.landmarkCrater++;
             else if (randValue <= 65) t.landmarkMountain++;
-            else if (randValue <= 75) t.landmarkVolcano++;
-            else { // Exceptional landmark path (76-100 = 25% chance)
+            else if (randValue >= volcanoMin && randValue <= volcanoMax) t.landmarkVolcano++;
+            else { // Exceptional landmark path (76-100 or adjusted range = ~25% chance)
                 // Attempt to generate exceptional landmark
                 // If it fails due to planet conditions, that's OK - move on without retry
                 _generateExceptionalLandmark(t, planet);
@@ -587,6 +862,7 @@
     window.EnvironmentData = {
         TerritoryBaseTerrain,
         generateEnvironment,
+        generateInhospitableEnvironment,
         getTerritoryTraitList,
         generateLandmarksForEnvironment,
         buildLandmarkList,
