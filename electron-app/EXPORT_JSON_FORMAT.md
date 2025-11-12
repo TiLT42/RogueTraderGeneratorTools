@@ -178,13 +178,15 @@ Represents a planet or large moon.
       "territories": [
         {
           "baseTerrain": "Forest",
-          "traits": ["Dense Vegetation", "Ancient Ruins"],
-          "landmarks": ["Crashed starship"]
+          "traits": ["Unique Compound", "Fertile"],
+          "landmarks": ["Cave Network"],
+          "uniqueCompoundOrganics": ["Juvenat Compounds"]
         },
         {
           "baseTerrain": "Mountains",
-          "traits": ["High Peaks"],
-          "landmarks": []
+          "traits": ["2x Unique Compound", "High Peaks"],
+          "landmarks": [],
+          "uniqueCompoundOrganics": ["Curative Compounds", "Toxins"]
         }
       ]
     },
@@ -247,6 +249,7 @@ Represents a planet or large moon.
       - `baseTerrain` (string): Primary terrain type
       - `traits` (array): Array of territory trait strings
       - `landmarks` (array): Array of landmark strings for this territory
+      - `uniqueCompoundOrganics` (array): Array of organic compound types associated with this territory's "Unique Compound" trait (empty array if no unique compound trait)
 - `mineralResources` (array, optional): Array of `{type, abundance}` objects
 - `organicCompounds` (array, optional): Array of `{type, abundance}` objects
 - `archeotechCaches` (array, optional): Array of `{type, abundance}` objects
@@ -710,6 +713,10 @@ For questions or issues with the Export JSON format:
 - **Planet Nodes**: Added `landmasses` array field for organized landmass structure
   - Continents and archipelagos with letter designations
   - Territories grouped by landmass with terrain, traits, and landmarks
+- **Planet Nodes**: Added `uniqueCompoundOrganics` array field to territory objects in landmasses
+  - Shows all organic compounds associated with territories that have "Unique Compound" trait
+  - Supports multiple unique compounds per territory (e.g., "2x Unique Compound")
+  - Allows linking terrain features to specific resources
 - **New Node Type**: `notable-species` - Container for species tied to territories
 - Complete data export for all node types
 - System nodes include `systemCreationRules` and `featureEffects`
