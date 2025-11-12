@@ -31,7 +31,7 @@ class GasGiantNode extends NodeBase {
         // Regeneration invariant: always clear state & children first
         this.reset();
         super.generate();
-        this.pageReference = createPageReference(19,'Table 1-6: Body'); // first referenced table in WPF flow doc
+        // Page reference shown inline in Type field
         this.generateBodyParity();
         this.generateGravityAndOrbitalFeaturePlan();
         this.generateOrbitalFeaturesParity();

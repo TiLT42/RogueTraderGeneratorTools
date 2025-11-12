@@ -7,7 +7,6 @@ class GravityRiptideNode extends NodeBase {
         this.nodeName = 'Gravity Riptide';
         this.fontWeight = 'bold';
         this.headerLevel = 3; // H3: Feature/hazard node
-        this.pageReference = createPageReference(15, 'Gravity Riptide');
     }
 
     generate() {

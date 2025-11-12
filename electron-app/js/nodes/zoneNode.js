@@ -12,7 +12,7 @@ class ZoneNode extends NodeBase {
 
     generate() {
         super.generate();
-        this.pageReference = createPageReference(13, 'Table 1-2: Star Generation');
+        // Page reference shown inline in System Influence field
         // No autonomous content generation (handled by SystemNode)
         this.updateDescription();
     }

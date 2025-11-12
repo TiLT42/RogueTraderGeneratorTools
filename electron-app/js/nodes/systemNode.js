@@ -121,7 +121,7 @@ class SystemNode extends NodeBase {
     generate() {
         this.reset();
         super.generate();
-        this.pageReference = createPageReference(12);
+        // Page references shown inline in description fields
         this.nodeName = this.generateSystemName();
         
         // Match WPF generation order exactly:
@@ -855,13 +855,13 @@ class SystemNode extends NodeBase {
         const base = RollD100();
         const abundance = base + (abundanceBonus||0);
         if (target.type === NodeTypes.Planet) {
-            const type = target.generateArcheotechCache ? target.generateArcheotechCache() : 'Archeotech Cache';
-            target.archeotechCaches.push({ type, abundance });
+            // Archeotech caches have NO type name - only abundance
+            target.archeotechCaches.push({ abundance });
             target.updateDescription?.();
         } else {
             if (!target.archeotechCaches) target.archeotechCaches = [];
-            const type = 'Archeotech Cache';
-            target.archeotechCaches.push({ type, abundance });
+            // Archeotech caches have NO type name - only abundance
+            target.archeotechCaches.push({ abundance });
             target.updateDescription?.();
         }
     }

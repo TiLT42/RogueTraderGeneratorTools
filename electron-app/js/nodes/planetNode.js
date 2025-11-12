@@ -66,6 +66,7 @@ class PlanetNode extends NodeBase {
         // Inhabitants
         this.inhabitants = 'None';
         this.inhabitantDevelopment = '';
+        this.inhabitantDevelopmentPage = null;
         this.techLevel = '';
         this.population = '';
         
@@ -114,7 +115,6 @@ class PlanetNode extends NodeBase {
     generate() {
         this.reset();
         super.generate();
-        this.pageReference = createPageReference(16);
 
         // Parity: Determine effectiveSystemZone from parent (WPF lines 298-317)
         // This is crucial for Haven feature and climate modifiers
@@ -653,9 +653,10 @@ class PlanetNode extends NodeBase {
     }
     _addArcheotechCache() {
         // C# parity: base abundance RollD100() + optional (RollD10()+5) if increased abundance flag set (no cap in WPF for cache abundance)
+        // Archeotech caches have NO type name in WPF - only abundance
         let abundance = RollD100();
         if (this.systemCreationRules && this.systemCreationRules.ruinedEmpireIncreasedAbundanceArcheotechCaches) abundance += (RollD10() + 5);
-        this.archeotechCaches.push({ type: this.generateArcheotechCache(), abundance });
+        this.archeotechCaches.push({ abundance });
     }
     _addXenosRuins() {
         // C# parity: base abundance RollD100() + optional (RollD10()+5) (no cap in WPF for ruins abundance)
@@ -735,13 +736,13 @@ class PlanetNode extends NodeBase {
     _generateHuman(forcedLevel='Undefined') {
         let roll = RollD10();
         if (forcedLevel==='Voidfarers') roll=10; else if (forcedLevel==='Colony') roll=5; else if (forcedLevel==='OrbitalHabitation') roll=6;
-        if (roll <=2) { this._setDev('Advanced Industry'); for(let i=0;i<3;i++) this._reduceRandomResource(RollD10()+RollD10()+RollD10()+5); }
-        else if (roll <=4) { if (this._isPlanetInhabitable()) { this._setDev('Basic Industry'); for(let i=0;i<5;i++) this._reduceRandomResource(RollD10()+RollD10()+5); return;} }
-        else if (roll ===5) { this._setDev('Colony'); this._reduceAllResources(RollD5()); }
-        else if (roll ===6) { this._setDev('Orbital Habitation'); }
-        else if (roll <=8) { if (this._isPlanetInhabitable()) { this._setDev('Pre-Industrial'); const rn = RandBetween(0,2); for(let i=0;i<rn;i++) this._reduceRandomResource(RollD10()+5); return;} }
-        else if (roll ===9) { if (this._isPlanetInhabitable()) { this._setDev('Primitive Clans'); this._reduceRandomResource(RollD10()+2); return;} }
-        else { this._setDev('Voidfarers'); for(let i=0;i<5;i++) this._reduceRandomResource(RollD10()+RollD10()+RollD10()+RollD10()+5); }
+        if (roll <=2) { this._setDev('Advanced Industry', 'Human'); for(let i=0;i<3;i++) this._reduceRandomResource(RollD10()+RollD10()+RollD10()+5); }
+        else if (roll <=4) { if (this._isPlanetInhabitable()) { this._setDev('Basic Industry', 'Human'); for(let i=0;i<5;i++) this._reduceRandomResource(RollD10()+RollD10()+5); return;} }
+        else if (roll ===5) { this._setDev('Colony', 'Human'); this._reduceAllResources(RollD5()); }
+        else if (roll ===6) { this._setDev('Orbital Habitation', 'Human'); }
+        else if (roll <=8) { if (this._isPlanetInhabitable()) { this._setDev('Pre-Industrial', 'Human'); const rn = RandBetween(0,2); for(let i=0;i<rn;i++) this._reduceRandomResource(RollD10()+5); return;} }
+        else if (roll ===9) { if (this._isPlanetInhabitable()) { this._setDev('Primitive Clans', 'Human'); this._reduceRandomResource(RollD10()+2); return;} }
+        else { this._setDev('Voidfarers', 'Human'); for(let i=0;i<5;i++) this._reduceRandomResource(RollD10()+RollD10()+RollD10()+RollD10()+5); }
         if (this.inhabitantDevelopment==='') this._generateHuman(); // retry branch if invalid
     }
     _generateEldar() {
@@ -752,29 +753,29 @@ class PlanetNode extends NodeBase {
             this.organicCompounds.forEach(o=> { if (typeof o!=='string' && o.abundance>0) o.abundance += RollD10()+RollD10(); });
         }
         const roll = RollD10();
-        if (roll <=3) { if (this._isPlanetInhabitable()) { this._setDev('Primitive Clans (Exodites)'); this._reduceRandomResource(RollD10()+2); return;} }
-        else if (roll <=8) { this._setDev('Orbital Habitation'); return; }
-        else { this._setDev('Voidfarers'); return; }
+        if (roll <=3) { if (this._isPlanetInhabitable()) { this._setDev('Primitive Clans (Exodites)', 'Eldar'); this._reduceRandomResource(RollD10()+2); return;} }
+        else if (roll <=8) { this._setDev('Orbital Habitation', 'Eldar'); return; }
+        else { this._setDev('Voidfarers', 'Eldar'); return; }
         this._generateEldar();
     }
     _generateKroot() {
         const roll = RollD10();
-        if (roll <=7) { if (this._isPlanetInhabitable()) { this._setDev('Primitive Clans'); this._reduceRandomResource(RollD10()+2); return; } }
-        else { this._setDev('Colony'); this._reduceAllResources(RollD5()); return; }
+        if (roll <=7) { if (this._isPlanetInhabitable()) { this._setDev('Primitive Clans', 'Kroot'); this._reduceRandomResource(RollD10()+2); return; } }
+        else { this._setDev('Colony', 'Kroot'); this._reduceAllResources(RollD5()); return; }
         this._generateKroot();
     }
     _generateOrk() {
         const roll = RollD10();
-        if (roll <=4) { this._setDev('Advanced Industry'); for(let i=0;i<3;i++) this._reduceRandomResource(RollD10()+RollD10()+RollD10()+5); }
-        else if (roll ===5) { this._setDev('Colony'); this._reduceAllResources(RollD5()); }
-        else if (roll <=8) { this._setDev('Primitive Clans'); this._reduceRandomResource(RollD10()+2); }
-        else { this._setDev('Voidfarers'); for(let i=0;i<5;i++) this._reduceRandomResource(RollD10()+RollD10()+RollD10()+RollD10()+5); }
+        if (roll <=4) { this._setDev('Advanced Industry', 'Ork'); for(let i=0;i<3;i++) this._reduceRandomResource(RollD10()+RollD10()+RollD10()+5); }
+        else if (roll ===5) { this._setDev('Colony', 'Ork'); this._reduceAllResources(RollD5()); }
+        else if (roll <=8) { this._setDev('Primitive Clans', 'Ork'); this._reduceRandomResource(RollD10()+2); }
+        else { this._setDev('Voidfarers', 'Ork'); for(let i=0;i<5;i++) this._reduceRandomResource(RollD10()+RollD10()+RollD10()+RollD10()+5); }
     }
     _generateRakGol() {
         const roll = RollD10();
-        if (roll <=2) { this._setDev('Colony'); this._reduceAllResources(RollD5()); }
-        else if (roll <=4) { this._setDev('Orbital Habitation'); }
-        else { this._setDev('Voidfarers'); for(let i=0;i<5;i++) this._reduceRandomResource(RollD10()+RollD10()+RollD10()+RollD10()+5); }
+        if (roll <=2) { this._setDev('Colony', "Rak'Gol"); this._reduceAllResources(RollD5()); }
+        else if (roll <=4) { this._setDev('Orbital Habitation', "Rak'Gol"); }
+        else { this._setDev('Voidfarers', "Rak'Gol"); for(let i=0;i<5;i++) this._reduceRandomResource(RollD10()+RollD10()+RollD10()+RollD10()+5); }
     }
     _generateXenosOther(forcedLevel='Undefined') {
         let roll = RollD10();
@@ -792,16 +793,38 @@ class PlanetNode extends NodeBase {
                 if (node.children.length>0) { this.primitiveXenosNode = node; this.addChild(node); }
             }
         };
-        if (roll <=1) { this._setDev('Advanced Industry'); for(let i=0;i<3;i++) this._reduceRandomResource(RollD10()+RollD10()+RollD10()+5); return; }
-        if (roll <=3) { if (this._isPlanetInhabitable()) { this._setDev('Basic Industry'); for(let i=0;i<5;i++) this._reduceRandomResource(RollD10()+RollD10()+5); return; } }
-        else if (roll ===4) { this._setDev('Colony'); this._reduceAllResources(RollD5()); return; }
-        else if (roll ===5) { this._setDev('Orbital Habitation'); return; }
-        else if (roll <=7) { if (this._isPlanetInhabitable()) { this._setDev('Pre-Industrial'); const rn = RandBetween(0,2); for(let i=0;i<rn;i++) this._reduceRandomResource(RollD10()+5); maybeAddPrimitive(); return; } }
-        else if (roll <=9) { if (this._isPlanetInhabitable()) { this._setDev('Primitive Clans'); this._reduceRandomResource(RollD10()+2); maybeAddPrimitive(); return; } }
-        else { this._setDev('Voidfarers'); for(let i=0;i<5;i++) this._reduceRandomResource(RollD10()+RollD10()+RollD10()+RollD10()+5); return; }
+        if (roll <=1) { this._setDev('Advanced Industry', 'Other'); for(let i=0;i<3;i++) this._reduceRandomResource(RollD10()+RollD10()+RollD10()+5); return; }
+        if (roll <=3) { if (this._isPlanetInhabitable()) { this._setDev('Basic Industry', 'Other'); for(let i=0;i<5;i++) this._reduceRandomResource(RollD10()+RollD10()+5); return; } }
+        else if (roll ===4) { this._setDev('Colony', 'Other'); this._reduceAllResources(RollD5()); return; }
+        else if (roll ===5) { this._setDev('Orbital Habitation', 'Other'); return; }
+        else if (roll <=7) { if (this._isPlanetInhabitable()) { this._setDev('Pre-Industrial', 'Other'); const rn = RandBetween(0,2); for(let i=0;i<rn;i++) this._reduceRandomResource(RollD10()+5); maybeAddPrimitive(); return; } }
+        else if (roll <=9) { if (this._isPlanetInhabitable()) { this._setDev('Primitive Clans', 'Other'); this._reduceRandomResource(RollD10()+2); maybeAddPrimitive(); return; } }
+        else { this._setDev('Voidfarers', 'Other'); for(let i=0;i<5;i++) this._reduceRandomResource(RollD10()+RollD10()+RollD10()+RollD10()+5); return; }
         this._generateXenosOther();
     }
-    _setDev(dev) { this.inhabitantDevelopment = dev; }
+    _setDev(dev, species = null) { 
+        this.inhabitantDevelopment = dev; 
+        // Store page reference based on development level and species (WPF parity)
+        // Human/Xenos Other: 40-42, Eldar: 42-43, Kroot: 44-45, Ork: 46-47, Rak'Gol: 49
+        // Use passed species if provided, otherwise fall back to this.inhabitants
+        const inhabitants = species || this.inhabitants || 'None';
+        if (inhabitants === 'Human' || inhabitants === 'Other') {
+            if (dev === 'Advanced Industry') this.inhabitantDevelopmentPage = 40;
+            else if (dev === 'Basic Industry' || dev.startsWith('Colony') || dev.startsWith('Orbital') || dev.startsWith('Pre-Industrial')) this.inhabitantDevelopmentPage = 41;
+            else if (dev.startsWith('Primitive') || dev.startsWith('Voidfarers')) this.inhabitantDevelopmentPage = 42;
+        } else if (inhabitants === 'Eldar') {
+            if (dev.includes('Exodites')) this.inhabitantDevelopmentPage = 42;
+            else this.inhabitantDevelopmentPage = 43;
+        } else if (inhabitants === 'Kroot') {
+            if (dev.startsWith('Primitive')) this.inhabitantDevelopmentPage = 45;
+            else this.inhabitantDevelopmentPage = 44;
+        } else if (inhabitants === 'Ork') {
+            if (dev.startsWith('Advanced') || dev.startsWith('Colony') || dev.startsWith('Primitive')) this.inhabitantDevelopmentPage = 46;
+            else this.inhabitantDevelopmentPage = 47;
+        } else if (inhabitants === "Rak'Gol") {
+            this.inhabitantDevelopmentPage = 49;
+        }
+    }
 
     buildEnvironmentReferences() {
         if (this.environment && window.EnvironmentData) {
@@ -1071,10 +1094,9 @@ class PlanetNode extends NodeBase {
         
         // Chance for archeotech or xenos ruins
         if (RollD100() <= 10) {
-            // Parity: always store as {type, abundance}
-            const type = this.generateArcheotechCache();
+            // Archeotech caches have NO type name - only abundance
             const abundance = RollD100();
-            this.archeotechCaches.push({ type, abundance });
+            this.archeotechCaches.push({ abundance });
         }
         
         if (RollD100() <= 15) {
@@ -1126,17 +1148,6 @@ class PlanetNode extends NodeBase {
         if (roll <= 65) return createOrganicCompound('Toxins', RollD5());
         if (roll <= 80) return createOrganicCompound('Vivid Accessories', RollD5());
         return createOrganicCompound('Exotic Compounds', RollD5());
-    }
-
-    generateArcheotechCache() {
-        const types = [
-            'Ancient Data Repository',
-            'Technological Ruins',
-            'Archeotech Device Cache',
-            'Pre-Age of Strife Facility',
-            'Dark Age Technology'
-        ];
-    return ChooseFrom(types); // NOTE (Parity): C# uses uniform selection across 5 archeotech cache types; weighting verified.
     }
 
     generateXenosRuins() {
@@ -1436,6 +1447,66 @@ class PlanetNode extends NodeBase {
         }
     }
 
+    // Helper to format mineral resource with abundance text and page reference (WPF parity)
+    formatMineralResource(resource) {
+        if (typeof resource === 'string') return resource;
+        const abundanceText = window.CommonData.getResourceAbundanceText(resource.abundance);
+        const resourceName = resource.type.toLowerCase();
+        const pageRef = window.APP_STATE.settings.showPageNumbers 
+            ? ` <span class="page-reference">${createPageReference(30)}</span>` 
+            : '';
+        return `${abundanceText} (${resource.abundance}) ${resourceName}${pageRef}`;
+    }
+
+    // Helper to format organic compound with abundance text and page reference (WPF parity)
+    formatOrganicCompound(compound) {
+        if (typeof compound === 'string') return compound;
+        const abundanceText = window.CommonData.getResourceAbundanceText(compound.abundance);
+        let compoundName = compound.type.toLowerCase();
+        let pageNumber = 30;
+        
+        // Match WPF page numbers for specific compound types
+        if (compound.type === 'Vivid Accessories') {
+            pageNumber = 31;
+        }
+        
+        const pageRef = window.APP_STATE.settings.showPageNumbers 
+            ? ` <span class="page-reference">${createPageReference(pageNumber)}</span>` 
+            : '';
+        return `${abundanceText} (${compound.abundance}) ${compoundName}${pageRef}`;
+    }
+
+    // Helper to format archeotech cache with abundance text and page reference (WPF parity)
+    // Note: Archeotech caches have NO type name, only abundance
+    formatArcheotechCache(cache) {
+        if (typeof cache === 'string') return cache;
+        const abundanceText = window.CommonData.getResourceAbundanceText(cache.abundance);
+        const pageRef = window.APP_STATE.settings.showPageNumbers 
+            ? ` <span class="page-reference">${createPageReference(28)}</span>` 
+            : '';
+        return `${abundanceText} (${cache.abundance})${pageRef}`;
+    }
+
+    // Helper to format xenos ruins with abundance text and species (WPF parity)
+    formatXenosRuins(ruins) {
+        if (typeof ruins === 'string') return ruins;
+        const abundanceText = window.CommonData.getResourceAbundanceText(ruins.abundance);
+        let speciesName = 'unknown';
+        
+        // Extract species name from type
+        if (ruins.type.includes('Eldar')) speciesName = 'Eldar';
+        else if (ruins.type.includes('Egarian')) speciesName = 'Egarian';
+        else if (ruins.type.includes("Yu'Vath")) speciesName = "Yu'Vath";
+        else if (ruins.type.includes('Ork')) speciesName = 'Ork';
+        else if (ruins.type.includes('Kroot')) speciesName = 'Kroot';
+        
+        const pageRef = window.APP_STATE.settings.showPageNumbers 
+            ? ` <span class="page-reference">${createPageReference(31)}</span>` 
+            : '';
+        return `${abundanceText} (${ruins.abundance}) ruins of ${speciesName} origin${pageRef}`;
+    }
+
+
     updateDescription() {
         // Start with classification to identify planet vs moon
         let desc = '';
@@ -1623,26 +1694,35 @@ class PlanetNode extends NodeBase {
         desc += `<h4>Base Mineral Resources</h4>`;
         const mineralResourcesFiltered = this.mineralResources.filter(r => typeof r === 'string' || r.abundance > 0);
         if (mineralResourcesFiltered.length === 0) desc += '<p>None</p>'; else {
-            desc += '<ul>' + mineralResourcesFiltered.map(r=> (typeof r === 'string'? `<li>${r}</li>` : `<li>${r.type} (Abundance ${r.abundance})</li>`)).join('') + '</ul>';
+            desc += '<ul>' + mineralResourcesFiltered.map(r => `<li>${this.formatMineralResource(r)}</li>`).join('') + '</ul>';
         }
         desc += `<h4>Organic Compounds</h4>`;
         const organicCompoundsFiltered = this.organicCompounds.filter(c => typeof c === 'string' || c.abundance > 0);
         if (organicCompoundsFiltered.length === 0) desc += '<p>None</p>'; else {
-            desc += '<ul>' + organicCompoundsFiltered.map(c=> typeof c==='string'? `<li>${c}</li>` : `<li>${c.type} (Abundance ${c.abundance})</li>`).join('') + '</ul>';
+            desc += '<ul>' + organicCompoundsFiltered.map(c => `<li>${this.formatOrganicCompound(c)}</li>`).join('') + '</ul>';
         }
         desc += `<h4>Archeotech Caches</h4>`;
         const archeotechCachesFiltered = this.archeotechCaches.filter(a => typeof a === 'string' || a.abundance > 0);
-        if (archeotechCachesFiltered.length === 0) desc += '<p>None</p>'; else desc += '<ul>'+archeotechCachesFiltered.map(a=> (typeof a==='string'? `<li>${a}</li>` : `<li>${a.type} (Abundance ${a.abundance})</li>`)).join('')+'</ul>';
+        if (archeotechCachesFiltered.length === 0) desc += '<p>None</p>'; else {
+            desc += '<ul>' + archeotechCachesFiltered.map(a => `<li>${this.formatArcheotechCache(a)}</li>`).join('') + '</ul>';
+        }
         desc += `<h4>Xenos Ruins</h4>`;
         const xenosRuinsFiltered = this.xenosRuins.filter(x => typeof x === 'string' || x.abundance > 0);
-        if (xenosRuinsFiltered.length === 0) desc += '<p>None</p>'; else desc += '<ul>'+xenosRuinsFiltered.map(x=> (typeof x==='string'? `<li>${x}</li>` : `<li>${x.type} (Abundance ${x.abundance})</li>`)).join('')+'</ul>';
+        if (xenosRuinsFiltered.length === 0) desc += '<p>None</p>'; else {
+            desc += '<ul>' + xenosRuinsFiltered.map(x => `<li>${this.formatXenosRuins(x)}</li>`).join('') + '</ul>';
+        }
 
         // Inhabitants (simplified model retained)
     desc += `<h4>Inhabitants</h4>`;
     let speciesLine = this.inhabitants;
     if (this.isInhabitantHomeWorld && this.inhabitants !== 'None') speciesLine += ' (Home World)';
     desc += `<p><strong>Species:</strong> ${speciesLine}</p>`;
-        if (this.inhabitantDevelopment) desc += `<p><strong>Development:</strong> ${this.inhabitantDevelopment}</p>`;
+        if (this.inhabitantDevelopment) {
+            const devPageRef = this.inhabitantDevelopmentPage && window.APP_STATE.settings.showPageNumbers
+                ? ` <span class="page-reference">${createPageReference(this.inhabitantDevelopmentPage)}</span>`
+                : '';
+            desc += `<p><strong>Development:</strong> ${this.inhabitantDevelopment}${devPageRef}</p>`;
+        }
         if (this.techLevel) desc += `<p><strong>Technology Level:</strong> ${this.techLevel}</p>`;
         if (this.population) desc += `<p><strong>Population:</strong> ${this.population}</p>`;
 
@@ -1693,6 +1773,7 @@ class PlanetNode extends NodeBase {
         json.effectiveSystemZoneCloserToSun = this.effectiveSystemZoneCloserToSun;
         json.inhabitants = this.inhabitants;
         json.inhabitantDevelopment = this.inhabitantDevelopment;
+        json.inhabitantDevelopmentPage = this.inhabitantDevelopmentPage;
         json.techLevel = this.techLevel;
         json.population = this.population;
         json.numContinents = this.numContinents;
@@ -1769,7 +1850,6 @@ class PlanetNode extends NodeBase {
         }
         if (this.archeotechCaches && this.archeotechCaches.length > 0) {
             data.archeotechCaches = this.archeotechCaches.map(a => ({
-                type: a.type,
                 abundance: a.abundance
             }));
         }
@@ -1836,6 +1916,7 @@ class PlanetNode extends NodeBase {
             effectiveSystemZoneCloserToSun: data.effectiveSystemZoneCloserToSun || false,
             inhabitants: data.inhabitants || 'None',
             inhabitantDevelopment: data.inhabitantDevelopment || '',
+            inhabitantDevelopmentPage: data.inhabitantDevelopmentPage || null,
             techLevel: data.techLevel || '',
             population: data.population || '',
             numContinents: data.numContinents || 0,

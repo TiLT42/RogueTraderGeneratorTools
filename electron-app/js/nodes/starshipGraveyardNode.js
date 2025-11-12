@@ -38,7 +38,7 @@ class StarshipGraveyardNode extends NodeBase {
     generate() {
         this.reset();
         super.generate();
-        this.pageReference = createPageReference(17, 'Table 1-5: Starship Graveyard Origins');
+        // Page reference shown inline in Fleet Composition field
         // Fallback injection: if systemCreationRules not provided by ZoneNode (edge cases like manual insertion)
         if (!this.systemCreationRules) {
             let p = this.parent; while (p && !this.systemCreationRules) { if (p.systemCreationRules) this.systemCreationRules = p.systemCreationRules; p = p.parent; }
@@ -208,15 +208,6 @@ class StarshipGraveyardNode extends NodeBase {
         this._resourceXenosTotal += val;
     }
 
-    _getResourceAbundanceText(total) {
-        if (total <= 15) return 'Minimal';
-        if (total <= 40) return 'Limited';
-        if (total <= 65) return 'Sustainable';
-        if (total <= 85) return 'Significant';
-        if (total <= 98) return 'Major';
-        return 'Plentiful';
-    }
-
     // ----- Dominant Ruined Species Bias / Adoption -----
     _getRandomSpeciesWithDominantBias(applyBias) {
         let species = window.StarshipToolsData.getRandomSpecies();
@@ -259,17 +250,7 @@ class StarshipGraveyardNode extends NodeBase {
         }
     }
 
-    // ----- Resource Type Generators (reuse station selections for consistency) -----
-    generateArcheotechCache() {
-        const types = [
-            'Ancient Data Repository',
-            'Technological Ruins',
-            'Archeotech Device Cache',
-            'Pre-Age of Strife Facility',
-            'Dark Age Technology'
-        ];
-        return ChooseFrom(types);
-    }
+    // ----- Resource Type Generators (for xenos ruins only - archeotech has no type) -----
     generateXenosRuins() {
         // Parity: Weighted species & dominant adoption (60% reuse, 40/20/10/10/10/10 distribution otherwise; 70% chance to set dominant if undefined).
         const rules = this.systemCreationRules;
@@ -319,12 +300,12 @@ class StarshipGraveyardNode extends NodeBase {
     const xenoTotal = this._resourceXenosTotal;
         if (archeoTotal>0 || xenoTotal>0) {
             if (archeoTotal>0) {
-                const cat = this._getResourceAbundanceText(archeoTotal);
+                const cat = window.CommonData.getResourceAbundanceText(archeoTotal);
                 const ref = showPages ? ` <span class="page-reference">${createPageReference(28,'', RuleBook.StarsOfInequity)}</span>` : '';
                 desc += `<p><strong>Archeotech Resources:</strong> ${cat} (${archeoTotal})${ref}</p>`;
             }
             if (xenoTotal>0) {
-                const cat2 = this._getResourceAbundanceText(xenoTotal);
+                const cat2 = window.CommonData.getResourceAbundanceText(xenoTotal);
                 const ref2 = showPages ? ` <span class="page-reference">${createPageReference(31,'', RuleBook.StarsOfInequity)}</span>` : '';
                 desc += `<p><strong>Xenotech Resources:</strong> ${cat2} (${xenoTotal})${ref2}</p>`;
             }
