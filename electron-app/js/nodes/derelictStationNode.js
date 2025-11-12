@@ -158,6 +158,7 @@ class DerelictStationNode extends NodeBase {
             }).join('') + '</ul>';
         }
         if (xenos.length>0) {
+            const xenoPageRef = showPages ? ` <span class="page-reference">${createPageReference(31)}</span>` : '';
             desc += '<h4>Xenotech Resources</h4><ul>' + xenos.map(r=>{
                 const abundanceText = window.CommonData.getResourceAbundanceText(r.abundance);
                 let speciesName = 'unknown';
@@ -166,7 +167,7 @@ class DerelictStationNode extends NodeBase {
                 else if (r.type.includes("Yu'Vath")) speciesName = "Yu'Vath";
                 else if (r.type.includes('Ork')) speciesName = 'Ork';
                 else if (r.type.includes('Kroot')) speciesName = 'Kroot';
-                return `<li>${abundanceText} (${r.abundance}) ruins of ${speciesName}</li>`;
+                return `<li>${abundanceText} (${r.abundance}) ruins of ${speciesName} origin${xenoPageRef}</li>`;
             }).join('') + '</ul>';
         }
         if (archeo.length===0 && xenos.length===0) {
