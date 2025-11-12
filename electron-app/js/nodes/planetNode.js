@@ -541,17 +541,28 @@ class PlanetNode extends NodeBase {
     }
 
     generateEnvironmentParity() {
-        if (!(this.habitability === 'LimitedEcosystem' || this.habitability === 'Verdant')) {
-            this.environment = null;
+        // Standard environment generation for ecosystem planets (Limited Ecosystem / Verdant)
+        if (this.habitability === 'LimitedEcosystem' || this.habitability === 'Verdant') {
+            let numTerritories = RollD5();
+            if (this.effectivePlanetSize === 'Small') numTerritories -= 2;
+            if (this.effectivePlanetSize === 'Vast') numTerritories += 3;
+            if (this.habitability === 'Verdant') numTerritories += 2;
+            if (numTerritories < 1) numTerritories = 1;
+            if (window.EnvironmentData && typeof window.EnvironmentData.generateEnvironment === 'function') {
+                this.environment = window.EnvironmentData.generateEnvironment(numTerritories);
+            } else {
+                this.environment = null;
+            }
             return;
         }
-        let numTerritories = RollD5();
-        if (this.effectivePlanetSize === 'Small') numTerritories -= 2;
-        if (this.effectivePlanetSize === 'Vast') numTerritories += 3;
-        if (this.habitability === 'Verdant') numTerritories += 2;
-        if (numTerritories < 1) numTerritories = 1;
-        if (window.EnvironmentData && typeof window.EnvironmentData.generateEnvironment === 'function') {
-            this.environment = window.EnvironmentData.generateEnvironment(numTerritories);
+        
+        // Alternate territory generation for non-ecosystem planets
+        // Per Stars of Inequity: "Planets without a Habitability result of Limited Ecosystem or Verdant 
+        // do not generate Territories randomly, although they can include one or more appropriately 
+        // selected examples, at the GM's discretion."
+        // This generates 0-2 territories (~50% chance) with appropriate types for inhospitable worlds
+        if (window.EnvironmentData && typeof window.EnvironmentData.generateInhospitableEnvironment === 'function') {
+            this.environment = window.EnvironmentData.generateInhospitableEnvironment(this);
         } else {
             this.environment = null;
         }
