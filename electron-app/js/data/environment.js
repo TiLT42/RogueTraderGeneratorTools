@@ -78,7 +78,9 @@
             landmarkVolcano: 0,
             landmarkWhirlpool: 0,
             // Notable species xenos nodes associated with this territory
-            notableSpeciesXenos: []
+            notableSpeciesXenos: [],
+            // Organic compound associated with Unique Compound trait (if any)
+            uniqueCompoundOrganic: null
         };
     }
 
