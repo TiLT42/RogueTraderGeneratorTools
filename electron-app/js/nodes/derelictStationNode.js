@@ -89,8 +89,8 @@ class DerelictStationNode extends NodeBase {
                 this.xenosRuins.push({ type, abundance });
             } else {
                 if (!this.archeotechCaches) this.archeotechCaches = [];
-                const type = this.generateArcheotechCache();
-                this.archeotechCaches.push({ type, abundance });
+                // Archeotech caches have NO type name - only abundance
+                this.archeotechCaches.push({ abundance });
             }
         }
     }
@@ -105,17 +105,6 @@ class DerelictStationNode extends NodeBase {
 
     _generateHullIntegrity() {
         this.hullIntegrity = RollD10(4); // 4d10
-    }
-
-    generateArcheotechCache() {
-        const types = [
-            'Ancient Data Repository',
-            'Technological Ruins',
-            'Archeotech Device Cache',
-            'Pre-Age of Strife Facility',
-            'Dark Age Technology'
-        ];
-        return ChooseFrom(types);
     }
 
     generateXenosRuins() {

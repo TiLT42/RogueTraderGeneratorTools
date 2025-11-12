@@ -250,17 +250,7 @@ class StarshipGraveyardNode extends NodeBase {
         }
     }
 
-    // ----- Resource Type Generators (reuse station selections for consistency) -----
-    generateArcheotechCache() {
-        const types = [
-            'Ancient Data Repository',
-            'Technological Ruins',
-            'Archeotech Device Cache',
-            'Pre-Age of Strife Facility',
-            'Dark Age Technology'
-        ];
-        return ChooseFrom(types);
-    }
+    // ----- Resource Type Generators (for xenos ruins only - archeotech has no type) -----
     generateXenosRuins() {
         // Parity: Weighted species & dominant adoption (60% reuse, 40/20/10/10/10/10 distribution otherwise; 70% chance to set dominant if undefined).
         const rules = this.systemCreationRules;

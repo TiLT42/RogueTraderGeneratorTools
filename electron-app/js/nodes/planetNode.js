@@ -654,9 +654,10 @@ class PlanetNode extends NodeBase {
     }
     _addArcheotechCache() {
         // C# parity: base abundance RollD100() + optional (RollD10()+5) if increased abundance flag set (no cap in WPF for cache abundance)
+        // Archeotech caches have NO type name in WPF - only abundance
         let abundance = RollD100();
         if (this.systemCreationRules && this.systemCreationRules.ruinedEmpireIncreasedAbundanceArcheotechCaches) abundance += (RollD10() + 5);
-        this.archeotechCaches.push({ type: this.generateArcheotechCache(), abundance });
+        this.archeotechCaches.push({ abundance });
     }
     _addXenosRuins() {
         // C# parity: base abundance RollD100() + optional (RollD10()+5) (no cap in WPF for ruins abundance)
@@ -1093,10 +1094,9 @@ class PlanetNode extends NodeBase {
         
         // Chance for archeotech or xenos ruins
         if (RollD100() <= 10) {
-            // Parity: always store as {type, abundance}
-            const type = this.generateArcheotechCache();
+            // Archeotech caches have NO type name - only abundance
             const abundance = RollD100();
-            this.archeotechCaches.push({ type, abundance });
+            this.archeotechCaches.push({ abundance });
         }
         
         if (RollD100() <= 15) {
@@ -1148,17 +1148,6 @@ class PlanetNode extends NodeBase {
         if (roll <= 65) return createOrganicCompound('Toxins', RollD5());
         if (roll <= 80) return createOrganicCompound('Vivid Accessories', RollD5());
         return createOrganicCompound('Exotic Compounds', RollD5());
-    }
-
-    generateArcheotechCache() {
-        const types = [
-            'Ancient Data Repository',
-            'Technological Ruins',
-            'Archeotech Device Cache',
-            'Pre-Age of Strife Facility',
-            'Dark Age Technology'
-        ];
-    return ChooseFrom(types); // NOTE (Parity): C# uses uniform selection across 5 archeotech cache types; weighting verified.
     }
 
     generateXenosRuins() {
@@ -1458,12 +1447,15 @@ class PlanetNode extends NodeBase {
         }
     }
 
-    // Helper to format mineral resource with abundance text (WPF parity)
+    // Helper to format mineral resource with abundance text and page reference (WPF parity)
     formatMineralResource(resource) {
         if (typeof resource === 'string') return resource;
         const abundanceText = window.CommonData.getResourceAbundanceText(resource.abundance);
         const resourceName = resource.type.toLowerCase();
-        return `${abundanceText} (${resource.abundance}) ${resourceName}`;
+        const pageRef = window.APP_STATE.settings.showPageNumbers 
+            ? ` <span class="page-reference">${createPageReference(30)}</span>` 
+            : '';
+        return `${abundanceText} (${resource.abundance}) ${resourceName}${pageRef}`;
     }
 
     // Helper to format organic compound with abundance text and page reference (WPF parity)
@@ -1485,6 +1477,7 @@ class PlanetNode extends NodeBase {
     }
 
     // Helper to format archeotech cache with abundance text and page reference (WPF parity)
+    // Note: Archeotech caches have NO type name, only abundance
     formatArcheotechCache(cache) {
         if (typeof cache === 'string') return cache;
         const abundanceText = window.CommonData.getResourceAbundanceText(cache.abundance);
@@ -1507,7 +1500,10 @@ class PlanetNode extends NodeBase {
         else if (ruins.type.includes('Ork')) speciesName = 'Ork';
         else if (ruins.type.includes('Kroot')) speciesName = 'Kroot';
         
-        return `${abundanceText} (${ruins.abundance}) ruins of ${speciesName}`;
+        const pageRef = window.APP_STATE.settings.showPageNumbers 
+            ? ` <span class="page-reference">${createPageReference(31)}</span>` 
+            : '';
+        return `${abundanceText} (${ruins.abundance}) ruins of ${speciesName} origin${pageRef}`;
     }
 
 
@@ -1854,7 +1850,6 @@ class PlanetNode extends NodeBase {
         }
         if (this.archeotechCaches && this.archeotechCaches.length > 0) {
             data.archeotechCaches = this.archeotechCaches.map(a => ({
-                type: a.type,
                 abundance: a.abundance
             }));
         }
