@@ -133,26 +133,22 @@ console.log('\nOrganic compounds generated:', planet.organicCompounds.length);
 console.log('Expected at least:', env.territories[0].uniqueCompound + env.territories[1].uniqueCompound);
 
 // Check that territories have associated organic compounds
-console.log('\nTerritory 0 uniqueCompoundOrganic:', env.territories[0].uniqueCompoundOrganic ? 
-    (typeof env.territories[0].uniqueCompoundOrganic === 'string' ? 
-        env.territories[0].uniqueCompoundOrganic : 
-        env.territories[0].uniqueCompoundOrganic.type) : 'null');
-console.log('Territory 1 uniqueCompoundOrganic:', env.territories[1].uniqueCompoundOrganic ? 
-    (typeof env.territories[1].uniqueCompoundOrganic === 'string' ? 
-        env.territories[1].uniqueCompoundOrganic : 
-        env.territories[1].uniqueCompoundOrganic.type) : 'null');
-console.log('Territory 2 uniqueCompoundOrganic:', env.territories[2].uniqueCompoundOrganic ? 
-    (typeof env.territories[2].uniqueCompoundOrganic === 'string' ? 
-        env.territories[2].uniqueCompoundOrganic : 
-        env.territories[2].uniqueCompoundOrganic.type) : 'null');
+console.log('\nTerritory 0 uniqueCompoundOrganics:', env.territories[0].uniqueCompoundOrganics ? 
+    env.territories[0].uniqueCompoundOrganics.map(o => typeof o === 'string' ? o : o.type).join(', ') : '[]');
+console.log('Territory 1 uniqueCompoundOrganics:', env.territories[1].uniqueCompoundOrganics ? 
+    env.territories[1].uniqueCompoundOrganics.map(o => typeof o === 'string' ? o : o.type).join(', ') : '[]');
+console.log('Territory 2 uniqueCompoundOrganics:', env.territories[2].uniqueCompoundOrganics ? 
+    env.territories[2].uniqueCompoundOrganics.map(o => typeof o === 'string' ? o : o.type).join(', ') : '[]');
 
 // Assertions
-console.assert(env.territories[0].uniqueCompoundOrganic !== null, 'Territory 0 should have uniqueCompoundOrganic');
-console.assert(env.territories[1].uniqueCompoundOrganic !== null, 'Territory 1 should have uniqueCompoundOrganic');
-console.assert(env.territories[2].uniqueCompoundOrganic === null || env.territories[2].uniqueCompoundOrganic === undefined, 
-    'Territory 2 should not have uniqueCompoundOrganic');
+console.assert(env.territories[0].uniqueCompoundOrganics && env.territories[0].uniqueCompoundOrganics.length === 1, 
+    'Territory 0 should have 1 uniqueCompoundOrganic');
+console.assert(env.territories[1].uniqueCompoundOrganics && env.territories[1].uniqueCompoundOrganics.length === 2, 
+    'Territory 1 should have 2 uniqueCompoundOrganics');
+console.assert(!env.territories[2].uniqueCompoundOrganics || env.territories[2].uniqueCompoundOrganics.length === 0, 
+    'Territory 2 should have no uniqueCompoundOrganics');
 
-console.log('\n✓ Test 1 passed: Organic compounds are associated with territories\n');
+console.log('\n✓ Test 1 passed: Organic compounds are associated with territories (including multiple per territory)\n');
 
 // Test 2: Check HTML output includes unique compound display
 console.log('Test 2: Verify HTML output includes unique compound information');
@@ -191,27 +187,39 @@ const json = planet.toJSON();
 console.log('JSON serialization includes environment:', json.environment !== null);
 console.log('Environment territories preserved:', json.environment && json.environment.territories ? json.environment.territories.length : 0);
 
-// Check that uniqueCompoundOrganic is in the serialized data
+// Check that uniqueCompoundOrganics is in the serialized data
 if (json.environment && json.environment.territories) {
-    const t0Organic = json.environment.territories[0].uniqueCompoundOrganic;
-    console.log('Territory 0 uniqueCompoundOrganic in JSON:', t0Organic ? 
-        (typeof t0Organic === 'string' ? t0Organic : t0Organic.type) : 'null');
-    console.assert(t0Organic !== null && t0Organic !== undefined, 
-        'Territory 0 uniqueCompoundOrganic should be preserved in JSON');
+    const t0Organics = json.environment.territories[0].uniqueCompoundOrganics;
+    console.log('Territory 0 uniqueCompoundOrganics in JSON:', t0Organics && t0Organics.length > 0 ? 
+        t0Organics.map(o => typeof o === 'string' ? o : o.type).join(', ') : '[]');
+    console.assert(t0Organics && t0Organics.length === 1, 
+        'Territory 0 should have 1 uniqueCompoundOrganic preserved in JSON');
+    
+    const t1Organics = json.environment.territories[1].uniqueCompoundOrganics;
+    console.log('Territory 1 uniqueCompoundOrganics in JSON:', t1Organics && t1Organics.length > 0 ? 
+        t1Organics.map(o => typeof o === 'string' ? o : o.type).join(', ') : '[]');
+    console.assert(t1Organics && t1Organics.length === 2, 
+        'Territory 1 should have 2 uniqueCompoundOrganics preserved in JSON');
 }
 
 // Deserialize and verify
 const restored = window.PlanetNode.fromJSON(json);
 console.log('Restored planet has environment:', restored.environment !== null);
 if (restored.environment && restored.environment.territories) {
-    const restoredT0Organic = restored.environment.territories[0].uniqueCompoundOrganic;
-    console.log('Restored territory 0 uniqueCompoundOrganic:', restoredT0Organic ? 
-        (typeof restoredT0Organic === 'string' ? restoredT0Organic : restoredT0Organic.type) : 'null');
-    console.assert(restoredT0Organic !== null && restoredT0Organic !== undefined, 
-        'Territory 0 uniqueCompoundOrganic should be restored from JSON');
+    const restoredT0Organics = restored.environment.territories[0].uniqueCompoundOrganics;
+    console.log('Restored territory 0 uniqueCompoundOrganics:', restoredT0Organics && restoredT0Organics.length > 0 ? 
+        restoredT0Organics.map(o => typeof o === 'string' ? o : o.type).join(', ') : '[]');
+    console.assert(restoredT0Organics && restoredT0Organics.length === 1, 
+        'Territory 0 should have 1 uniqueCompoundOrganic restored from JSON');
+    
+    const restoredT1Organics = restored.environment.territories[1].uniqueCompoundOrganics;
+    console.log('Restored territory 1 uniqueCompoundOrganics:', restoredT1Organics && restoredT1Organics.length > 0 ? 
+        restoredT1Organics.map(o => typeof o === 'string' ? o : o.type).join(', ') : '[]');
+    console.assert(restoredT1Organics && restoredT1Organics.length === 2, 
+        'Territory 1 should have 2 uniqueCompoundOrganics restored from JSON');
 }
 
-console.log('\n✓ Test 3 passed: Save/load preserves unique compound association\n');
+console.log('\n✓ Test 3 passed: Save/load preserves unique compound associations (including multiple per territory)\n');
 
 // Test 4: Verify export JSON includes unique compound info
 console.log('Test 4: Verify export JSON includes unique compound information');
@@ -225,8 +233,8 @@ if (exportJson.landmasses) {
     exportJson.landmasses.forEach(lm => {
         if (lm.territories) {
             lm.territories.forEach(t => {
-                if (t.uniqueCompoundOrganic) {
-                    console.log('Found uniqueCompoundOrganic in export:', t.uniqueCompoundOrganic);
+                if (t.uniqueCompoundOrganics && t.uniqueCompoundOrganics.length > 0) {
+                    console.log('Found uniqueCompoundOrganics in export:', t.uniqueCompoundOrganics.join(', '));
                     foundInExport = true;
                 }
             });
@@ -234,15 +242,16 @@ if (exportJson.landmasses) {
     });
 }
 
-console.log('Export JSON includes uniqueCompoundOrganic:', foundInExport);
+console.log('Export JSON includes uniqueCompoundOrganics:', foundInExport);
 // Note: This might be false if landmasses aren't organized, which is fine
-console.log('(Note: uniqueCompoundOrganic appears in export only when landmasses are organized)');
+console.log('(Note: uniqueCompoundOrganics appears in export only when landmasses are organized)');
 
 console.log('\n✓ Test 4 passed: Export JSON structure verified\n');
 
 console.log('=== All Tests Passed ===\n');
 console.log('Summary:');
 console.log('- Organic compounds are correctly associated with territories that have uniqueCompound trait');
-console.log('- HTML display shows "Unique Compound: [Type]" under terrain listings');
-console.log('- Save/load preserves the association');
+console.log('- Multiple unique compounds per territory are fully supported');
+console.log('- HTML display shows all "Unique Compound: [Type]" entries under terrain listings');
+console.log('- Save/load preserves all associations');
 console.log('- Export JSON includes the information when applicable');

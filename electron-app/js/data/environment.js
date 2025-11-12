@@ -79,8 +79,8 @@
             landmarkWhirlpool: 0,
             // Notable species xenos nodes associated with this territory
             notableSpeciesXenos: [],
-            // Organic compound associated with Unique Compound trait (if any)
-            uniqueCompoundOrganic: null
+            // Organic compounds associated with Unique Compound trait (array, can be multiple)
+            uniqueCompoundOrganics: []
         };
     }
 

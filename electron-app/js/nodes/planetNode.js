@@ -591,17 +591,19 @@ class PlanetNode extends NodeBase {
             // Assign organic compounds to territories with unique compound traits
             if (this.environment.territories) {
                 this.environment.territories.forEach(territory => {
+                    // Initialize array if not present (for backward compatibility with old saves)
+                    if (!territory.uniqueCompoundOrganics) {
+                        territory.uniqueCompoundOrganics = [];
+                    }
                     for (let i = 0; i < territory.uniqueCompound; i++) {
                         const organic = this.generateOrganicCompound();
                         if (organic) {
-                            // Add to planet's organic compounds list (if not duplicate)
+                            // Add to planet's organic compounds list (if not duplicate type)
                             if (!this.organicCompounds.find(o => (typeof o === 'string' ? o : o.type) === (typeof organic === 'string' ? organic : organic.type))) {
                                 this.organicCompounds.push(organic);
                             }
-                            // Associate with territory (store only the first unique compound's organic for display)
-                            if (!territory.uniqueCompoundOrganic) {
-                                territory.uniqueCompoundOrganic = organic;
-                            }
+                            // Associate with territory (store all unique compounds)
+                            territory.uniqueCompoundOrganics.push(organic);
                         }
                     }
                 });
@@ -1507,16 +1509,24 @@ class PlanetNode extends NodeBase {
                             
                             // Display landmarks and notable species for this territory (indented)
                             const lm = window.EnvironmentData.buildLandmarkList(t);
-                            const hasUniqueCompoundOrganic = t.uniqueCompoundOrganic && t.uniqueCompound > 0;
-                            if (lm.length > 0 || (t.notableSpeciesXenos && t.notableSpeciesXenos.length > 0) || hasUniqueCompoundOrganic) {
+                            const hasUniqueCompoundOrganics = t.uniqueCompoundOrganics && t.uniqueCompoundOrganics.length > 0;
+                            // Backward compatibility: check old field name too
+                            const hasOldUniqueCompoundOrganic = !hasUniqueCompoundOrganics && t.uniqueCompoundOrganic && t.uniqueCompound > 0;
+                            if (lm.length > 0 || (t.notableSpeciesXenos && t.notableSpeciesXenos.length > 0) || hasUniqueCompoundOrganics || hasOldUniqueCompoundOrganic) {
                                 desc += '<ul>';
                                 // Show notable species first (above landmarks)
                                 if (t.notableSpeciesXenos && t.notableSpeciesXenos.length > 0) {
                                     const speciesNames = t.notableSpeciesXenos.map(x => x.nodeName).join(', ');
                                     desc += `<li>Notable Species: ${speciesNames}</li>`;
                                 }
-                                // Show unique compound organic after notable species
-                                if (hasUniqueCompoundOrganic) {
+                                // Show unique compound organics after notable species
+                                if (hasUniqueCompoundOrganics) {
+                                    t.uniqueCompoundOrganics.forEach(organic => {
+                                        const organicType = typeof organic === 'string' ? organic : organic.type;
+                                        desc += `<li>Unique Compound: ${organicType}</li>`;
+                                    });
+                                } else if (hasOldUniqueCompoundOrganic) {
+                                    // Backward compatibility for old saves with single compound
                                     const organicType = typeof t.uniqueCompoundOrganic === 'string' ? t.uniqueCompoundOrganic : t.uniqueCompoundOrganic.type;
                                     desc += `<li>Unique Compound: ${organicType}</li>`;
                                 }
@@ -1566,16 +1576,24 @@ class PlanetNode extends NodeBase {
                     
                     // Display landmarks and notable species for this territory (indented)
                     const lm = window.EnvironmentData.buildLandmarkList(t);
-                    const hasUniqueCompoundOrganic = t.uniqueCompoundOrganic && t.uniqueCompound > 0;
-                    if (lm.length > 0 || (t.notableSpeciesXenos && t.notableSpeciesXenos.length > 0) || hasUniqueCompoundOrganic) {
+                    const hasUniqueCompoundOrganics = t.uniqueCompoundOrganics && t.uniqueCompoundOrganics.length > 0;
+                    // Backward compatibility: check old field name too
+                    const hasOldUniqueCompoundOrganic = !hasUniqueCompoundOrganics && t.uniqueCompoundOrganic && t.uniqueCompound > 0;
+                    if (lm.length > 0 || (t.notableSpeciesXenos && t.notableSpeciesXenos.length > 0) || hasUniqueCompoundOrganics || hasOldUniqueCompoundOrganic) {
                         desc += '<ul>';
                         // Show notable species first (above landmarks)
                         if (t.notableSpeciesXenos && t.notableSpeciesXenos.length > 0) {
                             const speciesNames = t.notableSpeciesXenos.map(x => x.nodeName).join(', ');
                             desc += `<li>Notable Species: ${speciesNames}</li>`;
                         }
-                        // Show unique compound organic after notable species
-                        if (hasUniqueCompoundOrganic) {
+                        // Show unique compound organics after notable species
+                        if (hasUniqueCompoundOrganics) {
+                            t.uniqueCompoundOrganics.forEach(organic => {
+                                const organicType = typeof organic === 'string' ? organic : organic.type;
+                                desc += `<li>Unique Compound: ${organicType}</li>`;
+                            });
+                        } else if (hasOldUniqueCompoundOrganic) {
+                            // Backward compatibility for old saves with single compound
                             const organicType = typeof t.uniqueCompoundOrganic === 'string' ? t.uniqueCompoundOrganic : t.uniqueCompoundOrganic.type;
                             desc += `<li>Unique Compound: ${organicType}</li>`;
                         }
@@ -1728,7 +1746,9 @@ class PlanetNode extends NodeBase {
                         baseTerrain: t.baseTerrain,
                         traits: window.EnvironmentData ? window.EnvironmentData.getTerritoryTraitList(t) : [],
                         landmarks: window.EnvironmentData ? window.EnvironmentData.buildLandmarkList(t) : [],
-                        uniqueCompoundOrganic: t.uniqueCompoundOrganic ? (typeof t.uniqueCompoundOrganic === 'string' ? t.uniqueCompoundOrganic : t.uniqueCompoundOrganic.type) : null
+                        uniqueCompoundOrganics: t.uniqueCompoundOrganics && t.uniqueCompoundOrganics.length > 0 
+                            ? t.uniqueCompoundOrganics.map(o => typeof o === 'string' ? o : o.type)
+                            : (t.uniqueCompoundOrganic ? [typeof t.uniqueCompoundOrganic === 'string' ? t.uniqueCompoundOrganic : t.uniqueCompoundOrganic.type] : [])
                     }))
                 }));
             }
