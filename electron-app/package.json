@@ -29,7 +29,7 @@
   },
   "devDependencies": {
     "electron": "^38.1.0",
-    "electron-builder": "^25.1.8",
+    "electron-builder": "^26.6.0",
     "jsdom": "^27.1.0"
   },
   "dependencies": {
