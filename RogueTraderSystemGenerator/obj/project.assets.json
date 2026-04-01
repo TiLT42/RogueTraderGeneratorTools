@@ -1,0 +1,62 @@
+{
+  "version": 3,
+  "targets": {
+    ".NETFramework,Version=v4.0": {},
+    ".NETFramework,Version=v4.0/win-x86": {}
+  },
+  "libraries": {},
+  "projectFileDependencyGroups": {
+    ".NETFramework,Version=v4.0": []
+  },
+  "packageFolders": {
+    "C:\\Users\\espen\\.nuget\\packages\\": {}
+  },
+  "project": {
+    "version": "1.0.0",
+    "restore": {
+      "projectUniqueName": "G:\\Code\\RogueTrader\\RogueTraderGeneratorTools\\RogueTraderSystemGenerator\\RogueTraderGeneratorTools.csproj",
+      "projectName": "RogueTraderGeneratorTools",
+      "projectPath": "G:\\Code\\RogueTrader\\RogueTraderGeneratorTools\\RogueTraderSystemGenerator\\RogueTraderGeneratorTools.csproj",
+      "packagesPath": "C:\\Users\\espen\\.nuget\\packages\\",
+      "outputPath": "G:\\Code\\RogueTrader\\RogueTraderGeneratorTools\\RogueTraderSystemGenerator\\obj\\",
+      "projectStyle": "PackageReference",
+      "configFilePaths": [
+        "C:\\Users\\espen\\AppData\\Roaming\\NuGet\\NuGet.Config"
+      ],
+      "originalTargetFrameworks": [
+        "net40"
+      ],
+      "sources": {
+        "https://api.nuget.org/v3/index.json": {}
+      },
+      "frameworks": {
+        "net40": {
+          "targetAlias": "net40",
+          "projectReferences": {}
+        }
+      },
+      "warningProperties": {
+        "warnAsError": [
+          "NU1605"
+        ]
+      },
+      "restoreAuditProperties": {
+        "enableAudit": "true",
+        "auditLevel": "low",
+        "auditMode": "direct"
+      },
+      "SdkAnalysisLevel": "10.0.100"
+    },
+    "frameworks": {
+      "net40": {
+        "targetAlias": "net40",
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.104\\RuntimeIdentifierGraph.json"
+      }
+    },
+    "runtimes": {
+      "win-x86": {
+        "#import": []
+      }
+    }
+  }
+}
