@@ -108,7 +108,7 @@ class GasGiantNode extends NodeBase {
             } else if (roll <= 85) { // lesser moon
                 this.ensureOrbitalFeaturesNode();
                 // Parity: AddLesserMoon()
-                const lm = createNode(NodeTypes.LesserMoon); lm.generate?.(); this.orbitalFeaturesNode.addChild(lm);
+                const lm = createNode(NodeTypes.LesserMoon); lm.generate(true); this.orbitalFeaturesNode.addChild(lm);
             } else { // moon (planet)
                 this.ensureOrbitalFeaturesNode();
                 const moon = createNode(NodeTypes.Planet); moon.isMoon = true; moon.maxSize = 5; moon.generate?.(); this.orbitalFeaturesNode.addChild(moon);

@@ -291,7 +291,7 @@ class PlanetNode extends NodeBase {
         }
     }
     _createAsteroid() { const a = createNode(NodeTypes.Asteroid); a.generate(); return a; }
-    _createLesserMoon() { const m = createNode(NodeTypes.LesserMoon); m.generate(); return m; }
+    _createLesserMoon() { const m = createNode(NodeTypes.LesserMoon); m.generate(false); return m; }
 
     _assignNamesToOrbitalFeatures() {
         if (!this.orbitalFeaturesNode) return;
@@ -620,12 +620,13 @@ class PlanetNode extends NodeBase {
         if (numAdditional < 0) numAdditional = 0;
         for (let i=0;i<numAdditional;i++) {
             const r = RollD10();
-            if (r <= 2) { // Archeotech
+            if (r <= 2) { // Archeotech (cases 1-2)
                 this._addArcheotechCache();
-            } else if (r <= 6) { // Mineral or Organic (conditional)
+            } else if (r <= 6) { // Mineral resource (cases 3-6)
                 this._addRandomMineral();
-                if (['Verdant','LimitedEcosystem'].includes(this.habitability)) this._addOrganic(); else i--; // reroll attempt if not allowed
-            } else { // Xenos ruins
+            } else if (r <= 8) { // Organic compound (cases 7-8, habitable only)
+                if (['Verdant','LimitedEcosystem'].includes(this.habitability)) this._addOrganic(); else i--; // re-roll if not habitable
+            } else { // Xenos ruins (cases 9-10)
                 this._addXenosRuins();
             }
         }
@@ -640,11 +641,11 @@ class PlanetNode extends NodeBase {
         if (!type) return;
         let existing = this.mineralResources.find(m=>m.type===type);
         if (!existing) {
-            const baseAbundance = 5 + RollD10();
+            const baseAbundance = RollD100();
             existing = { type, abundance: baseAbundance };
             this.mineralResources.push(existing);
         } else {
-            existing.abundance += RollD5();
+            existing.abundance += RollD100();
         }
     }
     _addOrganic() {

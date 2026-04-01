@@ -53,6 +53,13 @@ class TreeView {
             this.container.appendChild(ul);
         }
         
+        // Capture currently collapsed node IDs before clearing
+        const collapsedIds = new Set();
+        ul.querySelectorAll('.tree-node-expander:not(.expanded)').forEach(expander => {
+            const treeNode = expander.closest('.tree-node');
+            if (treeNode) collapsedIds.add(parseInt(treeNode.dataset.nodeId, 10));
+        });
+
         // Clear existing content
         ul.innerHTML = '';
         
@@ -63,6 +70,19 @@ class TreeView {
                 ul.appendChild(li);
             }
         }
+
+        // Restore collapsed state for nodes that were collapsed before the refresh
+        collapsedIds.forEach(id => {
+            const treeNode = ul.querySelector(`.tree-node[data-node-id="${id}"]`);
+            if (treeNode) {
+                const expander = treeNode.querySelector('.tree-node-expander');
+                const children = treeNode.querySelector('.tree-node-children');
+                if (expander && children) {
+                    expander.classList.remove('expanded');
+                    children.style.display = 'none';
+                }
+            }
+        });
         // Empty tree - no message needed, just keep it empty
     }
 

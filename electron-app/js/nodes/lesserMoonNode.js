@@ -16,10 +16,23 @@ class LesserMoonNode extends NodeBase {
         // WPF display uses page 16 inline in the Type field description
     }
 
-    generate() {
+    generate(isGasGiantMoon = false) {
         super.generate();
-        // Parity note: In WPF, lesser moons added without internal randomization here.
-        // We leave resources/inhabitants empty (0/None) unless future system effects modify them.
+        // 50% chance (roll 6+ on d10) for a single Mineral Resource
+        // Abundance: d100-5 for rocky planet moons, 5d10+5 for gas giant moons
+        if (RollD10() >= 6) {
+            let abundance;
+            if (isGasGiantMoon) {
+                let sum = 0; for (let j = 0; j < 5; j++) sum += RollD10(); abundance = sum + 5;
+            } else {
+                abundance = Math.max(0, RollD100() - 5);
+            }
+            const type = window.CommonData.generateMineralResource();
+            if (type === 'Industrial Metals') this.resourceIndustrialMetal += abundance;
+            else if (type === 'Ornamental Materials') this.resourceOrnamental += abundance;
+            else if (type === 'Radioactive Materials') this.resourceRadioactive += abundance;
+            else if (type === 'Exotic Materials') this.resourceExoticMaterial += abundance;
+        }
         this.updateDescription();
     }
 
