@@ -13,14 +13,13 @@
         return { content, pageNumber, ruleName, book };
     }
 
-    // Shared mineral resource generator (parity logic moved from PlanetNode.generateMineralResource)
+    // Shared mineral resource generator (parity with C# NodeBase.GenerateMineralResources D10 type roll)
     function generateMineralResource() {
-        const roll = RollD100();
-        if (roll <= 40) return 'Industrial Metals';
-        if (roll <= 60) return 'Ornamental Materials';
-        if (roll <= 75) return 'Radioactive Materials';
-        if (roll <= 90) return 'Exotic Materials';
-        return 'Rare Earth Elements';
+        const roll = RollD10();
+        if (roll <= 4) return 'Industrial Metals';
+        if (roll <= 7) return 'Ornamental Materials';
+        if (roll <= 9) return 'Radioactive Materials';
+        return 'Exotic Materials';
     }
 
     // Get abundance description from numeric value (WPF parity: NodeBase.GetResourceAbundanceText)
