@@ -376,6 +376,9 @@
     }
     
     // Mountain Ranges: Table 1-15
+    // NOTE: The WPF version (Environment.cs) is BUGGED - it uses the Forest table for all terrain types,
+    // meaning Mountain/Plains/Swamp/Wasteland never generate terrain-specific traits like Boundary,
+    // Foothills, Fertile, Stagnant, Virulent, etc. That bug is known and intentionally NOT replicated here.
     function generateMountainTrait(t){
         const randValue = RollD100();
         if (randValue <= 25) t.boundary++;
@@ -391,6 +394,8 @@
     }
     
     // Plains: Table 1-15
+    // NOTE: The WPF version (Environment.cs) is BUGGED - it uses the Forest table for all terrain types.
+    // That bug is known and intentionally NOT replicated here.
     function generatePlainsTrait(t){
         const randValue = RollD100();
         if (randValue <= 10) t.brokenGround++;
@@ -406,6 +411,8 @@
     }
     
     // Swamps: Table 1-15
+    // NOTE: The WPF version (Environment.cs) is BUGGED - it uses the Forest table for all terrain types.
+    // That bug is known and intentionally NOT replicated here.
     function generateSwampTrait(t){
         const randValue = RollD100();
         if (randValue <= 10) t.expansive++;
@@ -421,6 +428,8 @@
     }
     
     // Wastelands: Table 1-15
+    // NOTE: The WPF version (Environment.cs) is BUGGED - it uses the Forest table for all terrain types.
+    // That bug is known and intentionally NOT replicated here.
     function generateWastelandTrait(t){
         const randValue = RollD100();
         if (randValue <= 20) t.desolate++;

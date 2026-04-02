@@ -585,8 +585,12 @@ class PlanetNode extends NodeBase {
         if (this.systemCreationRules && this.systemCreationRules.numExtraMineralResourcesPerPlanet) {
             for (let i=0;i<this.systemCreationRules.numExtraMineralResourcesPerPlanet;i++) this._addRandomMineral();
         }
+        // Exotic materials from system rules (Bountiful: roll 1d10, add Exotic Materials on 7+)
+        if (this.systemCreationRules && this.systemCreationRules.chanceForExtraExoticMaterialsPerPlanet && RollD10() >= 7) {
+            this._addSpecificMineral('Exotic Materials');
+        }
 
-        // Organic compounds from territories (environment-driven)
+        // Organic compounds from territories (environment-driven, parity with WPF GetNumOrganicCompounds loop)
         if (this.environment && window.EnvironmentData) {
             // Assign organic compounds to territories with unique compound traits
             if (this.environment.territories) {
@@ -598,8 +602,14 @@ class PlanetNode extends NodeBase {
                     for (let i = 0; i < territory.uniqueCompound; i++) {
                         const organic = this.generateOrganicCompound();
                         if (organic) {
-                            // Add to planet's organic compounds list (if not duplicate type)
-                            if (!this.organicCompounds.find(o => (typeof o === 'string' ? o : o.type) === (typeof organic === 'string' ? organic : organic.type))) {
+                            // Accumulate abundance if same type already present (parity with WPF GenerateOrganicCompound)
+                            const organicType = typeof organic === 'string' ? organic : organic.type;
+                            const existing = this.organicCompounds.find(o => (typeof o === 'string' ? o : o.type) === organicType);
+                            if (existing) {
+                                if (typeof existing !== 'string' && typeof organic !== 'string') {
+                                    existing.abundance += organic.abundance;
+                                }
+                            } else {
                                 this.organicCompounds.push(organic);
                             }
                             // Associate with territory (store all unique compounds)
@@ -650,7 +660,18 @@ class PlanetNode extends NodeBase {
     }
     _addOrganic() {
         const organic = this.generateOrganicCompound();
-        if (organic && !this.organicCompounds.find(o=> (typeof o==='string'? o: o.type) === (typeof organic==='string'?organic:organic.type))) this.organicCompounds.push(organic);
+        if (organic) {
+            const organicType = typeof organic === 'string' ? organic : organic.type;
+            const existing = this.organicCompounds.find(o => (typeof o === 'string' ? o : o.type) === organicType);
+            if (existing) {
+                // Accumulate abundance (parity with WPF GenerateOrganicCompound which adds to existing compound)
+                if (typeof existing !== 'string' && typeof organic !== 'string') {
+                    existing.abundance += organic.abundance;
+                }
+            } else {
+                this.organicCompounds.push(organic);
+            }
+        }
     }
     _addArcheotechCache() {
         // C# parity: base abundance RollD100() + optional (RollD10()+5) if increased abundance flag set (no cap in WPF for cache abundance)
@@ -882,8 +903,8 @@ class PlanetNode extends NodeBase {
             numMinerals += this.systemCreationRules.numExtraMineralResourcesPerPlanet;
         for (let i=0;i<numMinerals;i++) this._addRandomMineral();
 
-        // Exotic materials chance (Bountiful effect flag)
-        if (this.systemCreationRules?.chanceForExtraExoticMaterialsPerPlanet) {
+        // Exotic materials chance (Bountiful: roll 1d10, add Exotic Materials on 7+)
+        if (this.systemCreationRules?.chanceForExtraExoticMaterialsPerPlanet && RollD10() >= 7) {
             this._addSpecificMineral('Exotic Materials');
         }
 
