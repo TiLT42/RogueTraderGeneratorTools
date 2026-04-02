@@ -402,6 +402,8 @@ class DocumentViewer {
                 content = content.replace(/<[^>]*>/g, '');
                 // Decode HTML entities first
                 content = decodeHTMLEntities(content);
+                // Remove any residual angle brackets (e.g. from entity-encoded tags)
+                content = content.replace(/[<>]/g, '');
                 // Always escape the content - we only get here if there are no HTML formatting tags
                 return escapeRTF(content);
             }
@@ -415,19 +417,19 @@ class DocumentViewer {
         // Handle headings with proper escaping
         result = result.replace(/<h1[^>]*>(.*?)<\/h1>/gis, (match, content) => {
             let text = content.replace(/<[^>]*>/g, ''); // Strip inner tags
-            text = decodeHTMLEntities(text);
+            text = decodeHTMLEntities(text).replace(/[<>]/g, '');
             return '\\fs32\\b ' + escapeRTF(text) + '\\b0\\fs24\\par\\par\n';
         });
         
         result = result.replace(/<h2[^>]*>(.*?)<\/h2>/gis, (match, content) => {
             let text = content.replace(/<[^>]*>/g, '');
-            text = decodeHTMLEntities(text);
+            text = decodeHTMLEntities(text).replace(/[<>]/g, '');
             return '\\fs28\\b ' + escapeRTF(text) + '\\b0\\fs24\\par\\par\n';
         });
         
         result = result.replace(/<h3[^>]*>(.*?)<\/h3>/gis, (match, content) => {
             let text = content.replace(/<[^>]*>/g, '');
-            text = decodeHTMLEntities(text);
+            text = decodeHTMLEntities(text).replace(/[<>]/g, '');
             return '\\fs24\\b ' + escapeRTF(text) + '\\b0\\fs24\\par\\par\n';
         });
         
@@ -446,7 +448,7 @@ class DocumentViewer {
         // Handle page references - special case for italic paragraphs
         result = result.replace(/<p[^>]*class="page-reference"[^>]*>(.*?)<\/p>/gis, (match, content) => {
             let text = content.replace(/<[^>]*>/g, '');
-            text = decodeHTMLEntities(text);
+            text = decodeHTMLEntities(text).replace(/[<>]/g, '');
             return '\\i ' + escapeRTF(text) + '\\i0\\par\n';
         });
         

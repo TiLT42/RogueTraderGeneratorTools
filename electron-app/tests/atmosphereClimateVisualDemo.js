@@ -61,6 +61,7 @@ function printPlanetExample(title, planet) {
                     .replace(/&ndash;/g, '–')
                     .replace(/&mdash;/g, '—')
                     .replace(/&rsquo;/g, "'")
+                    .replace(/[<>]/g, '')
                     .trim();
                 if (clean) {
                     console.log(colors.bright + clean + colors.reset);
@@ -86,6 +87,7 @@ function printPlanetExample(title, planet) {
                     .replace(/&ndash;/g, '–')
                     .replace(/&mdash;/g, '—')
                     .replace(/&rsquo;/g, "'")
+                    .replace(/[<>]/g, '')
                     .trim();
                 if (cleaned) {
                     console.log(colors.bright + '  • ' + cleaned + colors.reset);

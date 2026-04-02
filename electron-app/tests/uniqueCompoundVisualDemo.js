@@ -196,7 +196,7 @@ if (territoriesStart !== -1 && territoriesEnd !== -1) {
         .replace(/<\/ul>/g, '')
         .replace(/<li>/g, '  - ')
         .replace(/<\/li>/g, '\n')
-        .replace(/<[^>]*>/g, '');
+        .replace(/[<>]/g, '');
     
     console.log(textVersion);
 }
