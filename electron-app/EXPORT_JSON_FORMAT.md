@@ -273,12 +273,32 @@ Represents a gas giant planet.
   "name": "Gas Giant",
   "description": "<p>A massive gas giant...</p>",
   "children": [
-    // Lesser Moons, Orbital Features
+    // Orbital Features container (lesser moons, planetary rings, planet moons)
   ]
 }
 ```
 
-**Note**: Gas giants follow a similar structure to planets but with fewer terrestrial properties.
+**Note**: Gas giants follow a similar structure to planets but with fewer terrestrial properties. Planetary rings appear as `"planetary-ring"` child nodes inside the `"orbital-features"` container, alongside moons and asteroids.
+
+### Planetary Ring Node
+
+**Type**: `"planetary-ring"`
+
+Represents one or more instances of planetary rings around a gas giant. Multiple rolled instances increase the ring's severity (rather than adding separate ring nodes).
+
+```json
+{
+  "type": "planetary-ring",
+  "name": "Planetary Rings (Debris)",
+  "description": "<p>A vessel with cause to pass directly through the ring...</p>",
+  "ringType": "Debris",
+  "count": 2
+}
+```
+
+**Fields:**
+- `ringType` (string): Ring type — `"Debris"` (navigational hazard requiring Pilot Tests) or `"Dust"` (impairs auger array Tests)
+- `count` (number): Number of instances rolled; each additional instance increases the severity of the ring's effects
 
 ### Asteroid Belt Node
 
@@ -552,6 +572,7 @@ Additional node types that may appear:
 - `"gravity-riptide"`: Gravity riptide hazard
 - `"starship-graveyard"`: Starship graveyard
 - `"orbital-features"`: Container for orbital features
+- `"planetary-ring"`: Planetary ring around a gas giant (see dedicated section above)
 - `"lesser-moon"`: Small moon
 - `"asteroid"`: Single large asteroid
 - `"primitive-xenos"`: Container for primitive xenos

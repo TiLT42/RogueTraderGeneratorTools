@@ -41,6 +41,15 @@ class PlanetaryRingNode extends NodeBase {
         this.description = desc;
     }
 
+    toExportJSON() {
+        const data = this._getBaseExportData();
+        data.ringType = this.ringType;
+        data.count = this.count;
+        // No children expected on a ring node, but call for consistency
+        this._addChildrenToExport(data);
+        return data;
+    }
+
     toJSON() {
         const json = super.toJSON();
         json.ringType = this.ringType;
