@@ -29,6 +29,8 @@ window.getNodeClass = function(type) {
             return StarshipGraveyardNode;
         case NodeTypes.OrbitalFeatures:
             return OrbitalFeaturesNode;
+        case NodeTypes.PlanetaryRing:
+            return PlanetaryRingNode;
         case NodeTypes.LesserMoon:
             return LesserMoonNode;
         case NodeTypes.Xenos:

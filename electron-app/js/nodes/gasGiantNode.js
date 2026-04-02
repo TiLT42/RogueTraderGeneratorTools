@@ -11,8 +11,6 @@ class GasGiantNode extends NodeBase {
         this.gravity = '';
         this.titan = false;
         this.orbitalFeaturesNode = null;
-        this.planetaryRingsDebris = 0;
-        this.planetaryRingsDust = 0;
         this.inhabitants = 'None';
         this.inhabitantDevelopment = '';
         this.systemCreationRules = null;
@@ -40,7 +38,7 @@ class GasGiantNode extends NodeBase {
     }
 
     resetParityState() {
-        this.body=''; this.bodyValue=0; this.gravity=''; this.titan=false; this.planetaryRingsDebris=0; this.planetaryRingsDust=0; this.orbitalFeaturesNode=null;
+        this.body=''; this.bodyValue=0; this.gravity=''; this.titan=false; this.orbitalFeaturesNode=null;
     }
 
     generateBodyParity() {
@@ -102,9 +100,9 @@ class GasGiantNode extends NodeBase {
             if (roll <= 20) {
                 // no feature
             } else if (roll <= 35) {
-                this.planetaryRingsDebris++;
+                this._addOrIncrementRing('Debris');
             } else if (roll <= 50) {
-                this.planetaryRingsDust++;
+                this._addOrIncrementRing('Dust');
             } else if (roll <= 85) { // lesser moon
                 this.ensureOrbitalFeaturesNode();
                 // Parity: AddLesserMoon()
@@ -113,6 +111,22 @@ class GasGiantNode extends NodeBase {
                 this.ensureOrbitalFeaturesNode();
                 const moon = createNode(NodeTypes.Planet); moon.isMoon = true; moon.maxSize = 5; moon.generate?.(); this.orbitalFeaturesNode.addChild(moon);
             }
+        }
+    }
+
+    _addOrIncrementRing(ringType) {
+        this.ensureOrbitalFeaturesNode();
+        // Multiple instances increase the existing ring rather than adding a new one
+        const existing = this.orbitalFeaturesNode.children.find(
+            c => c.type === NodeTypes.PlanetaryRing && c.ringType === ringType
+        );
+        if (existing) {
+            existing.count++;
+            existing.updateDescription();
+        } else {
+            const ring = createNode(NodeTypes.PlanetaryRing);
+            ring.generate(ringType);
+            this.orbitalFeaturesNode.addChild(ring);
         }
     }
 
@@ -216,19 +230,6 @@ class GasGiantNode extends NodeBase {
         desc += `<p><strong>Type:</strong> Gas Giant${addPageRef(19,'Table 1-6: Body')}</p>`;
         desc += `<p><strong>Body:</strong> ${this.body}${addPageRef(19,'Table 1-6: Body')}</p>`;
         desc += `<p><strong>Gravity:</strong> ${this.gravity}${addPageRef(20,'Table 1-7: Gravity')}</p>`;
-        if (this.planetaryRingsDebris>0) {
-            if (this.planetaryRingsDebris===1) {
-                desc += `<p><strong>Planetary Rings (Debris):</strong> A vessel with cause to pass directly through the ring must make a Challenging (+0) Pilot (Space Craft)+Manoeuvrability Test as if passing through an Asteroid Field (RT Core p226-227). Avoiding the field requires a detour.${addPageRef(20,'Table 1-8: Orbital Features')}</p>`;
-            } else {
-                const penalty = -10 * (this.planetaryRingsDebris - 1);
-                desc += `<p><strong>Planetary Rings (Debris):</strong> A vessel with cause to pass directly through the ring must make a Challenging (+0) Pilot (Space Craft)+Manoeuvrability Test as if passing through an Asteroid Field (RT Core p226-227), suffering a ${penalty} penalty. Avoiding the field requires a detour.${addPageRef(20,'Table 1-8: Orbital Features')}</p>`;
-            }
-        }
-        if (this.planetaryRingsDust>0) {
-            // Two steps more difficult = -20 base, then -5 per every TWO additional instances
-            const penalty = -20 + (-5 * Math.floor((this.planetaryRingsDust - 1) / 2));
-            desc += `<p><strong>Planetary Rings (Dust):</strong> Any Tests using the ship's auger arrays on a target within, on, or directly through the ring suffer a ${penalty} penalty.${addPageRef(20,'Table 1-8: Orbital Features')}</p>`;
-        }
         // Gas giants in WPF do not list Base Mineral Resources; include a consistent placeholder for clarity
         if (this.inhabitants !== 'None') {
             desc += `<p><strong>Inhabitants:</strong> ${this.inhabitants}</p>`;
@@ -243,7 +244,7 @@ class GasGiantNode extends NodeBase {
     toJSON() {
         const json = super.toJSON();
         json.body = this.body; json.bodyValue = this.bodyValue; json.gravity = this.gravity; json.titan = this.titan;
-        json.planetaryRingsDebris = this.planetaryRingsDebris; json.planetaryRingsDust = this.planetaryRingsDust; json.zone = this.zone;
+        json.zone = this.zone;
         json.inhabitants = this.inhabitants; json.inhabitantDevelopment = this.inhabitantDevelopment;
         return json;
     }
@@ -257,7 +258,6 @@ class GasGiantNode extends NodeBase {
         });
         Object.assign(node, {
             body: data.body || '', bodyValue: data.bodyValue || 0, gravity: data.gravity || '', titan: data.titan || false,
-            planetaryRingsDebris: data.planetaryRingsDebris || 0, planetaryRingsDust: data.planetaryRingsDust || 0,
             zone: data.zone || 'PrimaryBiosphere', inhabitants: data.inhabitants || 'None', inhabitantDevelopment: data.inhabitantDevelopment || ''
         });
         if (data.children) {
@@ -266,6 +266,27 @@ class GasGiantNode extends NodeBase {
                 node.addChild(restoredChild);
                 if (restoredChild.type === NodeTypes.OrbitalFeatures) node.orbitalFeaturesNode = restoredChild;
             }
+        }
+        // Backward compatibility: convert old ring counters to ring nodes
+        if (data.planetaryRingsDebris > 0) {
+            node.ensureOrbitalFeaturesNode();
+            const ring = createNode(NodeTypes.PlanetaryRing);
+            ring.ringType = 'Debris';
+            ring.count = data.planetaryRingsDebris;
+            ring.nodeName = 'Planetary Rings (Debris)';
+            ring.isGenerated = true;
+            ring.updateDescription();
+            node.orbitalFeaturesNode.addChild(ring);
+        }
+        if (data.planetaryRingsDust > 0) {
+            node.ensureOrbitalFeaturesNode();
+            const ring = createNode(NodeTypes.PlanetaryRing);
+            ring.ringType = 'Dust';
+            ring.count = data.planetaryRingsDust;
+            ring.nodeName = 'Planetary Rings (Dust)';
+            ring.isGenerated = true;
+            ring.updateDescription();
+            node.orbitalFeaturesNode.addChild(ring);
         }
         return node;
     }
