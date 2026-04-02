@@ -375,63 +375,63 @@
         }
     }
     
-    // Mountain Ranges: Table 1-15
+    // Mountain Ranges: Table 1-15 (parity with WPF - same table as Forest for all terrain types)
     function generateMountainTrait(t){
         const randValue = RollD100();
-        if (randValue <= 25) t.boundary++;
-        else if (randValue <= 50) t.expansive++;
-        else if (randValue <= 65) t.extremeTemperature++;
-        else if (randValue <= 75) t.foothills++;
-        else if (randValue <= 85) t.notableSpecies++;
+        if (randValue <= 5) t.exoticNature++;
+        else if (randValue <= 25) t.expansive++;
+        else if (randValue <= 40) t.extremeTemperature++;
+        else if (randValue <= 65) t.notableSpecies++;
+        else if (randValue <= 80) t.uniqueCompound++;
         else if (randValue <= 95) t.unusualLocation++;
-        else { // 96-100 -> two more rolls
-            generateMountainTrait(t);
-            generateMountainTrait(t);
+        else { // 96-100 -> two more rolls (WPF calls GenerateForestTerritoryTrait for all terrain doubles)
+            generateForestTrait(t);
+            generateForestTrait(t);
         }
     }
     
-    // Plains: Table 1-15
+    // Plains: Table 1-15 (parity with WPF - same table as Forest for all terrain types)
     function generatePlainsTrait(t){
         const randValue = RollD100();
-        if (randValue <= 10) t.brokenGround++;
-        else if (randValue <= 30) t.expansive++;
-        else if (randValue <= 45) t.extremeTemperature++;
-        else if (randValue <= 70) t.fertile++;
-        else if (randValue <= 85) t.notableSpecies++;
+        if (randValue <= 5) t.exoticNature++;
+        else if (randValue <= 25) t.expansive++;
+        else if (randValue <= 40) t.extremeTemperature++;
+        else if (randValue <= 65) t.notableSpecies++;
+        else if (randValue <= 80) t.uniqueCompound++;
         else if (randValue <= 95) t.unusualLocation++;
-        else { // 96-100 -> two more rolls
-            generatePlainsTrait(t);
-            generatePlainsTrait(t);
+        else { // 96-100 -> two more rolls (WPF calls GenerateForestTerritoryTrait for all terrain doubles)
+            generateForestTrait(t);
+            generateForestTrait(t);
         }
     }
     
-    // Swamps: Table 1-15
+    // Swamps: Table 1-15 (parity with WPF - same table as Forest for all terrain types)
     function generateSwampTrait(t){
         const randValue = RollD100();
-        if (randValue <= 10) t.expansive++;
-        else if (randValue <= 30) t.extremeTemperature++;
-        else if (randValue <= 45) t.notableSpecies++;
-        else if (randValue <= 65) t.stagnant++;
-        else if (randValue <= 75) t.unusualLocation++;
-        else if (randValue <= 95) t.virulent++;
-        else { // 96-100 -> two more rolls
-            generateSwampTrait(t);
-            generateSwampTrait(t);
+        if (randValue <= 5) t.exoticNature++;
+        else if (randValue <= 25) t.expansive++;
+        else if (randValue <= 40) t.extremeTemperature++;
+        else if (randValue <= 65) t.notableSpecies++;
+        else if (randValue <= 80) t.uniqueCompound++;
+        else if (randValue <= 95) t.unusualLocation++;
+        else { // 96-100 -> two more rolls (WPF calls GenerateForestTerritoryTrait for all terrain doubles)
+            generateForestTrait(t);
+            generateForestTrait(t);
         }
     }
     
-    // Wastelands: Table 1-15
+    // Wastelands: Table 1-15 (parity with WPF - same table as Forest for all terrain types)
     function generateWastelandTrait(t){
         const randValue = RollD100();
-        if (randValue <= 20) t.desolate++;
-        else if (randValue <= 40) t.expansive++;
-        else if (randValue <= 70) t.extremeTemperature++;
-        else if (randValue <= 75) t.notableSpecies++;
-        else if (randValue <= 80) t.ruined++;
+        if (randValue <= 5) t.exoticNature++;
+        else if (randValue <= 25) t.expansive++;
+        else if (randValue <= 40) t.extremeTemperature++;
+        else if (randValue <= 65) t.notableSpecies++;
+        else if (randValue <= 80) t.uniqueCompound++;
         else if (randValue <= 95) t.unusualLocation++;
-        else { // 96-100 -> two more rolls
-            generateWastelandTrait(t);
-            generateWastelandTrait(t);
+        else { // 96-100 -> two more rolls (WPF calls GenerateForestTerritoryTrait for all terrain doubles)
+            generateForestTrait(t);
+            generateForestTrait(t);
         }
     }
 
