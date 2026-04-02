@@ -402,6 +402,10 @@ namespace RogueTraderSystemGenerator
 
         private void GenerateMountainTerritoryTrait()
         {
+            // BUG: This method incorrectly uses the same trait table as GenerateForestTerritoryTrait.
+            // Mountain-specific traits (Boundary, Foothills, etc.) are never generated.
+            // This is a known bug in the WPF version that was never fixed before deprecation.
+            // The Electron version correctly implements per-terrain trait tables - do NOT change it to match this.
             int randValue = Globals.RollD100();
             if (randValue <= 5)
                 TerritoryTraitExoticNature++;
@@ -424,6 +428,10 @@ namespace RogueTraderSystemGenerator
 
         private void GeneratePlainsTerritoryTrait()
         {
+            // BUG: This method incorrectly uses the same trait table as GenerateForestTerritoryTrait.
+            // Plains-specific traits (Broken Ground, Fertile, etc.) are never generated.
+            // This is a known bug in the WPF version that was never fixed before deprecation.
+            // The Electron version correctly implements per-terrain trait tables - do NOT change it to match this.
             int randValue = Globals.RollD100();
             if (randValue <= 5)
                 TerritoryTraitExoticNature++;
@@ -446,6 +454,10 @@ namespace RogueTraderSystemGenerator
 
         private void GenerateSwampTerritoryTrait()
         {
+            // BUG: This method incorrectly uses the same trait table as GenerateForestTerritoryTrait.
+            // Swamp-specific traits (Stagnant, Virulent, etc.) are never generated.
+            // This is a known bug in the WPF version that was never fixed before deprecation.
+            // The Electron version correctly implements per-terrain trait tables - do NOT change it to match this.
             int randValue = Globals.RollD100();
             if (randValue <= 5)
                 TerritoryTraitExoticNature++;
@@ -468,6 +480,10 @@ namespace RogueTraderSystemGenerator
 
         private void GenerateWastelandTerritoryTrait()
         {
+            // BUG: This method incorrectly uses the same trait table as GenerateForestTerritoryTrait.
+            // Wasteland-specific traits (Desolate, Ruined, etc.) are never generated.
+            // This is a known bug in the WPF version that was never fixed before deprecation.
+            // The Electron version correctly implements per-terrain trait tables - do NOT change it to match this.
             int randValue = Globals.RollD100();
             if (randValue <= 5)
                 TerritoryTraitExoticNature++;
