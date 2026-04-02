@@ -39,6 +39,7 @@ const NodeTypes = {
     StarshipGraveyard: 'starship-graveyard',
     OrbitalFeatures: 'orbital-features',
     LesserMoon: 'lesser-moon',
+    PlanetaryRing: 'planetary-ring',
     Asteroid: 'asteroid',
     Xenos: 'xenos',
     PrimitiveXenos: 'primitive-xenos',

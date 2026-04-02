@@ -94,7 +94,8 @@ class NodeBase {
             this.type === NodeTypes.RadiationBursts ||
             this.type === NodeTypes.GravityRiptide ||
             this.type === NodeTypes.DustCloud ||
-            this.type === NodeTypes.PirateShips) {
+            this.type === NodeTypes.PirateShips ||
+            this.type === NodeTypes.PlanetaryRing) {
             this.updateDescription();
         }
         
