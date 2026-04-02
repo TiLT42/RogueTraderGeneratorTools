@@ -428,12 +428,15 @@ class ContextMenu {
                 if (this.currentNode.type === NodeTypes.Planet || this.currentNode.type === NodeTypes.GasGiant) {
                     const orbitalFeatures = this.getOrCreateOrbitalFeatures(this.currentNode);
                     const newNode = createNode(NodeTypes.LesserMoon);
+                    newNode.generate(this.currentNode.type === NodeTypes.GasGiant);
                     orbitalFeatures.addChild(newNode);
                     // Auto-name the moon using astronomical convention
                     this.renameOrbitalFeatures(this.currentNode);
                 } else {
                     // For Orbital Features node, create a lesser moon
                     const newNode = createNode(NodeTypes.LesserMoon);
+                    const isGasGiantMoon = this.currentNode.parent && this.currentNode.parent.type === NodeTypes.GasGiant;
+                    newNode.generate(isGasGiantMoon);
                     this.currentNode.addChild(newNode);
                     // Auto-name the moon using astronomical convention
                     if (this.currentNode.parent) {
