@@ -1144,11 +1144,11 @@ class PlanetNode extends NodeBase {
             return 'Exotic Compounds';
         }
         const { createOrganicCompound } = data;
-        if (roll <= 25) return createOrganicCompound('Curative Compounds', RollD5());
-        if (roll <= 45) return createOrganicCompound('Juvenat Compounds', RollD5());
-        if (roll <= 65) return createOrganicCompound('Toxins', RollD5());
-        if (roll <= 80) return createOrganicCompound('Vivid Accessories', RollD5());
-        return createOrganicCompound('Exotic Compounds', RollD5());
+        if (roll <= 25) return createOrganicCompound('Curative Compounds', RollD100());
+        if (roll <= 45) return createOrganicCompound('Juvenat Compounds', RollD100());
+        if (roll <= 65) return createOrganicCompound('Toxins', RollD100());
+        if (roll <= 80) return createOrganicCompound('Vivid Accessories', RollD100());
+        return createOrganicCompound('Exotic Compounds', RollD100());
     }
 
     generateXenosRuins() {
