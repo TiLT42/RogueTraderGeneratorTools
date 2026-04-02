@@ -703,7 +703,7 @@ namespace RogueTraderSystemGenerator.Nodes
             numMineralResources += _systemCreationRules.NumExtraMineralResourcesPerPlanet;
             GenerateMineralResources(numMineralResources, mineralResourceAbundanceModifier, maximumMineralResourceAbundance);
 
-            if(_systemCreationRules.ChanceForExtraExoticMaterialsPerPlanet)
+            if(_systemCreationRules.ChanceForExtraExoticMaterialsPerPlanet && Globals.RollD10() >= 7)
                 GenerateExoticMaterialsResource(1, mineralResourceAbundanceModifier, maximumMineralResourceAbundance);
 
             // Generate Additional Resources

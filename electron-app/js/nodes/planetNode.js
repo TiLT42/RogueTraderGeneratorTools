@@ -585,8 +585,8 @@ class PlanetNode extends NodeBase {
         if (this.systemCreationRules && this.systemCreationRules.numExtraMineralResourcesPerPlanet) {
             for (let i=0;i<this.systemCreationRules.numExtraMineralResourcesPerPlanet;i++) this._addRandomMineral();
         }
-        // Exotic materials from system rules (parity with WPF ChanceForExtraExoticMaterialsPerPlanet)
-        if (this.systemCreationRules && this.systemCreationRules.chanceForExtraExoticMaterialsPerPlanet) {
+        // Exotic materials from system rules (Bountiful: roll 1d10, add Exotic Materials on 7+)
+        if (this.systemCreationRules && this.systemCreationRules.chanceForExtraExoticMaterialsPerPlanet && RollD10() >= 7) {
             this._addSpecificMineral('Exotic Materials');
         }
 
@@ -903,8 +903,8 @@ class PlanetNode extends NodeBase {
             numMinerals += this.systemCreationRules.numExtraMineralResourcesPerPlanet;
         for (let i=0;i<numMinerals;i++) this._addRandomMineral();
 
-        // Exotic materials chance (Bountiful effect flag)
-        if (this.systemCreationRules?.chanceForExtraExoticMaterialsPerPlanet) {
+        // Exotic materials chance (Bountiful: roll 1d10, add Exotic Materials on 7+)
+        if (this.systemCreationRules?.chanceForExtraExoticMaterialsPerPlanet && RollD10() >= 7) {
             this._addSpecificMineral('Exotic Materials');
         }
 
