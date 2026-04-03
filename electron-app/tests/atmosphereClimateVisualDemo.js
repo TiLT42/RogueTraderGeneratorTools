@@ -48,12 +48,10 @@ function sanitizeHtmlToText(text) {
             .replace(/&ndash;/g, '–')
             .replace(/&mdash;/g, '—')
             .replace(/&rsquo;/g, "'")
-            // Remove any remaining angle brackets.
+            // Remove any remaining angle brackets so that tag-like sequences
+            // (including any form of "<script") cannot survive.
             .replace(/[<>]/g, '')
             .trim();
-        // Additionally ensure that any residual "script" sequences directly following
-        // a less-than sign cannot survive, in case they are re-formed across passes.
-        current = current.replace(/<\s*script/gi, '');
     } while (current !== previous);
     return current;
 }
