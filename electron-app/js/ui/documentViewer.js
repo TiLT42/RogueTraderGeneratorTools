@@ -483,8 +483,8 @@ class DocumentViewer {
         
         result = result.replace(/<br\s*\/?>/gi, '\\par\n');
         
-        // Remove any remaining HTML tags
-        result = result.replace(/<[^>]*>/g, '');
+        // Remove any remaining HTML tags using DOM-based sanitizer
+        result = stripHtmlTags(result);
         
         // Clean up excessive whitespace and paragraph breaks
         result = result.replace(/\\par\n\\par\n\\par\n+/g, '\\par\\par\n');
