@@ -1,5 +1,20 @@
 // Document viewer UI management
 
+// Safely strip HTML tags using DOMParser instead of regex-based sanitization
+function stripHtmlTags(html) {
+    if (html == null) {
+        return '';
+    }
+    try {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(String(html), 'text/html');
+        return doc.body ? doc.body.textContent || '' : '';
+    } catch (e) {
+        // Fallback: return the original string if parsing fails
+        return String(html);
+    }
+}
+
 class DocumentViewer {
     constructor(containerElement) {
         this.container = containerElement;
@@ -416,20 +431,20 @@ class DocumentViewer {
         
         // Handle headings with proper escaping
         result = result.replace(/<h1[^>]*>(.*?)<\/h1>/gis, (match, content) => {
-            let text = content.replace(/<[^>]*>/g, ''); // Strip inner tags
+            let text = stripHtmlTags(content); // Strip inner tags robustly
             text = decodeHTMLEntities(text).replace(/[<>]/g, '');
             return '\\fs32\\b ' + escapeRTF(text) + '\\b0\\fs24\\par\\par\n';
         });
         
         result = result.replace(/<h2[^>]*>(.*?)<\/h2>/gis, (match, content) => {
             let text = decodeHTMLEntities(content);
-            text = text.replace(/<[^>]*>/g, '').replace(/[<>]/g, '');
+            text = stripHtmlTags(text).replace(/[<>]/g, '');
             return '\\fs28\\b ' + escapeRTF(text) + '\\b0\\fs24\\par\\par\n';
         });
         
         result = result.replace(/<h3[^>]*>(.*?)<\/h3>/gis, (match, content) => {
             let text = decodeHTMLEntities(content);
-            text = text.replace(/<[^>]*>/g, '').replace(/[<>]/g, '');
+            text = stripHtmlTags(text).replace(/[<>]/g, '');
             return '\\fs24\\b ' + escapeRTF(text) + '\\b0\\fs24\\par\\par\n';
         });
         
@@ -448,7 +463,7 @@ class DocumentViewer {
         // Handle page references - special case for italic paragraphs
         result = result.replace(/<p[^>]*class="page-reference"[^>]*>(.*?)<\/p>/gis, (match, content) => {
             let text = decodeHTMLEntities(content);
-            text = text.replace(/<[^>]*>/g, '').replace(/[<>]/g, '');
+            text = stripHtmlTags(text).replace(/[<>]/g, '');
             return '\\i ' + escapeRTF(text) + '\\i0\\par\n';
         });
         
@@ -461,7 +476,7 @@ class DocumentViewer {
         // Handle description sections - keep content as is, just remove the div tags
         result = result.replace(/<div[^>]*class="description-section"[^>]*>(.*?)<\/div>/gis, (match, content) => {
             // Process the content recursively (it may contain other tags)
-            const text = content.replace(/<div[^>]*>/gi, '').replace(/<\/div>/gi, '');
+            const text = stripHtmlTags(content);
             return text + '\\par\n';
         });
         
