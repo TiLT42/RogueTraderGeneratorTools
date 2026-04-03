@@ -32,6 +32,32 @@ const colors = {
     red: '\x1b[31m'
 };
 
+function sanitizeHtmlToText(text) {
+    if (typeof text !== 'string') {
+        return '';
+    }
+    let previous;
+    let current = text;
+    // Repeat until the string stops changing to avoid re-formation of unsafe patterns.
+    do {
+        previous = current;
+        current = current
+            // Remove HTML tags like <p>, </p>, <li>, etc.
+            .replace(/<[^>]*>/g, '')
+            // Decode common entities used in descriptions.
+            .replace(/&ndash;/g, '–')
+            .replace(/&mdash;/g, '—')
+            .replace(/&rsquo;/g, "'")
+            // Remove any remaining angle brackets.
+            .replace(/[<>]/g, '')
+            .trim();
+        // Additionally ensure that any residual "script" sequences directly following
+        // a less-than sign cannot survive, in case they are re-formed across passes.
+        current = current.replace(/<\s*script/gi, '');
+    } while (current !== previous);
+    return current;
+}
+
 function printSection(title) {
     console.log('\n' + colors.bright + colors.cyan + '═'.repeat(80) + colors.reset);
     console.log(colors.bright + colors.cyan + title + colors.reset);
@@ -56,13 +82,7 @@ function printPlanetExample(title, planet) {
             line.includes('Climate:')) {
             // Only show the basic attribute line, not the rules section header
             if (!line.includes('Special Rules')) {
-                let clean = line
-                    .replace(/<[^>]*>/g, '')
-                    .replace(/&ndash;/g, '–')
-                    .replace(/&mdash;/g, '—')
-                    .replace(/&rsquo;/g, "'")
-                    .replace(/[<>]/g, '')
-                    .trim();
+                let clean = sanitizeHtmlToText(line);
                 if (clean) {
                     console.log(colors.bright + clean + colors.reset);
                 }
@@ -82,13 +102,7 @@ function printPlanetExample(title, planet) {
             // Split by </li> and process each item
             const items = listContent.split('</li>');
             items.forEach(item => {
-                const cleaned = item
-                    .replace(/<li>/g, '')
-                    .replace(/&ndash;/g, '–')
-                    .replace(/&mdash;/g, '—')
-                    .replace(/&rsquo;/g, "'")
-                    .replace(/[<>]/g, '')
-                    .trim();
+                const cleaned = sanitizeHtmlToText(item);
                 if (cleaned) {
                     console.log(colors.bright + '  • ' + cleaned + colors.reset);
                 }
