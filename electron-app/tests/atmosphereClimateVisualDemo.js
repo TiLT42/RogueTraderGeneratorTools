@@ -42,17 +42,18 @@ function sanitizeHtmlToText(text) {
     do {
         previous = current;
         current = current
-            // Remove HTML tags like <p>, </p>, <li>, etc.
+            // Remove <script...> tags first, before any other processing,
+            // so that <script sequences cannot survive partial transformations.
+            .replace(/<\s*script[^>]*>/gi, '')
+            // Remove remaining HTML tags like <p>, </p>, <li>, etc.
             .replace(/<[^>]*>/g, '')
             // Decode common entities used in descriptions.
             .replace(/&ndash;/g, '–')
             .replace(/&mdash;/g, '—')
             .replace(/&rsquo;/g, "'")
-            // Remove any remaining angle brackets so that tag-like sequences
-            // (including any form of "<script") cannot survive.
+            // Remove any remaining angle brackets so that no tag-like sequences
+            // can survive.
             .replace(/[<>]/g, '')
-            // Neutralize any remaining "script" substrings to avoid script-like content.
-            .replace(/script/gi, 'scr' + 'ipt')
             .trim();
     } while (current !== previous);
     return current;
