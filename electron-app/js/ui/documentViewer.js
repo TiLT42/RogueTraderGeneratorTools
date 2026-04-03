@@ -422,14 +422,14 @@ class DocumentViewer {
         });
         
         result = result.replace(/<h2[^>]*>(.*?)<\/h2>/gis, (match, content) => {
-            let text = content.replace(/<[^>]*>/g, '');
-            text = decodeHTMLEntities(text).replace(/[<>]/g, '');
+            let text = decodeHTMLEntities(content);
+            text = text.replace(/<[^>]*>/g, '').replace(/[<>]/g, '');
             return '\\fs28\\b ' + escapeRTF(text) + '\\b0\\fs24\\par\\par\n';
         });
         
         result = result.replace(/<h3[^>]*>(.*?)<\/h3>/gis, (match, content) => {
-            let text = content.replace(/<[^>]*>/g, '');
-            text = decodeHTMLEntities(text).replace(/[<>]/g, '');
+            let text = decodeHTMLEntities(content);
+            text = text.replace(/<[^>]*>/g, '').replace(/[<>]/g, '');
             return '\\fs24\\b ' + escapeRTF(text) + '\\b0\\fs24\\par\\par\n';
         });
         
@@ -447,8 +447,8 @@ class DocumentViewer {
         
         // Handle page references - special case for italic paragraphs
         result = result.replace(/<p[^>]*class="page-reference"[^>]*>(.*?)<\/p>/gis, (match, content) => {
-            let text = content.replace(/<[^>]*>/g, '');
-            text = decodeHTMLEntities(text).replace(/[<>]/g, '');
+            let text = decodeHTMLEntities(content);
+            text = text.replace(/<[^>]*>/g, '').replace(/[<>]/g, '');
             return '\\i ' + escapeRTF(text) + '\\i0\\par\n';
         });
         
