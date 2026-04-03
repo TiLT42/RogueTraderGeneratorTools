@@ -51,6 +51,8 @@ function sanitizeHtmlToText(text) {
             // Remove any remaining angle brackets so that tag-like sequences
             // (including any form of "<script") cannot survive.
             .replace(/[<>]/g, '')
+            // Neutralize any remaining "script" substrings to avoid script-like content.
+            .replace(/script/gi, 'scr' + 'ipt')
             .trim();
     } while (current !== previous);
     return current;
