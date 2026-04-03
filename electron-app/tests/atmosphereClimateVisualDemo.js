@@ -32,6 +32,29 @@ const colors = {
     red: '\x1b[31m'
 };
 
+function sanitizeHtmlToText(text) {
+    if (typeof text !== 'string') {
+        return '';
+    }
+    let previous;
+    let current = text;
+    // Iteratively remove HTML tags until the string stops changing.
+    // The loop handles reconstruction attacks where removing one tag could
+    // create another tag-like sequence (e.g., <scrip<x>t> → <script>).
+    do {
+        previous = current;
+        current = current.replace(/<[^>]*>/g, '');
+    } while (current !== previous);
+    // Decode common HTML entities used in descriptions.
+    current = current
+        .replace(/&ndash;/g, '–')
+        .replace(/&mdash;/g, '—')
+        .replace(/&rsquo;/g, "'");
+    // Strip any remaining angle brackets for final safety.
+    current = current.replace(/[<>]/g, '');
+    return current.trim();
+}
+
 function printSection(title) {
     console.log('\n' + colors.bright + colors.cyan + '═'.repeat(80) + colors.reset);
     console.log(colors.bright + colors.cyan + title + colors.reset);
@@ -56,13 +79,7 @@ function printPlanetExample(title, planet) {
             line.includes('Climate:')) {
             // Only show the basic attribute line, not the rules section header
             if (!line.includes('Special Rules')) {
-                let clean = line
-                    .replace(/<[^>]*>/g, '')
-                    .replace(/&ndash;/g, '–')
-                    .replace(/&mdash;/g, '—')
-                    .replace(/&rsquo;/g, "'")
-                    .replace(/[<>]/g, '')
-                    .trim();
+                let clean = sanitizeHtmlToText(line);
                 if (clean) {
                     console.log(colors.bright + clean + colors.reset);
                 }
@@ -82,13 +99,7 @@ function printPlanetExample(title, planet) {
             // Split by </li> and process each item
             const items = listContent.split('</li>');
             items.forEach(item => {
-                const cleaned = item
-                    .replace(/<li>/g, '')
-                    .replace(/&ndash;/g, '–')
-                    .replace(/&mdash;/g, '—')
-                    .replace(/&rsquo;/g, "'")
-                    .replace(/[<>]/g, '')
-                    .trim();
+                const cleaned = sanitizeHtmlToText(item);
                 if (cleaned) {
                     console.log(colors.bright + '  • ' + cleaned + colors.reset);
                 }
