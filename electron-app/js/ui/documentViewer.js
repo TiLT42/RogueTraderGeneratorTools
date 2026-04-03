@@ -382,9 +382,9 @@ class DocumentViewer {
             return text
                 .replace(/&lt;/g, '<')
                 .replace(/&gt;/g, '>')
-                .replace(/&amp;/g, '&')
                 .replace(/&quot;/g, '"')
-                .replace(/&nbsp;/g, ' ');
+                .replace(/&nbsp;/g, ' ')
+                .replace(/&amp;/g, '&');
         };
         
         // Helper to process inline formatting recursively
