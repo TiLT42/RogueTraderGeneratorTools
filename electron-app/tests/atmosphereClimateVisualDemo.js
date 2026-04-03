@@ -38,25 +38,21 @@ function sanitizeHtmlToText(text) {
     }
     let previous;
     let current = text;
-    // Repeat until the string stops changing to avoid re-formation of unsafe patterns.
+    // Iteratively remove HTML tags until the string stops changing.
+    // The loop handles reconstruction attacks where removing one tag could
+    // create another tag-like sequence (e.g., <scrip<x>t> → <script>).
     do {
         previous = current;
-        current = current
-            // Remove <script...> tags first, before any other processing,
-            // so that <script sequences cannot survive partial transformations.
-            .replace(/<\s*script[^>]*>/gi, '')
-            // Remove remaining HTML tags like <p>, </p>, <li>, etc.
-            .replace(/<[^>]*>/g, '')
-            // Decode common entities used in descriptions.
-            .replace(/&ndash;/g, '–')
-            .replace(/&mdash;/g, '—')
-            .replace(/&rsquo;/g, "'")
-            // Remove any remaining angle brackets so that no tag-like sequences
-            // can survive.
-            .replace(/[<>]/g, '')
-            .trim();
+        current = current.replace(/<[^>]*>/g, '');
     } while (current !== previous);
-    return current;
+    // Decode common HTML entities used in descriptions.
+    current = current
+        .replace(/&ndash;/g, '–')
+        .replace(/&mdash;/g, '—')
+        .replace(/&rsquo;/g, "'");
+    // Strip any remaining angle brackets for final safety.
+    current = current.replace(/[<>]/g, '');
+    return current.trim();
 }
 
 function printSection(title) {
