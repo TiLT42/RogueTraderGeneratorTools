@@ -413,13 +413,8 @@ class DocumentViewer {
             
             // If no more formatting tags to process, handle remaining HTML and escape text
             if (!hasItalic && !hasBold) {
-                // Remove any other remaining tags
-                content = content.replace(/<[^>]*>/g, '');
-                // Decode HTML entities first
-                content = decodeHTMLEntities(content);
-                // Remove any residual angle brackets (e.g. from entity-encoded tags)
-                content = content.replace(/[<>]/g, '');
-                // Always escape the content - we only get here if there are no HTML formatting tags
+                // Decode HTML entities first, then remove all angle brackets in one pass
+                content = decodeHTMLEntities(content).replace(/[<>]/g, '');
                 return escapeRTF(content);
             }
             
@@ -431,8 +426,8 @@ class DocumentViewer {
         
         // Handle headings with proper escaping
         result = result.replace(/<h1[^>]*>(.*?)<\/h1>/gis, (match, content) => {
-            let text = stripHtmlTags(content); // Strip inner tags robustly
-            text = decodeHTMLEntities(text).replace(/[<>]/g, '');
+            let text = decodeHTMLEntities(content);
+            text = stripHtmlTags(text).replace(/[<>]/g, '');
             return '\\fs32\\b ' + escapeRTF(text) + '\\b0\\fs24\\par\\par\n';
         });
         
