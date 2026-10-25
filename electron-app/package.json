@@ -28,7 +28,7 @@
     "url": "https://github.com/TiLT42/RogueTraderGeneratorTools.git"
   },
   "devDependencies": {
-    "electron": "^41.10.6",
+    "electron": "^42.11.16",
     "electron-builder": "^26.15.3",
     "jsdom": "^27.1.0"
   },
